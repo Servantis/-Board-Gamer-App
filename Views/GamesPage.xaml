@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<ContentPage
+    x:Class="BoardGamerApp.Views.GamesPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    BackgroundColor="#F5F7FA">
+
+    <VerticalStackLayout Padding="0"
+                         Spacing="0">
+
+        <!-- Header -->
+        <Grid BackgroundColor="#1E3A8A"
+              Padding="20,40,20,20">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <Image Source="back_arrow.png"
+                   HeightRequest="24"
+                   VerticalOptions="Center"
+                   HorizontalOptions="Start"/>
+
+            <Label Grid.Column="1"
+                   Text="SPIELPORTAL"
+                   TextColor="White"
+                   FontAttributes="Bold"
+                   FontSize="20"
+                   VerticalOptions="Center"
+                   HorizontalOptions="Center"/>
+        </Grid>
+
+        <!-- Spielkarten -->
+        <ScrollView>
+            <VerticalStackLayout Padding="20"
+                                 Spacing="15">
+                <!-- Karte 1 -->
+                <Frame CornerRadius="10"
+                       Padding="15"
+                       BackgroundColor="White"
+                       HasShadow="True">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <VerticalStackLayout>
+                            <Label Text="Catan"
+                                   FontAttributes="Bold"
+                                   FontSize="18"
+                                   TextColor="#0F172A"/>
+
+                            <Label Text="Vorgeschlagen von Peter"
+                                   FontSize="14"
+                                   TextColor="#334155"/>
+
+                            <!-- Stimmenanzeige -->
+                            <HorizontalStackLayout Spacing="4"
+                                                   Margin="0,6,0,0">
+                                <Label Text="★★★★★"
+                                       TextColor="#FBBF24"
+                                       FontSize="16"/>
+                                <Label Text="(5 Stimmen)"
+                                       TextColor="#334155"
+                                       FontSize="14"/>
+                            </HorizontalStackLayout>
+                        </VerticalStackLayout>
+
+                        <!-- RadioButton rechts -->
+                        <RadioButton Grid.Column="1"
+                                     VerticalOptions="Center"
+                                     GroupName="SpielAuswahl"
+                                     Value="Catan"/>
+                    </Grid>
+                </Frame>
+
+                <!-- Karte 2 -->
+                <Frame CornerRadius="10"
+                       Padding="15"
+                       BackgroundColor="White"
+                       HasShadow="True">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <VerticalStackLayout>
+                            <Label Text="Carcassonne"
+                                   FontAttributes="Bold"
+                                   FontSize="18"
+                                   TextColor="#0F172A"/>
+
+                            <Label Text="Vorgeschlagen von Markus"
+                                   FontSize="14"
+                                   TextColor="#334155"/>
+
+                            <!-- Stimmenanzeige -->
+                            <HorizontalStackLayout Spacing="4"
+                                                   Margin="0,6,0,0">
+                                <Label Text="★★★★☆"
+                                       TextColor="#FBBF24"
+                                       FontSize="16"/>
+                                <Label Text="(4 Stimmen)"
+                                       TextColor="#334155"
+                                       FontSize="14"/>
+                            </HorizontalStackLayout>
+                        </VerticalStackLayout>
+
+                        <!-- RadioButton rechts -->
+                        <RadioButton Grid.Column="1"
+                                     VerticalOptions="Center"
+                                     GroupName="SpielAuswahl"
+                                     Value="Catan"/>
+                    </Grid>
+                </Frame>
+
+                <!-- Karte 3 -->
+                <Frame CornerRadius="10"
+                       Padding="15"
+                       BackgroundColor="White"
+                       HasShadow="True">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <VerticalStackLayout>
+                            <Label Text="Azul"
+                                   FontAttributes="Bold"
+                                   FontSize="18"
+                                   TextColor="#0F172A"/>
+
+                            <Label Text="Vorgeschlagen von Anna"
+                                   FontSize="14"
+                                   TextColor="#334155"/>
+
+                            <!-- Stimmenanzeige -->
+                            <HorizontalStackLayout Spacing="4"
+                                                   Margin="0,6,0,0">
+                                <Label Text="★★☆☆☆"
+                                       TextColor="#FBBF24"
+                                       FontSize="16"/>
+                                <Label Text="(2 Stimmen)"
+                                       TextColor="#334155"
+                                       FontSize="14"/>
+                            </HorizontalStackLayout>
+                        </VerticalStackLayout>
+
+
+                        <!-- RadioButton rechts -->
+                        <RadioButton Grid.Column="1"
+                                     VerticalOptions="Center"
+                                     GroupName="SpielAuswahl"
+                                     Value="Catan"/>
+                    </Grid>
+                </Frame>
+            </VerticalStackLayout>
+        </ScrollView>
+
+        <!-- Button unten -->
+
+        <Grid Padding="20">
+            <Button Text="STIMME ABGEBEN"
+                    FontAttributes="Bold"
+                    FontSize="16"
+                    TextColor="#1E3A8A"
+                    BackgroundColor="White"
+                    CornerRadius="10"
+                    HeightRequest="50"
+                    HorizontalOptions="Fill"
+                    VerticalOptions="End"/>
+        </Grid>
+
+        <Grid Padding="20">
+            <Button Text="+ SPIEL VORSCHLAGEN"
+                    FontAttributes="Bold"
+                    FontSize="16"
+                    TextColor="#1E3A8A"
+                    BackgroundColor="White"
+                    CornerRadius="10"
+                    HeightRequest="50"
+                    HorizontalOptions="Fill"
+                    VerticalOptions="End"/>
+        </Grid>
+
+    </VerticalStackLayout>
+</ContentPage>
+

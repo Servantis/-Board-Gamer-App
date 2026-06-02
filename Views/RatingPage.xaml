@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<ContentPage
+    x:Class="BoardGamerApp.Views.RatingPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    BackgroundColor="#0F4C81">
+
+    <Grid RowDefinitions="Auto,*"
+          Padding="0">
+
+        <!-- Header / Titel -->
+        <Grid BackgroundColor="#0F4C81"
+              Padding="16,40,16,16"
+              Grid.Row="0">
+            <Label Text="BEWERTUNG"
+                   HorizontalOptions="Center"
+                   VerticalOptions="Center"
+                   TextColor="White"
+                   FontAttributes="Bold"
+                   FontSize="20"/>
+        </Grid>
+
+        <!-- Inhalt -->
+        <Border Grid.Row="1"
+                BackgroundColor="White"
+                Padding="24,24,24,32"
+                StrokeThickness="0"
+                StrokeShape="RoundRectangle 24">
+
+            <VerticalStackLayout Spacing="24">
+
+                <!-- Gastgeber -->
+                <Grid ColumnDefinitions="Auto,*"
+                      RowDefinitions="Auto">
+                    <Label Text="Gastgeber"
+                           Grid.Column="0"
+                           VerticalOptions="Center"
+                           TextColor="#333"
+                           FontSize="16"/>
+
+                    <HorizontalStackLayout
+                        Grid.Column="1"
+                        HorizontalOptions="End"
+                        Spacing="4"
+                        BindableLayout.ItemsSource="{Binding RatingGastgeberItems}">
+
+                        <BindableLayout.ItemTemplate>
+                            <DataTemplate>
+                                <Image
+                                    WidthRequest="28"
+                                    HeightRequest="28"
+                                    Source="{Binding Image}">
+                                    <Image.GestureRecognizers>
+                                        <TapGestureRecognizer Command="{Binding TapCommand}"/>
+                                    </Image.GestureRecognizers>
+                                </Image>
+                            </DataTemplate>
+                        </BindableLayout.ItemTemplate>
+                    </HorizontalStackLayout>
+                </Grid>
+
+                <!-- Essen -->
+                <Grid ColumnDefinitions="Auto,*"
+                      RowDefinitions="Auto">
+                    <Label Text="Essen"
+                           Grid.Column="0"
+                           VerticalOptions="Center"
+                           TextColor="#333"
+                           FontSize="16"/>
+
+                    <HorizontalStackLayout
+                        Grid.Column="1"
+                        HorizontalOptions="End"
+                        Spacing="4"
+                        BindableLayout.ItemsSource="{Binding RatingEssenItems}">
+
+                        <BindableLayout.ItemTemplate>
+                            <DataTemplate>
+                                <Image
+                                    WidthRequest="28"
+                                    HeightRequest="28"
+                                    Source="{Binding Image}">
+                                    <Image.GestureRecognizers>
+                                        <TapGestureRecognizer Command="{Binding TapCommand}"/>
+                                    </Image.GestureRecognizers>
+                                </Image>
+                            </DataTemplate>
+                        </BindableLayout.ItemTemplate>
+                    </HorizontalStackLayout>
+                </Grid>
+
+                <!-- Abend -->
+                <Grid ColumnDefinitions="Auto,*"
+                      RowDefinitions="Auto">
+                    <Label Text="Abend"
+                           Grid.Column="0"
+                           VerticalOptions="Center"
+                           TextColor="#333"
+                           FontSize="16"/>
+
+                    <HorizontalStackLayout
+                        Grid.Column="1"
+                        HorizontalOptions="End"
+                        Spacing="4"
+                        BindableLayout.ItemsSource="{Binding RatingAbendItems}">
+
+                        <BindableLayout.ItemTemplate>
+                            <DataTemplate>
+                                <Image
+                                    WidthRequest="28"
+                                    HeightRequest="28"
+                                    Source="{Binding Image}">
+                                    <Image.GestureRecognizers>
+                                        <TapGestureRecognizer Command="{Binding TapCommand}"/>
+                                    </Image.GestureRecognizers>
+                                </Image>
+                            </DataTemplate>
+                        </BindableLayout.ItemTemplate>
+                    </HorizontalStackLayout>
+                </Grid>
+
+                <!-- Kommentar -->
+                <VerticalStackLayout Spacing="8">
+                    <Label Text="Kommentar"
+                           TextColor="#333"
+                           FontSize="16"/>
+                    <Editor Placeholder="Dein Feedback..."
+                            AutoSize="TextChanges"
+                            HeightRequest="100"
+                            BackgroundColor="#F5F5F5"
+                            TextColor="#333"/>
+                </VerticalStackLayout>
+
+                <!-- Button -->
+                <Button Text="BEWERTUNG ABSENDEN"
+                        BackgroundColor="#0F4C81"
+                        TextColor="White"
+                        CornerRadius="12"
+                        FontAttributes="Bold"
+                        HeightRequest="48"/>
+            </VerticalStackLayout>
+        </Border>
+    </Grid>
+</ContentPage>

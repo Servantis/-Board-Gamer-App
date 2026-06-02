@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<ContentPage
+       x:Class="BoardGamerApp.Views.MessagePage"
+       xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+       xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+       BackgroundColor="#F5F7FA">
+
+       <Grid RowDefinitions="Auto,*,Auto">
+
+              <!-- Header -->
+              <Grid BackgroundColor="#1E3A8A"
+                    Padding="20,40,20,20"
+                    Grid.Row="0">
+                     <Label Text="GRUPPENNACHRICHT"
+                            TextColor="White"
+                            FontAttributes="Bold"
+                            FontSize="20"
+                            HorizontalOptions="Center"
+                            VerticalOptions="Center"/>
+              </Grid>
+
+              <!-- Nachrichtenverlauf -->
+              <ScrollView Grid.Row="1">
+                     <VerticalStackLayout Padding="20"
+                                          Spacing="12">
+
+                            <!-- Nachricht von anderen -->
+                            <Frame BackgroundColor="White"
+                                   CornerRadius="12"
+                                   Padding="12"
+                                   HasShadow="False"
+                                   HorizontalOptions="Start"
+                                   MaximumWidthRequest="260">
+                                   <VerticalStackLayout Spacing="4">
+                                          <Label Text="Peter"
+                                                 FontAttributes="Bold"
+                                                 FontSize="13"
+                                                 TextColor="#1E3A8A"/>
+                                          <Label Text="Bin schon unterwegs!"
+                                                 FontSize="15"
+                                                 TextColor="#0F172A"/>
+                                          <Label Text="18:42"
+                                                 FontSize="11"
+                                                 TextColor="#64748B"
+                                                 HorizontalOptions="End"/>
+                                   </VerticalStackLayout>
+                            </Frame>
+
+                            <!-- Nachricht von dir -->
+                            <Frame BackgroundColor="#1E3A8A"
+                                   CornerRadius="12"
+                                   Padding="12"
+                                   HasShadow="False"
+                                   HorizontalOptions="End"
+                                   MaximumWidthRequest="260">
+                                   <VerticalStackLayout Spacing="4">
+                                          <Label Text="Ich"
+                                                 FontAttributes="Bold"
+                                                 FontSize="13"
+                                                 TextColor="White"/>
+                                          <Label Text="Ich komme vielleicht 10 Minuten später."
+                                                 FontSize="15"
+                                                 TextColor="White"/>
+                                          <Label Text="18:45"
+                                                 FontSize="11"
+                                                 TextColor="#E2E8F0"
+                                                 HorizontalOptions="End"/>
+                                   </VerticalStackLayout>
+                            </Frame>
+
+                            <!-- Nachricht von Anna -->
+                            <Frame BackgroundColor="White"
+                                   CornerRadius="12"
+                                   Padding="12"
+                                   HasShadow="False"
+                                   HorizontalOptions="Start"
+                                   MaximumWidthRequest="260">
+                                   <VerticalStackLayout Spacing="4">
+                                          <Label Text="Anna"
+                                                 FontAttributes="Bold"
+                                                 FontSize="13"
+                                                 TextColor="#1E3A8A"/>
+                                          <Label Text="Alles gut, wir warten auf dich 😊"
+                                                 FontSize="15"
+                                                 TextColor="#0F172A"/>
+                                          <Label Text="18:46"
+                                                 FontSize="11"
+                                                 TextColor="#64748B"
+                                                 HorizontalOptions="End"/>
+                                   </VerticalStackLayout>
+                            </Frame>
+
+                     </VerticalStackLayout>
+              </ScrollView>
+
+              <!-- Eingabebereich -->
+              <Grid Grid.Row="2"
+                    Padding="12"
+                    BackgroundColor="White"
+                    ColumnDefinitions="*,Auto"
+                    VerticalOptions="End">
+
+                     <Entry Placeholder="Nachricht schreiben..."
+                            FontSize="16"
+                            BackgroundColor="#F1F5F9"
+                            HeightRequest="44"
+                            Margin="12"/>
+
+                     <Button Grid.Column="1"
+                             Text="Senden"
+                             BackgroundColor="#1E3A8A"
+                             TextColor="White"
+                             CornerRadius="10"
+                             Padding="16,8"
+                             HeightRequest="44"
+                             VerticalOptions="Center"/>
+              </Grid>
+       </Grid>
+</ContentPage>
