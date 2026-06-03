@@ -12,8 +12,9 @@
             <VerticalStackLayout Padding="30,0"
                                  Spacing="25">
 
-                <Label Text="Nächster Spieleabend"
+                <Label Text="Nächster Termin"
                        Style="{StaticResource Headline}"
+                       FontSize="18"
                        SemanticProperties.HeadingLevel="Level1"/>
 
                 <Border StrokeThickness="0"
@@ -45,6 +46,81 @@
                                TextColor="#1E3A8A"
                                FontAttributes="Bold"/>
                     </VerticalStackLayout>
+                </Border>
+
+                <Label Text="Vergangener Termin"
+                       Style="{StaticResource Headline}"
+                       FontSize="18"
+                       SemanticProperties.HeadingLevel="Level1"/>
+
+                <Border StrokeThickness="0"
+                        BackgroundColor="#FFFFFF"
+                        StrokeShape="RoundRectangle 12"
+                        Padding="12"
+                        Margin="0,6,0,0">
+
+                    <Border.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnRatingClicked"/>
+                    </Border.GestureRecognizers>
+
+                    <Grid ColumnDefinitions="Auto,*,Auto"
+                          VerticalOptions="Center">
+
+                        <!-- Datumskreis -->
+                        <Frame Grid.Column="0"
+                               WidthRequest="50"
+                               HeightRequest="50"
+                               CornerRadius="25"
+                               BackgroundColor="#EDE6DD"
+                               VerticalOptions="Center"
+                               HorizontalOptions="Center"
+                               HasShadow="False">
+                            <VerticalStackLayout VerticalOptions="Center"
+                                                 HorizontalOptions="Center"
+                                                 Spacing="0">
+                                <Label Text="Mai"
+                                       FontSize="10"
+                                       FontAttributes="Bold"
+                                       TextColor="#7C6A58"
+                                       HorizontalOptions="Center"/>
+                                <Label Text="10"
+                                       FontSize="16"
+                                       FontAttributes="Bold"
+                                       TextColor="#7C6A58"
+                                       HorizontalOptions="Center"/>
+                            </VerticalStackLayout>
+                        </Frame>
+
+                        <!-- Termintext -->
+                        <VerticalStackLayout Grid.Column="1"
+                                             Padding="10,0"
+                                             VerticalOptions="Center">
+                            <Label Text="Sonntag, 10. Mai"
+                                   FontAttributes="Bold"
+                                   FontSize="16"
+                                   TextColor="#3B2E25"/>
+                            <Label Text="Bernd K. · Beethovenstr. 4"
+                                   FontSize="14"
+                                   TextColor="#7C6A58"/>
+                        </VerticalStackLayout>
+
+                        <!-- Bewertet-Badge -->
+                        <Frame Grid.Column="2"
+                               Padding="10,4"
+                               CornerRadius="12"
+                               BackgroundColor="#EDE6DD"
+                               VerticalOptions="Center"
+                               HorizontalOptions="End"
+                               HasShadow="False">
+                            <Label Text="Bewertet"
+                                   FontSize="12"
+                                   FontAttributes="Bold"
+                                   TextColor="#7C6A58"
+                                   HorizontalOptions="Center"
+                                   VerticalOptions="Center"/>
+                        </Frame>
+
+                    </Grid>
                 </Border>
 
             </VerticalStackLayout>
