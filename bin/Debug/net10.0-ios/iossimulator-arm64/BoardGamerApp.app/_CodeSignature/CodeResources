@@ -14,11 +14,11 @@
 		</data>
 		<key>BoardGamerApp.dll</key>
 		<data>
-		4vYavzlypxF9LQJszE6ri9FdE3g=
+		MS4Tl5XUuy2tSEOvALCnCkrlW+A=
 		</data>
 		<key>BoardGamerApp.pdb</key>
 		<data>
-		wkHt9T4SvZAoaOvm52ySpHtwq1A=
+		OtT9gpDoLhrRtxj7jVYcrkmM5jc=
 		</data>
 		<key>Info.plist</key>
 		<data>
@@ -840,6 +840,10 @@
 		<data>
 		wYubJ4tczUHEXmUV2KASo0GOIhc=
 		</data>
+		<key>calender_icon.png</key>
+		<data>
+		j1cIlZY2o/Sz3M/uH8AypU3EPtk=
+		</data>
 		<key>cs/Microsoft.Maui.Controls.resources.dll</key>
 		<data>
 		yLiK70PQX4t3tZQgUIsZy8NftGo=
@@ -879,6 +883,10 @@
 		<key>fr/Microsoft.Maui.Controls.resources.dll</key>
 		<data>
 		Uepby1eknmgMB1KAoVgZrygh3rw=
+		</data>
+		<key>group_icon.png</key>
+		<data>
+		vjC2uFL/7h/Kaos3wRplBrTKbME=
 		</data>
 		<key>he/Microsoft.Maui.Controls.resources.dll</key>
 		<data>
@@ -979,6 +987,10 @@
 		<key>pl/Microsoft.Maui.Controls.resources.dll</key>
 		<data>
 		icPn//PDGlPX1uZzxz8FJOZWk4E=
+		</data>
+		<key>plus_icon.png</key>
+		<data>
+		oqNfqJgRX19S1lxqrQZD7p4TbWc=
 		</data>
 		<key>pt-BR/Microsoft.Maui.Controls.resources.dll</key>
 		<data>
@@ -1081,14 +1093,14 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			S9ECRTl26BTh6t7KrHAAiss0zP2Y9MTCrNcn38mXm4U=
+			03F/eZEoC+8zmyyRMy0tlGsRy0+lHO5D3qh+M3jAldM=
 			</data>
 		</dict>
 		<key>BoardGamerApp.pdb</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			1Mpxu6l2XY7alP3m5HevadK+XQt2pGdLlxbML0kMugU=
+			dh+MwzSBjDkmLOFwGVYx+mKxTPtTxlfdaSDws/de/T8=
 			</data>
 		</dict>
 		<key>MauiInfo.plist</key>
@@ -2512,6 +2524,13 @@
 			eg18TNBHVInjJ0Q8SVHv1j/YtNG8796weQZxgDkoqNs=
 			</data>
 		</dict>
+		<key>calender_icon.png</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			mQqhxIMHfe7oNRpUUtq/nnaLC5tccn+y4eNiaC68ueA=
+			</data>
+		</dict>
 		<key>cs/Microsoft.Maui.Controls.resources.dll</key>
 		<dict>
 			<key>hash2</key>
@@ -2580,6 +2599,13 @@
 			<key>hash2</key>
 			<data>
 			keF/sClXpa9BvrzTd1fZfZxXbDk0wFAlRBBCJzXg9co=
+			</data>
+		</dict>
+		<key>group_icon.png</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			ibRQZ1vFUhGaTlc8DuG3zV3CvQjHzOzB5ldvr4/KFpI=
 			</data>
 		</dict>
 		<key>he/Microsoft.Maui.Controls.resources.dll</key>
@@ -2755,6 +2781,13 @@
 			<key>hash2</key>
 			<data>
 			ypdGIHCZJZ94t3XUrlQ2aEljlDz9SSnCh91QJDmCXWc=
+			</data>
+		</dict>
+		<key>plus_icon.png</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			OCJCV3aHs0ysKu82pMip8yPpTWyAOQIlbf/+CulME2k=
 			</data>
 		</dict>
 		<key>pt-BR/Microsoft.Maui.Controls.resources.dll</key>
