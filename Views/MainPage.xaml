@@ -19,18 +19,27 @@
                 <Border StrokeThickness="0"
                         BackgroundColor="#FFFFFF"
                         StrokeShape="RoundRectangle 12">
+
+                    <Border.GestureRecognizers>
+                        <!--Durch dazugehörige OnxxxxClicked-Methode ersetzen-->
+                        <TapGestureRecognizer Tapped="OnEventClicked"/>
+                    </Border.GestureRecognizers>
+
                     <VerticalStackLayout Padding="15"
                                          Spacing="6">
                         <Label Text="Freitag, 12. Juni 2026 – 19:00 Uhr"
                                FontAttributes="Bold"
                                FontSize="16"
                                TextColor="#0F172A"/>
+
                         <Label Text="Ort: Annastraße 5, 12345 Musterstadt"
                                FontSize="14"
                                TextColor="#334155"/>
+
                         <Label Text="Spiel: Catan"
                                FontSize="14"
                                TextColor="#334155"/>
+
                         <Label Text="Ausrichter: Anna"
                                FontSize="14"
                                TextColor="#1E3A8A"
@@ -117,6 +126,7 @@
 <!-- 
 ALTER CODE für die Hauptseite, bevor die Footer-Navigation hinzugefügt wurde.
 Für Copy Paste-Zwecke aufbewahren, falls die Footer-Navigation doch nicht so gut ankommt.
+
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="BoardGamerApp.Views.MainPage">
