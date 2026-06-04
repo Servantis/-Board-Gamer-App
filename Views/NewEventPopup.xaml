@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<toolkit:Popup
+    x:Class="BoardGamerApp.Views.NewEventPopup"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+    Color="#80000000">
+
+    <Border StrokeShape="RoundRectangle 20"
+            BackgroundColor="#F8F5F0"
+            Padding="20"
+            HorizontalOptions="Center"
+            VerticalOptions="Center">
+        <VerticalStackLayout Spacing="15">
+            <Label Text="Neuen Termin anlegen"
+                   FontSize="20"
+                   FontAttributes="Bold"
+                   TextColor="#3B2E25"/>
+
+            <Entry Placeholder="Datum"
+                    BackgroundColor="#EDE6DD"/>
+            <Entry Placeholder="Uhrzeit"
+                    BackgroundColor="#EDE6DD"/>
+            <Entry Placeholder="Ort"
+                    BackgroundColor="#EDE6DD"/>
+
+            <Button Text="Speichern"
+                    BackgroundColor="#8B5E3C"
+                    TextColor="White"
+                    CornerRadius="12"/>
+        </VerticalStackLayout>
+    </Border>
+</toolkit:Popup>

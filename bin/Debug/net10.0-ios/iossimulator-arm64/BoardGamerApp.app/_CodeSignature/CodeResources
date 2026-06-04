@@ -14,11 +14,19 @@
 		</data>
 		<key>BoardGamerApp.dll</key>
 		<data>
-		LBb2svn6cmjfIhb8WG+w8p64DLY=
+		6m6JvTqs5AmNfgcSZgwdtG0puK0=
 		</data>
 		<key>BoardGamerApp.pdb</key>
 		<data>
-		bddQRNuUfnq2iO1ru/YypO2U77A=
+		kgTsfCEMN85Xy878V5fM5QrwCEU=
+		</data>
+		<key>CommunityToolkit.Maui.Core.dll</key>
+		<data>
+		pq8ALnICTp5zxhylUK3rVY2Dyjk=
+		</data>
+		<key>CommunityToolkit.Maui.dll</key>
+		<data>
+		v1Y8jZB/K8UYcCiVCEb9SIZkRT0=
 		</data>
 		<key>Info.plist</key>
 		<data>
@@ -91,6 +99,10 @@
 		<key>Microsoft.Extensions.Primitives.dll</key>
 		<data>
 		kMM/hdnZfPgRglvw4lsJkVeF69s=
+		</data>
+		<key>Microsoft.Maui.Controls.Compatibility.dll</key>
+		<data>
+		aiou9fmcGMBThAacsIpzAo5P9Gw=
 		</data>
 		<key>Microsoft.Maui.Controls.Xaml.dll</key>
 		<data>
@@ -1097,14 +1109,28 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			AXXmfF+qV8l4FiW6sW9DLNLIbEFhQwVCQZpXIIKVrtE=
+			pcVHcHc1spSzAk9Ww7waFzpdOT4DA5QyZr0OyIxBEIU=
 			</data>
 		</dict>
 		<key>BoardGamerApp.pdb</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			KppTfzCb0v9tnukcqwC4UYOy3Fc1TBdbNGIT1BZkQdg=
+			pciHjxLjVbfFSrK1VKOoU/Qe+UXWfdNh6rvKchzr9OM=
+			</data>
+		</dict>
+		<key>CommunityToolkit.Maui.Core.dll</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			BqMm0W5eIabvRAm4L5FlOUSg6MJz6sQcz4WUnUHJjL8=
+			</data>
+		</dict>
+		<key>CommunityToolkit.Maui.dll</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			QorQsLWaM/Mm0AbLrH0TpxoQJIZjnIaDXzCtUSwokCY=
 			</data>
 		</dict>
 		<key>MauiInfo.plist</key>
@@ -1224,6 +1250,13 @@
 			<key>hash2</key>
 			<data>
 			aq+Sk0P9AkFdbLXZA4FsLxyDGxlL/noVeJh5CT0Pprc=
+			</data>
+		</dict>
+		<key>Microsoft.Maui.Controls.Compatibility.dll</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			Lfw2/3kLI/pLGSEOYYRwA0XYtZxL/BQxDKlcE1PGiMc=
 			</data>
 		</dict>
 		<key>Microsoft.Maui.Controls.Xaml.dll</key>

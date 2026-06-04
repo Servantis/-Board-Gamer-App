@@ -3,16 +3,16 @@
        x:Class="BoardGamerApp.Views.EventPage"
        xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
        xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-       BackgroundColor="#F5F7FA">
+       BackgroundColor="#F8F5F0">
 
-       <VerticalStackLayout Padding="0"
-                            Spacing="0">
+       <Grid RowDefinitions="Auto,*,80">
 
               <!-- Header -->
-              <Grid BackgroundColor="#EDE6DD"
+              <Grid Grid.Row="0"
+                    BackgroundColor="#EDE6DD"
                     Padding="20,40,20,20">
-                     <Label Text="KOMMENDE SPIELE"
-                            TextColor="White"
+                     <Label Text="TERMINÜBERSICHT"
+                            TextColor="#3B2E25"
                             FontAttributes="Bold"
                             FontSize="20"
                             HorizontalOptions="Center"
@@ -20,7 +20,7 @@
               </Grid>
 
               <!-- Terminliste -->
-              <ScrollView>
+              <ScrollView Grid.Row="1">
                      <VerticalStackLayout Padding="20"
                                           Spacing="15">
 
@@ -29,22 +29,17 @@
                                    Padding="15"
                                    BackgroundColor="White"
                                    HasShadow="True">
-
                                    <VerticalStackLayout Spacing="6">
-
                                           <Label Text="Freitag, 12. Juni 2026 – 19:00 Uhr"
                                                  FontAttributes="Bold"
                                                  FontSize="16"
                                                  TextColor="#0F172A"/>
-
                                           <Label Text="Ort: Annastraße 5, 12345 Musterstadt"
                                                  FontSize="14"
                                                  TextColor="#334155"/>
-
                                           <Label Text="Spiel: Catan"
                                                  FontSize="14"
                                                  TextColor="#334155"/>
-
                                           <Label Text="Ausrichter: Anna"
                                                  FontSize="14"
                                                  TextColor="#1E3A8A"
@@ -57,22 +52,17 @@
                                    Padding="15"
                                    BackgroundColor="White"
                                    HasShadow="True">
-
                                    <VerticalStackLayout Spacing="6">
-
                                           <Label Text="Samstag, 20. Juni 2026 – 18:30 Uhr"
                                                  FontAttributes="Bold"
                                                  FontSize="16"
                                                  TextColor="#0F172A"/>
-
                                           <Label Text="Ort: Markusstraße 10, 12345 Musterstadt"
                                                  FontSize="14"
                                                  TextColor="#334155"/>
-
                                           <Label Text="Spiel: Azul"
                                                  FontSize="14"
                                                  TextColor="#334155"/>
-
                                           <Label Text="Ausrichter: Markus"
                                                  FontSize="14"
                                                  TextColor="#1E3A8A"
@@ -85,22 +75,17 @@
                                    Padding="15"
                                    BackgroundColor="White"
                                    HasShadow="True">
-
                                    <VerticalStackLayout Spacing="6">
-
                                           <Label Text="Freitag, 3. Juli 2026 – 20:00 Uhr"
                                                  FontAttributes="Bold"
                                                  FontSize="16"
                                                  TextColor="#0F172A"/>
-
                                           <Label Text="Ort: Peterstraße 15, 12345 Musterstadt"
                                                  FontSize="14"
                                                  TextColor="#334155"/>
-
                                           <Label Text="Spiel: Carcassonne"
                                                  FontSize="14"
                                                  TextColor="#334155"/>
-
                                           <Label Text="Ausrichter: Peter"
                                                  FontSize="14"
                                                  TextColor="#1E3A8A"
@@ -109,5 +94,36 @@
                             </Frame>
                      </VerticalStackLayout>
               </ScrollView>
-       </VerticalStackLayout>
+
+              <!-- Footer Navigation -->
+              <Grid Grid.Row="2"
+                    BackgroundColor="#F8F5F0"
+                    Padding="20,10"
+                    ColumnDefinitions="*,Auto,*"
+                    VerticalOptions="End">
+
+                     <!-- Plus Button -->
+                     <Frame Grid.Column="1"
+                            WidthRequest="60"
+                            HeightRequest="60"
+                            CornerRadius="30"
+                            BackgroundColor="#8B5E3C"
+                            HasShadow="True"
+                            VerticalOptions="Center"
+                            HorizontalOptions="Center"
+                            InputTransparent="False">
+
+                            <Frame.GestureRecognizers>
+                                   <TapGestureRecognizer Tapped="OnNewEventClicked"/>
+                            </Frame.GestureRecognizers>
+
+                            <Image Source="plus_icon.png"
+                                   HeightRequest="28"
+                                   WidthRequest="28"
+                                   VerticalOptions="Center"
+                                   HorizontalOptions="Center"
+                                   InputTransparent="True"/>
+                     </Frame>
+              </Grid>
+       </Grid>
 </ContentPage>
