@@ -9,7 +9,7 @@
        <Grid RowDefinitions="Auto,*,Auto">
 
               <!-- Header -->
-              <Grid BackgroundColor="#1E3A8A"
+              <Grid BackgroundColor="#EDE6DD"
                     Padding="20,40,20,20"
                     Grid.Row="0">
                      <Label Text="GRUPPENNACHRICHT"

@@ -44,6 +44,10 @@
 		<data>
 		fI641eL9jR0ctyTre3xTwKkfsn8=
 		</data>
+		<key>Resources/envelope_icon.png</key>
+		<data>
+		MZ/H2uB7L3bM+k2xQ+4qecQkBv4=
+		</data>
 		<key>Resources/group_icon.png</key>
 		<data>
 		vjC2uFL/7h/Kaos3wRplBrTKbME=
@@ -71,14 +75,14 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			BdepjMCKz9HezUAp4BDRGSnb0BKETEebuSAWD/CP3GE=
+			x7fFGIsTj7nrjuP1Cr+mTCkpEgPcyziZi1PzM5wKDjA=
 			</data>
 		</dict>
 		<key>MonoBundle/BoardGamerApp.pdb</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			ekvyei9NfK46LaFXBGhpJLswD99Rbl6BaV1ljKxx7L8=
+			Qko5g8+fdOgAhq7kFyI0WbGDnv2XzaVn4zLTIArOvN8=
 			</data>
 		</dict>
 		<key>MonoBundle/Microsoft.CSharp.dll</key>
@@ -1738,6 +1742,13 @@
 			<key>hash2</key>
 			<data>
 			rSLn1k43aQXR7mL0G0rG/4hhLC1hBtjJ3USgbIFRDnk=
+			</data>
+		</dict>
+		<key>Resources/envelope_icon.png</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			Fg7HTt6HmKZbvLGm/uyv3thwJsrllRBbhslU5b1szYw=
 			</data>
 		</dict>
 		<key>Resources/group_icon.png</key>

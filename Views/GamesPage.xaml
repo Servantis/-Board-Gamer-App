@@ -10,7 +10,7 @@
                          Spacing="0">
 
         <!-- Header -->
-        <Grid BackgroundColor="#1E3A8A"
+        <Grid BackgroundColor="#EDE6DD"
               Padding="20,40,20,20">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto"/>

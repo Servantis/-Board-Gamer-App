@@ -14,11 +14,11 @@
 		</data>
 		<key>BoardGamerApp.dll</key>
 		<data>
-		ncnRanO7BV6ucLWpM8CX8/sP9kM=
+		LBb2svn6cmjfIhb8WG+w8p64DLY=
 		</data>
 		<key>BoardGamerApp.pdb</key>
 		<data>
-		7QYxTm1A0WrAmBukJ8C+deXuAAI=
+		bddQRNuUfnq2iO1ru/YypO2U77A=
 		</data>
 		<key>Info.plist</key>
 		<data>
@@ -872,6 +872,10 @@
 		<data>
 		jIBTNipHEFaMgQ1c5Eaw5RBtmxM=
 		</data>
+		<key>envelope_icon.png</key>
+		<data>
+		MZ/H2uB7L3bM+k2xQ+4qecQkBv4=
+		</data>
 		<key>es/Microsoft.Maui.Controls.resources.dll</key>
 		<data>
 		uVcIo0P8YW/yUoimBQph4ImU5oU=
@@ -1093,14 +1097,14 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			mcPXwc2nx0wobOH5cnwPbLIzKTVSIrIriUI2qii5owU=
+			AXXmfF+qV8l4FiW6sW9DLNLIbEFhQwVCQZpXIIKVrtE=
 			</data>
 		</dict>
 		<key>BoardGamerApp.pdb</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			LdCk1Y1obL2bJ7VJunU/+YUzDQqqje6n7omcnRQEfzo=
+			KppTfzCb0v9tnukcqwC4UYOy3Fc1TBdbNGIT1BZkQdg=
 			</data>
 		</dict>
 		<key>MauiInfo.plist</key>
@@ -2578,6 +2582,13 @@
 			<key>hash2</key>
 			<data>
 			eWpbGzu4lBG7qlc/1gqptcxxrrB55l9U9+kYfzW60XM=
+			</data>
+		</dict>
+		<key>envelope_icon.png</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			Fg7HTt6HmKZbvLGm/uyv3thwJsrllRBbhslU5b1szYw=
 			</data>
 		</dict>
 		<key>es/Microsoft.Maui.Controls.resources.dll</key>

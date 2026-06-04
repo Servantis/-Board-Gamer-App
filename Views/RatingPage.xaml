@@ -4,13 +4,13 @@
     x:Class="BoardGamerApp.Views.RatingPage"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    BackgroundColor="#0F4C81">
+    BackgroundColor="#EDE6DD">
 
     <Grid RowDefinitions="Auto,*"
           Padding="0">
 
         <!-- Header / Titel -->
-        <Grid BackgroundColor="#0F4C81"
+        <Grid BackgroundColor="#EDE6DD"
               Padding="16,40,16,16"
               Grid.Row="0">
             <Label Text="BEWERTUNG"

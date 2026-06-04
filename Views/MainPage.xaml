@@ -23,7 +23,7 @@
 
                     <Border.GestureRecognizers>
                         <!--Durch dazugehörige OnxxxxClicked-Methode ersetzen-->
-                        <TapGestureRecognizer Tapped="OnEventClicked"/>
+                        <TapGestureRecognizer Tapped="OnGamesClicked"/>
                     </Border.GestureRecognizers>
 
                     <VerticalStackLayout Padding="15"
@@ -78,16 +78,19 @@
                             <VerticalStackLayout VerticalOptions="Center"
                                                  HorizontalOptions="Center"
                                                  Spacing="0">
-                                <Label Text="Mai"
-                                       FontSize="10"
+                                <!--
+                                <Label Text="B"
+                                       FontSize="25"
                                        FontAttributes="Bold"
                                        TextColor="#7C6A58"
                                        HorizontalOptions="Center"/>
-                                <Label Text="10"
+                                
+                                <Label Text="K"
                                        FontSize="16"
                                        FontAttributes="Bold"
                                        TextColor="#7C6A58"
                                        HorizontalOptions="Center"/>
+-->
                             </VerticalStackLayout>
                         </Frame>
 
@@ -112,7 +115,7 @@
                                VerticalOptions="Center"
                                HorizontalOptions="End"
                                HasShadow="False">
-                            <Label Text="Bewertet"
+                            <Label Text="Bewerten"
                                    FontSize="12"
                                    FontAttributes="Bold"
                                    TextColor="#7C6A58"
@@ -164,10 +167,10 @@
 
                 <Frame.GestureRecognizers>
                     <!--Durch dazugehörige OnxxxxClicked-Methode ersetzen-->
-                    <TapGestureRecognizer Tapped="OnEventClicked"/>
+                    <TapGestureRecognizer Tapped="OnMessageClicked"/>
                 </Frame.GestureRecognizers>
 
-                <Image Source="plus_icon.png"
+                <Image Source="envelope_icon.png"
                        HeightRequest="28"
                        WidthRequest="28"
                        VerticalOptions="Center"
