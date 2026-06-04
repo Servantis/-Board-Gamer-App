@@ -9,18 +9,7 @@ public partial class EventPage : ContentPage
         InitializeComponent();
     }
 
-    private void OnEventClicked(object sender, EventArgs e)
-    {
-        // Navigation zur EventPage oder anderer Logik
-        Shell.Current.GoToAsync(nameof(EventPage));
-    }
-
-    private void OnMessageClicked(object sender, EventArgs e)
-    {
-        // Hier öffnest du später dein Popup für "Neuer Termin"
-        Console.WriteLine("Plus-Button geklickt");
-    }
-
+    // Öffnet das Popup zum Erstellen eines neuen Events, wenn auf das Plus-Symbol geklickt wird
     private void OnNewEventClicked(object sender, EventArgs e)
     {
         this.ShowPopup(new NewEventPopup());
