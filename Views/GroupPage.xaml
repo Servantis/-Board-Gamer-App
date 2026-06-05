@@ -1,0 +1,255 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="BoardGamerApp.Views.GroupPage"
+             BackgroundColor="#F8F5F0">
+
+    <Grid RowDefinitions="Auto,*,80">
+
+        <!-- Hauptinhalt -->
+        <ScrollView Grid.Row="1">
+            <VerticalStackLayout Padding="30,0"
+                                 Spacing="25">
+
+                <Label Text="Gruppe _NAME_"
+                       Style="{StaticResource SubHeadline}"
+                       FontSize="18"
+                       Margin="0,15,0,0"
+                       HorizontalTextAlignment="Start"
+                       
+                       SemanticProperties.HeadingLevel="Level1"/>
+
+                <Border StrokeThickness="0"
+                        BackgroundColor="#FFFFFF"
+                        StrokeShape="RoundRectangle 12">
+
+                    <VerticalStackLayout Padding="15"
+                                         Spacing="6">
+                        <Label Text="Mitglieder"
+                               FontAttributes="Bold"
+                               FontSize="16"
+                               TextColor="#0F172A"/>
+                        
+                        <!-- Ansicht generiert-->
+                        <CollectionView
+                                HeightRequest="300"
+                                ItemsSource="{Binding Members}">
+                            <CollectionView.ItemTemplate>
+                                <DataTemplate>
+
+                                    <Grid ColumnDefinitions="Auto,*,Auto"
+                                      Padding="10"
+                                      VerticalOptions="Center">
+
+                                        <!-- Avatar / Initialen-Kreis -->
+                                        <Border Grid.Column="0"
+                                            WidthRequest="50"
+                                            HeightRequest="50"
+                                            StrokeThickness="0"
+                                            BackgroundColor="#EDE6DD"
+                                            StrokeShape="RoundRectangle 25"
+                                            VerticalOptions="Center"
+                                            HorizontalOptions="Center">
+
+                                            <Label Text="{Binding Initials}"
+                                               FontSize="18"
+                                               FontAttributes="Bold"
+                                               TextColor="#7C6A58"
+                                               HorizontalOptions="Center"
+                                               VerticalOptions="Center"
+                                               HorizontalTextAlignment="Center"
+                                               VerticalTextAlignment="Center"/>
+                                        </Border>
+
+                                        <!-- Textbereich -->
+                                        <VerticalStackLayout Grid.Column="1"
+                                             Padding="10,0"
+                                             VerticalOptions="Center">
+
+                                            <Label Text="{Binding DisplayName}"
+                                               FontAttributes="Bold"
+                                               FontSize="16"
+                                               TextColor="#3B2E25"/>
+
+                                            <Label Text="{Binding Email}"
+                                               FontSize="14"
+                                               TextColor="#7C6A58"/>
+                                        </VerticalStackLayout>
+
+                                        <!-- Host Badge -->
+                                        <Frame Grid.Column="2"
+                                           Padding="10,4"
+                                           CornerRadius="12"
+                                           BackgroundColor="#EDE6DD"
+                                           VerticalOptions="Center"
+                                           HorizontalOptions="End"
+                                           HasShadow="False"
+                                           IsVisible="{Binding HostedFlag}">
+
+                                            <Label Text="✓ Hat ausgerichtet"
+                                               FontSize="12"
+                                               FontAttributes="Bold"
+                                               TextColor="#7C6A58"
+                                               HorizontalOptions="Center"
+                                               VerticalOptions="Center"/>
+                                        </Frame>
+                                    </Grid>
+                                </DataTemplate>
+                            </CollectionView.ItemTemplate>
+                        </CollectionView>
+                    </VerticalStackLayout>
+                </Border>
+
+
+
+                <Border StrokeThickness="0"
+                        BackgroundColor="#FFFFFF"
+                        StrokeShape="RoundRectangle 12"
+                        Padding="12"
+                        Margin="0,6,0,0">
+
+                    <!-- Mitgliederansicht -->
+                    <Grid ColumnDefinitions="Auto,*,Auto"
+                          VerticalOptions="Center">
+
+                        <Label Text="Letzte Gastgeber"
+                              FontAttributes="Bold"
+                              FontSize="16"
+                              TextColor="#0F172A"
+                               Margin="0,0,0,0"/>
+
+                        <CollectionView ItemsSource="{Binding LastHosts}"
+                     Margin="0,30,0,0">
+
+                            <CollectionView.ItemTemplate>
+                                <DataTemplate>
+
+                                    <Grid ColumnDefinitions="Auto,*,Auto"
+                  Padding="10"
+                  VerticalOptions="Center">
+
+                                        <!-- Initialen-Kreis -->
+                                        <Border Grid.Column="0"
+                        WidthRequest="50"
+                        HeightRequest="50"
+                        StrokeThickness="0"
+                        BackgroundColor="#EDE6DD"
+                        StrokeShape="RoundRectangle 25"
+                        VerticalOptions="Center"
+                        HorizontalOptions="Center">
+
+                                            <Label Text="{Binding Initials}"
+                           FontSize="18"
+                           FontAttributes="Bold"
+                           TextColor="#7C6A58"
+                           HorizontalOptions="Center"
+                           VerticalOptions="Center"
+                           HorizontalTextAlignment="Center"
+                           VerticalTextAlignment="Center"/>
+                                        </Border>
+
+                                        <!-- Name -->
+                                        <VerticalStackLayout Grid.Column="1"
+                                     Padding="10,0"
+                                     VerticalOptions="Center">
+
+                                            <Label Text="{Binding DisplayName}"
+                           FontAttributes="Bold"
+                           FontSize="16"
+                           TextColor="#3B2E25"/>
+                                        </VerticalStackLayout>
+
+                                        <!-- Badge: letzter Host -->
+     <!--                                   <Frame Grid.Column="2"
+                                           Padding="10,4"
+                                           CornerRadius="12"
+                                           BackgroundColor="#EDE6DD"
+                                           VerticalOptions="Center"
+                                           HorizontalOptions="End"
+                                           HasShadow="False">
+
+                                            <Label FontSize="12"
+                                                FontAttributes="Bold"
+                                                TextColor="#7C6A58">
+
+                                                <Label Text ="{Binding LastHostedDisplay}"
+                                                   FontSize="12"
+                                                   FontAttributes="Bold"
+                                                   TextColor="#7C6A58" />
+
+                                            </Label>
+
+                                        </Frame>
+-->
+                                    </Grid>
+
+                                </DataTemplate>
+                            </CollectionView.ItemTemplate>
+                        </CollectionView>
+                    </Grid>
+                </Border>
+            </VerticalStackLayout>
+        </ScrollView>
+
+        <!-- Footer Navigation -->
+        <Grid Grid.Row="2"
+              BackgroundColor="#F8F5F0"
+              Padding="20,10"
+              ColumnDefinitions="*,Auto,*"
+              VerticalOptions="End">
+
+            <!-- Termine -->
+            <VerticalStackLayout Grid.Column="0"
+                                 HorizontalOptions="Center"
+                                 VerticalOptions="Center">
+
+                <Image Source="calender_icon.png"
+                       HeightRequest="24"
+                       WidthRequest="24"/>
+
+                <Label Text="Termine"
+                       FontSize="12"
+                       TextColor="#8B5E3C"
+                       HorizontalOptions="Center"/>
+            </VerticalStackLayout>
+
+            <!-- Plus Button -->
+            <Frame Grid.Column="1"
+                   WidthRequest="60"
+                   HeightRequest="60"
+                   CornerRadius="30"
+                   BackgroundColor="#8B5E3C"
+                   HasShadow="True"
+                   VerticalOptions="Center"
+                   HorizontalOptions="Center">
+
+                <Image Source="plus_icon.png"
+                       HeightRequest="28"
+                       WidthRequest="28"
+                       VerticalOptions="Center"
+                       HorizontalOptions="Center"/>
+            </Frame>
+
+            <!-- Gruppe -->
+            <VerticalStackLayout Grid.Column="2"
+                                 HorizontalOptions="Center"
+                                 VerticalOptions="Center">
+                <!--
+           <VerticalStackLayout.GestureRecognizers> -->
+                <!--durch dazugehörige OnxxxxClicked-Methode ersetzen -->
+                <!--                  <TapGestureRecognizer Tapped="OnEventClicked"/>
+                </VerticalStackLayout.GestureRecognizers>
+                -->
+                <Image Source="group_icon.png"
+                       HeightRequest="24"
+                       WidthRequest="24"/>
+
+                <Label Text="Gruppe"
+                       FontSize="12"
+                       TextColor="#8B5E3C"
+                       HorizontalOptions="Center"/>
+            </VerticalStackLayout>
+        </Grid>
+
+    </Grid>
+</ContentPage>

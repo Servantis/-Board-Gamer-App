@@ -26,6 +26,11 @@ public partial class MainPage : ContentPage
 	{
 		await Shell.Current.GoToAsync(nameof(EventPage));
 	}
+
+    private async void OnGroupClicked(object? sender, EventArgs e)
+    {
+        await Shell.Current.GoToAsync(nameof(GroupPage));
+    }
 	// Navigiert zur Nachrichten-Seite wenn auf das Nachrichten-Symbol geklickt wird.
 	private async void OnMessageClicked(object? sender, EventArgs e)
 	{
