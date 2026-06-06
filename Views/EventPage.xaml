@@ -21,36 +21,50 @@
 
               <!-- Terminliste -->
               <ScrollView Grid.Row="1">
-                     <CollectionView ItemsSource="{Binding Events}">
-                            <CollectionView.ItemTemplate>
-                                   <DataTemplate>
-                                          <Frame CornerRadius="12"
-                                                 Padding="15"
-                                                 BackgroundColor="White"
-                                                 HasShadow="True">
-                                                 <VerticalStackLayout Spacing="6">
-                                                        <Label Text="{Binding DisplayDate}"
-                                                               FontAttributes="Bold"
-                                                               FontSize="16"
-                                                               TextColor="#0F172A"/>
 
-                                                        <Label Text="{Binding Location}"
-                                                               FontSize="14"
-                                                               TextColor="#334155"/>
+                     <!-- Abstand zum Rand -->
+                     <VerticalStackLayout Padding="20">
 
-                                                        <Label Text="Spiel: {Binding Game}"
-                                                               FontSize="14"
-                                                               TextColor="#334155"/>
+                            <CollectionView ItemsSource="{Binding Events}">
+                                   <CollectionView.ItemTemplate>
+                                          <DataTemplate>
 
-                                                        <Label Text="Ausrichter: {Binding Host}"
-                                                               FontSize="14"
-                                                               TextColor="#1E3A8A"
-                                                               FontAttributes="Bold"/>
-                                                 </VerticalStackLayout>
-                                          </Frame>
-                                   </DataTemplate>
-                            </CollectionView.ItemTemplate>
-                     </CollectionView>
+                                                 <!-- Abstand zwischen Items -->
+                                                 <Frame CornerRadius="12"
+                                                        Padding="15"
+                                                        Margin="0,0,0,15"
+                                                        BackgroundColor="White"
+                                                        HasShadow="False">
+
+                                                        <VerticalStackLayout Spacing="6">
+
+                                                               <Label Text="{Binding DisplayDate}"
+                                                                      FontAttributes="Bold"
+                                                                      FontSize="16"
+                                                                      TextColor="#0F172A"/>
+
+                                                               <Label Text="{Binding Location, StringFormat='Ort: {0}'}"
+                                                                      FontSize="14"
+                                                                      TextColor="#334155"/>
+
+                                                               <Label Text="{Binding Game, StringFormat='Spiel: {0}'}"
+                                                                      FontSize="14"
+                                                                      TextColor="#334155"/>
+
+                                                               <Label Text="{Binding Host, StringFormat='Veranstalter: {0}'}"
+                                                                      FontSize="14"
+                                                                      TextColor="#1E3A8A"
+                                                                      FontAttributes="Bold"/>
+
+                                                        </VerticalStackLayout>
+
+                                                 </Frame>
+
+                                          </DataTemplate>
+                                   </CollectionView.ItemTemplate>
+                            </CollectionView>
+
+                     </VerticalStackLayout>
 
               </ScrollView>
 
