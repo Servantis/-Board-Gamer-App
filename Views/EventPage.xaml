@@ -124,6 +124,25 @@
                                    HorizontalOptions="Center"
                                    InputTransparent="True"/>
                      </Frame>
+
+                     <VerticalStackLayout Grid.Column="2"
+                                          HorizontalOptions="Center"
+                                          VerticalOptions="Center">
+
+                            <VerticalStackLayout.GestureRecognizers>
+                                   <!--Durch dazugehörige OnxxxxClicked-Methode ersetzen-->
+                                   <TapGestureRecognizer Tapped="OnPreviousEventsClicked"/>
+                            </VerticalStackLayout.GestureRecognizers>
+
+                            <Image Source="backintime_icon.png"
+                                   HeightRequest="24"
+                                   WidthRequest="24"/>
+
+                            <Label Text="Vergangene Termine"
+                                   FontSize="12"
+                                   TextColor="#8B5E3C"
+                                   HorizontalOptions="Center"/>
+                     </VerticalStackLayout>
               </Grid>
        </Grid>
 </ContentPage>

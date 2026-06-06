@@ -28,6 +28,10 @@
 		<data>
 		UqrI40wY1qqMz407YpQETWoVltw=
 		</data>
+		<key>Resources/backintime_icon.png</key>
+		<data>
+		CyW/hG4o0hUBTNHS1YLwFeNeaKo=
+		</data>
 		<key>Resources/calender_icon.png</key>
 		<data>
 		j1cIlZY2o/Sz3M/uH8AypU3EPtk=
@@ -75,14 +79,28 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			BwYlO1baXh3TSq+d/+RiiS/h1e9Avv0vBtk1q0Iad3M=
+			cjTo1cNsAPs9qpeqvJvwqCkXaBOuyqVgjUB5hAhvJXc=
 			</data>
 		</dict>
 		<key>MonoBundle/BoardGamerApp.pdb</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			8hQRI7ilx7z89XRUKG4xQv0vApqkdcvZEcrYv3O+RBg=
+			ytahnlM78K6He5nH9UO34dZvEZH22zrI3ZRvkq4soFI=
+			</data>
+		</dict>
+		<key>MonoBundle/CommunityToolkit.Maui.Core.dll</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			u9oJz8/mXnKiXTGQN72K7r9DjLSi+BMi9dNT0t+KbWk=
+			</data>
+		</dict>
+		<key>MonoBundle/CommunityToolkit.Maui.dll</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			Cz3T+fk0iDbtFIQqtOeiW6ubIwGpEPmgovdm04yjNK8=
 			</data>
 		</dict>
 		<key>MonoBundle/Microsoft.CSharp.dll</key>
@@ -188,6 +206,13 @@
 			<key>hash2</key>
 			<data>
 			qZWh4PBYO21IcEURylmpndW8VuoG8GvJafXxllL/17I=
+			</data>
+		</dict>
+		<key>MonoBundle/Microsoft.Maui.Controls.Compatibility.dll</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			kd7xT/R0YIeOnVijieOAulLKPcLqsIO+aZPC1b5dCEo=
 			</data>
 		</dict>
 		<key>MonoBundle/Microsoft.Maui.Controls.Xaml.dll</key>
@@ -1714,6 +1739,13 @@
 			<key>hash2</key>
 			<data>
 			i2hXNksQqmRPKhsotj87jbPtwnCDBykqSfW0r9t2zyg=
+			</data>
+		</dict>
+		<key>Resources/backintime_icon.png</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			lK6TnUCRfp7pknwMkNTQTn7RX+HN1gFUO3lL0mELmTU=
 			</data>
 		</dict>
 		<key>Resources/calender_icon.png</key>

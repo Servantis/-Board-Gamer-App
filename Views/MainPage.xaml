@@ -98,11 +98,11 @@
                         <VerticalStackLayout Grid.Column="1"
                                              Padding="10,0"
                                              VerticalOptions="Center">
-                            <Label Text="Sonntag, 10. Mai"
+                            <Label Text="Sonntag, 10. Mai 2026"
                                    FontAttributes="Bold"
                                    FontSize="16"
                                    TextColor="#3B2E25"/>
-                            <Label Text="Bernd K. · Beethovenstr. 4"
+                            <Label Text="Bernd · Beethovenstr. 4"
                                    FontSize="14"
                                    TextColor="#7C6A58"/>
                         </VerticalStackLayout>

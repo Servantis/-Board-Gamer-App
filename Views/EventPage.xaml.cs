@@ -14,4 +14,9 @@ public partial class EventPage : ContentPage
     {
         this.ShowPopup(new NewEventPopup());
     }
+
+    private async void OnPreviousEventsClicked(object? sender, EventArgs e)
+    {
+        await Shell.Current.GoToAsync(nameof(PreviousEventsPage));
+    }
 }
