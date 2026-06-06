@@ -21,78 +21,37 @@
 
               <!-- Terminliste -->
               <ScrollView Grid.Row="1">
-                     <VerticalStackLayout Padding="20"
-                                          Spacing="15">
+                     <CollectionView ItemsSource="{Binding Events}">
+                            <CollectionView.ItemTemplate>
+                                   <DataTemplate>
+                                          <Frame CornerRadius="12"
+                                                 Padding="15"
+                                                 BackgroundColor="White"
+                                                 HasShadow="True">
+                                                 <VerticalStackLayout Spacing="6">
+                                                        <Label Text="{Binding DisplayDate}"
+                                                               FontAttributes="Bold"
+                                                               FontSize="16"
+                                                               TextColor="#0F172A"/>
 
-                            <!-- Termin 1 -->
-                            <Frame CornerRadius="12"
-                                   Padding="15"
-                                   BackgroundColor="White"
-                                   HasShadow="True">
-                                   <VerticalStackLayout Spacing="6">
-                                          <Label Text="Freitag, 12. Juni 2026 – 19:00 Uhr"
-                                                 FontAttributes="Bold"
-                                                 FontSize="16"
-                                                 TextColor="#0F172A"/>
-                                          <Label Text="Ort: Annastraße 5, 12345 Musterstadt"
-                                                 FontSize="14"
-                                                 TextColor="#334155"/>
-                                          <Label Text="Spiel: Catan"
-                                                 FontSize="14"
-                                                 TextColor="#334155"/>
-                                          <Label Text="Ausrichter: Anna"
-                                                 FontSize="14"
-                                                 TextColor="#1E3A8A"
-                                                 FontAttributes="Bold"/>
-                                   </VerticalStackLayout>
-                            </Frame>
+                                                        <Label Text="{Binding Location}"
+                                                               FontSize="14"
+                                                               TextColor="#334155"/>
 
-                            <!-- Termin 2 -->
-                            <Frame CornerRadius="12"
-                                   Padding="15"
-                                   BackgroundColor="White"
-                                   HasShadow="True">
-                                   <VerticalStackLayout Spacing="6">
-                                          <Label Text="Samstag, 20. Juni 2026 – 18:30 Uhr"
-                                                 FontAttributes="Bold"
-                                                 FontSize="16"
-                                                 TextColor="#0F172A"/>
-                                          <Label Text="Ort: Markusstraße 10, 12345 Musterstadt"
-                                                 FontSize="14"
-                                                 TextColor="#334155"/>
-                                          <Label Text="Spiel: Azul"
-                                                 FontSize="14"
-                                                 TextColor="#334155"/>
-                                          <Label Text="Ausrichter: Markus"
-                                                 FontSize="14"
-                                                 TextColor="#1E3A8A"
-                                                 FontAttributes="Bold"/>
-                                   </VerticalStackLayout>
-                            </Frame>
+                                                        <Label Text="Spiel: {Binding Game}"
+                                                               FontSize="14"
+                                                               TextColor="#334155"/>
 
-                            <!-- Termin 3 -->
-                            <Frame CornerRadius="12"
-                                   Padding="15"
-                                   BackgroundColor="White"
-                                   HasShadow="True">
-                                   <VerticalStackLayout Spacing="6">
-                                          <Label Text="Freitag, 3. Juli 2026 – 20:00 Uhr"
-                                                 FontAttributes="Bold"
-                                                 FontSize="16"
-                                                 TextColor="#0F172A"/>
-                                          <Label Text="Ort: Peterstraße 15, 12345 Musterstadt"
-                                                 FontSize="14"
-                                                 TextColor="#334155"/>
-                                          <Label Text="Spiel: Carcassonne"
-                                                 FontSize="14"
-                                                 TextColor="#334155"/>
-                                          <Label Text="Ausrichter: Peter"
-                                                 FontSize="14"
-                                                 TextColor="#1E3A8A"
-                                                 FontAttributes="Bold"/>
-                                   </VerticalStackLayout>
-                            </Frame>
-                     </VerticalStackLayout>
+                                                        <Label Text="Ausrichter: {Binding Host}"
+                                                               FontSize="14"
+                                                               TextColor="#1E3A8A"
+                                                               FontAttributes="Bold"/>
+                                                 </VerticalStackLayout>
+                                          </Frame>
+                                   </DataTemplate>
+                            </CollectionView.ItemTemplate>
+                     </CollectionView>
+
               </ScrollView>
 
               <!-- Footer Navigation -->
