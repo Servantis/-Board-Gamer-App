@@ -1,47 +1,79 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <toolkit:Popup
-        x:Class="BoardGamerApp.Views.NewEventPopup"
-        xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-        xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-        xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
-        Color="#80000000">
+       x:Class="BoardGamerApp.Views.NewEventPopup"
+       xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+       xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+       xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+       xmlns:sys="clr-namespace:System;assembly=mscorlib"
+       Color="#80000000">
 
-        <Border StrokeShape="RoundRectangle 20"
-                BackgroundColor="#F8F5F0"
-                Padding="20"
-                HorizontalOptions="Center"
-                VerticalOptions="Center">
+       <Border StrokeShape="RoundRectangle 20"
+               BackgroundColor="#F8F5F0"
+               Padding="20"
+               HorizontalOptions="Center"
+               VerticalOptions="Center">
 
-                <VerticalStackLayout Spacing="15">
+              <VerticalStackLayout Spacing="15">
 
-                        <Label Text="Neuen Termin anlegen"
-                               FontSize="20"
-                               FontAttributes="Bold"
-                               TextColor="#3B2E25"/>
+                     <Label Text="Neuen Termin anlegen"
+                            FontSize="20"
+                            FontAttributes="Bold"
+                            TextColor="#3B2E25"/>
 
-                        <Entry x:Name="DateEntry"
-                               Placeholder="Datum"
-                               BackgroundColor="#EDE6DD"/>
+                     <!-- Kombiniertes Datum/Uhrzeit-Feld -->
+                     <Border x:Name="DateTimeBorder"
+                             StrokeShape="RoundRectangle 12"
+                             BackgroundColor="#EDE6DD"
+                             Padding="10">
+                            <Border.GestureRecognizers>
+                                   <TapGestureRecognizer Tapped="OnDateTimeTapped"/>
+                            </Border.GestureRecognizers>
 
-                        <Entry x:Name="LocationEntry"
-                               Placeholder="Ort"
-                               BackgroundColor="#EDE6DD"/>
+                            <HorizontalStackLayout>
+                                   <Label x:Name="DateTimeLabel"
+                                          Text="Datum und Uhrzeit wählen"
+                                          TextColor="#3B2E25"
+                                          VerticalOptions="Center"/>
 
-                        <Entry x:Name="GameEntry"
-                               Placeholder="Spiel"
-                               BackgroundColor="#EDE6DD"/>
+                                   <Image Source="calendar.png"
+                                          WidthRequest="20"
+                                          HeightRequest="20"
+                                          Margin="10,0,0,0"
+                                          VerticalOptions="Center"/>
+                            </HorizontalStackLayout>
+                     </Border>
 
-                        <Entry x:Name="HostEntry"
-                               Placeholder="Veranstalter"
-                               BackgroundColor="#EDE6DD"/>
+                     <DatePicker x:Name="HiddenDatePicker"
+                                 Opacity="0"
+                                 HeightRequest="0"
+                                 WidthRequest="0"
+                                 InputTransparent="False"/>
 
-                        <Button Text="Speichern"
-                                BackgroundColor="#8B5E3C"
-                                TextColor="White"
-                                CornerRadius="12"
-                                Clicked="OnSaveClicked"/>
-                </VerticalStackLayout>
+                     <TimePicker x:Name="HiddenTimePicker"
+                                 Opacity="0"
+                                 HeightRequest="0"
+                                 WidthRequest="0"
+                                 InputTransparent="False"/>
 
-        </Border>
+
+                     <Entry x:Name="LocationEntry"
+                            Placeholder="Ort"
+                            BackgroundColor="#EDE6DD"/>
+
+                     <Entry x:Name="GameEntry"
+                            Placeholder="Spiel"
+                            BackgroundColor="#EDE6DD"/>
+
+                     <Entry x:Name="HostEntry"
+                            Placeholder="Veranstalter"
+                            BackgroundColor="#EDE6DD"/>
+
+                     <Button Text="Speichern"
+                             BackgroundColor="#8B5E3C"
+                             TextColor="White"
+                             CornerRadius="12"
+                             Clicked="OnSaveClicked"/>
+              </VerticalStackLayout>
+
+       </Border>
 </toolkit:Popup>
-
