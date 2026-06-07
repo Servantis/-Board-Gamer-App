@@ -11,12 +11,12 @@
             <VerticalStackLayout Padding="30,0"
                                  Spacing="25">
 
-                <Label Text="Gruppe _NAME_"
+                <Label Text="Gruppe"
                        Style="{StaticResource SubHeadline}"
                        FontSize="18"
                        Margin="0,15,0,0"
                        HorizontalTextAlignment="Start"
-                       
+                       HorizontalOptions="Start"
                        SemanticProperties.HeadingLevel="Level1"/>
 
                 <Border StrokeThickness="0"
@@ -29,7 +29,10 @@
                                FontAttributes="Bold"
                                FontSize="16"
                                TextColor="#0F172A"/>
-                        
+                        <Button Text="Trigger simulieren"
+                                Command="{Binding SimulateTriggerCommand}"
+                                Margin="10"/>
+
                         <!-- Ansicht generiert-->
                         <CollectionView
                                 HeightRequest="300"
@@ -74,8 +77,8 @@
                                             <Label Text="{Binding Email}"
                                                FontSize="14"
                                                TextColor="#7C6A58"/>
+                                            <Label Text="{Binding IsNextHost}" />
                                         </VerticalStackLayout>
-
                                         <!-- Host Badge -->
                                         <Frame Grid.Column="2"
                                            Padding="10,4"
@@ -93,15 +96,29 @@
                                                HorizontalOptions="Center"
                                                VerticalOptions="Center"/>
                                         </Frame>
+                                        <!-- IsNextHost Badge -->
+                                        <Frame Grid.Column="2"
+                                           Padding="10,4"
+                                           CornerRadius="12"
+                                           BackgroundColor="#EDE6DD"
+                                           VerticalOptions="Center"
+                                           HorizontalOptions="End"
+                                           HasShadow="False"
+                                           IsVisible="{Binding IsNextHost}">
+
+                                            <Label Text="nächster"
+                                               FontSize="12"
+                                               FontAttributes="Bold"
+                                               TextColor="#7C6A58"
+                                               HorizontalOptions="Center"
+                                               VerticalOptions="Center"/>
+                                        </Frame>
                                     </Grid>
                                 </DataTemplate>
                             </CollectionView.ItemTemplate>
                         </CollectionView>
                     </VerticalStackLayout>
                 </Border>
-
-
-
                 <Border StrokeThickness="0"
                         BackgroundColor="#FFFFFF"
                         StrokeShape="RoundRectangle 12"
@@ -109,58 +126,58 @@
                         Margin="0,6,0,0">
 
                     <!-- Mitgliederansicht -->
-                    <Grid ColumnDefinitions="Auto,*,Auto"
-                          VerticalOptions="Center">
-
+                    <VerticalStackLayout>
                         <Label Text="Letzte Gastgeber"
-                              FontAttributes="Bold"
-                              FontSize="16"
-                              TextColor="#0F172A"
+                               FontAttributes="Bold"
+                               FontSize="16"
+                               TextColor="#0F172A"
                                Margin="0,0,0,0"/>
 
                         <CollectionView ItemsSource="{Binding LastHosts}"
-                     Margin="0,30,0,0">
+                              Margin="0,30,0,0"
+                              HeightRequest="250">
 
                             <CollectionView.ItemTemplate>
                                 <DataTemplate>
-
                                     <Grid ColumnDefinitions="Auto,*,Auto"
-                  Padding="10"
-                  VerticalOptions="Center">
+                                      Padding="10"
+                                      VerticalOptions="Center"
+                                     >
 
                                         <!-- Initialen-Kreis -->
                                         <Border Grid.Column="0"
-                        WidthRequest="50"
-                        HeightRequest="50"
-                        StrokeThickness="0"
-                        BackgroundColor="#EDE6DD"
-                        StrokeShape="RoundRectangle 25"
-                        VerticalOptions="Center"
-                        HorizontalOptions="Center">
+                                            WidthRequest="50"
+                                            HeightRequest="50"
+                                            StrokeThickness="0"
+                                            BackgroundColor="#EDE6DD"
+                                            StrokeShape="RoundRectangle 25"
+                                            VerticalOptions="Center"
+                                            HorizontalOptions="Center">
 
                                             <Label Text="{Binding Initials}"
-                           FontSize="18"
-                           FontAttributes="Bold"
-                           TextColor="#7C6A58"
-                           HorizontalOptions="Center"
-                           VerticalOptions="Center"
-                           HorizontalTextAlignment="Center"
-                           VerticalTextAlignment="Center"/>
+                                               FontSize="18"
+                                               FontAttributes="Bold"
+                                               TextColor="#7C6A58"
+                                               HorizontalOptions="Center"
+                                               VerticalOptions="Center"
+                                               HorizontalTextAlignment="Center"
+                                               VerticalTextAlignment="Center"/>
                                         </Border>
 
                                         <!-- Name -->
                                         <VerticalStackLayout Grid.Column="1"
-                                     Padding="10,0"
-                                     VerticalOptions="Center">
+                                             Padding="10,0"
+                                             VerticalOptions="Center"
+                                             HorizontalOptions="Fill">
 
                                             <Label Text="{Binding DisplayName}"
-                           FontAttributes="Bold"
-                           FontSize="16"
-                           TextColor="#3B2E25"/>
+                                           FontAttributes="Bold"
+                                           FontSize="16"
+                                           TextColor="#3B2E25"/>
                                         </VerticalStackLayout>
 
                                         <!-- Badge: letzter Host -->
-     <!--                                   <Frame Grid.Column="2"
+                                        <Frame Grid.Column="2"
                                            Padding="10,4"
                                            CornerRadius="12"
                                            BackgroundColor="#EDE6DD"
@@ -168,25 +185,16 @@
                                            HorizontalOptions="End"
                                            HasShadow="False">
 
-                                            <Label FontSize="12"
-                                                FontAttributes="Bold"
-                                                TextColor="#7C6A58">
-
-                                                <Label Text ="{Binding LastHostedDisplay}"
-                                                   FontSize="12"
-                                                   FontAttributes="Bold"
-                                                   TextColor="#7C6A58" />
-
-                                            </Label>
-
+                                            <Label Text="{Binding LastHostedDisplay}"
+                                               FontSize="12"
+                                               FontAttributes="Bold"
+                                               TextColor="#7C6A58"/>
                                         </Frame>
--->
                                     </Grid>
-
                                 </DataTemplate>
                             </CollectionView.ItemTemplate>
                         </CollectionView>
-                    </Grid>
+                    </VerticalStackLayout>
                 </Border>
             </VerticalStackLayout>
         </ScrollView>

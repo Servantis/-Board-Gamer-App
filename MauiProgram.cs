@@ -1,6 +1,9 @@
-﻿using BoardGamerApp.Data;
-using BoardGamerApp.Services;
+﻿using BoardGamerApp.Services.Implementations;
 using BoardGamerApp.Services.Interfaces;
+using BoardGamerApp.ViewModels;
+using BoardGamerApp.Views;
+using BoardGamerApp.Data;
+using BoardGamerApp.Services;
 using BoardGamerApp.ViewModels;
 using BoardGamerApp.Views;
 using CommunityToolkit.Maui;
@@ -38,7 +41,15 @@ public static class MauiProgram
 #if DEBUG
         builder.Logging.AddDebug();
 #endif
+        // Service-Registration
+        builder.Services.AddSingleton<IHostSelectionService, HostSelectionService>();
+        builder.Services.AddSingleton<IHostScheduleService, HostScheduleService>();
+        builder.Services.AddSingleton<IGameNightTrigger, SimulatedGameNightTrigger>();
 
-		return builder.Build();
+        builder.Services.AddTransient<GroupMembersViewModel>();
+        builder.Services.AddTransient<GroupPage>();
+
+
+        return builder.Build();
 	}
 }

@@ -1,68 +1,136 @@
 ﻿using BoardGamerApp.Models;
+using BoardGamerApp.Services.Interfaces;
+using CommunityToolkit.Mvvm.Input;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Text;
+using System.Linq;
+using System.Windows.Input;
 
 namespace BoardGamerApp.ViewModels
 {
     public class GroupMembersViewModel
     {
-        public ObservableCollection<GroupMember> Members { get; }
+        private readonly IHostSelectionService _hostService;
+        private readonly IHostScheduleService _scheduleService;
 
-        public GroupMembersViewModel()
+        public ObservableCollection<GroupMember> Members { get; private set; }
+
+        public ICommand SelectNextHostCommand { get; }
+        public ICommand SimulateTriggerCommand { get; }
+
+        // Letzte Gastgeber ermitteln, wenn Flag gesetzt ist
+        public IEnumerable<GroupMember> LastHosts =>
+            Members.Where(m => m.HostedFlag);
+
+        public GroupMembersViewModel(IHostSelectionService hostService, IHostScheduleService scheduleService)
         {
-            LastHosts = new ObservableCollection<GroupMember>(
-                Members.Where(m => m.HostedFlag));
-            // später Service aufruf implementieren
-            // z.B. Members = await _groupService.GetMembersAsync();
+            _hostService = hostService;
+            _scheduleService = scheduleService;
+
+            InitializeMembers();
+
+            _scheduleService.EnsureHost(Members.ToList());
+            SelectNextHostCommand = new RelayCommand(SelectNextHost);
+            SimulateTriggerCommand = new RelayCommand(SimulateTrigger);
+
+            System.Diagnostics.Debug.WriteLine(
+            $"VM Hash: {GetHashCode()}");
+
+            System.Diagnostics.Debug.WriteLine(
+                $"Members Hash: {Members.GetHashCode()}");
+        }
+
+        // Testdaten, später über DB oder Service
+        private void InitializeMembers()
+        {
             Members = new ObservableCollection<GroupMember>
             {
-                new ()
+                new()
                 {
                     Name = "Max",
                     LastName = "Mustermann",
                     Email = "max@test.de",
                     HostedFlag = true,
-                    LastHostedDate = new DateTime(2026, 5, 1)
+                    LastHostedDate = new DateTime(2026, 5, 1),
+                    IsNextHost = false
                 },
-
                 new()
                 {
                     Name = "Anna",
                     LastName = "Meyer",
                     Email = "anna@test.de",
                     HostedFlag = false,
-                    LastHostedDate = new DateTime()
+                    LastHostedDate = new DateTime(2023, 1, 1),
+                    IsNextHost = false
                 },
-
                 new()
                 {
                     Name = "Paul",
                     LastName = "Schmidt",
                     Email = "paul@test.de",
                     HostedFlag = true,
-                    LastHostedDate = new DateTime(2026, 3, 1)
+                    LastHostedDate = new DateTime(2026, 3, 1),
+                    IsNextHost = false
                 },
-                   new()
+                new()
                 {
                     Name = "Tom",
                     LastName = "Tester",
                     Email = "tom@test.de",
                     HostedFlag = false,
-                    LastHostedDate = new DateTime()
+                    LastHostedDate = new DateTime(2022, 1, 1),
+                    IsNextHost = false
                 },
-
                 new()
                 {
                     Name = "Richard",
                     LastName = "Müller",
                     Email = "richard@test.de",
                     HostedFlag = true,
-                    LastHostedDate = new DateTime(2026, 4, 1)
+                    LastHostedDate = new DateTime(2026, 4, 1),
+                    IsNextHost = false
                 }
             };
         }
-        public ObservableCollection<GroupMember> LastHosts { get; }
+
+        // zentrale Datenzugriffsmethode (später über DB)
+        public List<GroupMember> GetMembers()
+        {
+            return Members.ToList();
+        }
+
+        private void SelectNextHost()
+        {
+            var selected = _hostService.SelectNextHost(Members.ToList());
+            System.Diagnostics.Debug.WriteLine("SelectNextHost wurde aufgerufen");
+            foreach (var member in Members)
+            {
+                System.Diagnostics.Debug.WriteLine(
+                    $"{member.DisplayName}: Hosted={member.HostedFlag}, NextHost={member.IsNextHost}");
+            }
+            // optional: UI-Update sichtbar machen (falls Service nur berechnet)
+            if (selected != null)
+            {
+                foreach (var m in Members)
+                    m.IsNextHost = false;
+
+                selected.IsNextHost = true;
+            }
+        }
+
+
+        private void SimulateTrigger()
+        {
+            System.Diagnostics.Debug.WriteLine("=== TESTTRIGGER AUSGELÖST ===");
+
+            _scheduleService.EnsureHost(Members.ToList());
+
+            foreach (var member in Members)
+            {
+                System.Diagnostics.Debug.WriteLine(
+                    $"TEST: {member.DisplayName} -> Hosted={member.HostedFlag}, NextHost={member.IsNextHost}");
+            }
+        }
     }
 }
