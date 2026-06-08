@@ -14,11 +14,11 @@
 		</data>
 		<key>BoardGamerApp.dll</key>
 		<data>
-		TNjrvZ6PeHku6mGDPGAQ1W1olGo=
+		p3uNFbsxaSGYN0MGNzVQzt7fB9k=
 		</data>
 		<key>BoardGamerApp.pdb</key>
 		<data>
-		qZ79pWBS2T7OPQ9btefzjewZj/E=
+		Upw4koY0aZIs16EE6fZ+oC12WXc=
 		</data>
 		<key>CommunityToolkit.Maui.Core.dll</key>
 		<data>
@@ -1068,6 +1068,10 @@
 		<data>
 		Q+5fPaP1TwrJZ931YGGof7y0kOQ=
 		</data>
+		<key>trash_icon.png</key>
+		<data>
+		mM+zClzZXOsLBdjfDp+ZTZWNf/4=
+		</data>
 		<key>uk/Microsoft.Maui.Controls.resources.dll</key>
 		<data>
 		Jo8HAEsgrxi8udEsFOHIqY7bu/g=
@@ -1113,14 +1117,14 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			KMpcOOo6SLsMUsclERQOtbLQq0tVkkBXEaPYEsfGdRY=
+			FPb499W2JOt+ci9v6iYEyby9Lzjt1J5oXn5v8B9ZC0E=
 			</data>
 		</dict>
 		<key>BoardGamerApp.pdb</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			h9KkarCt01Dk8qmKs81WQo3r92ype5X6CfaA8bGJnxU=
+			ue+u3Mgu1BbUk6P4eu5SNPaElA33LMgbVItoIV/+Swk=
 			</data>
 		</dict>
 		<key>CommunityToolkit.Maui.Core.dll</key>
@@ -2941,6 +2945,13 @@
 			<key>hash2</key>
 			<data>
 			ZdRGriF4/Cm2PY+MLIPCLxRWC9TJr9BMMtIchQePYsg=
+			</data>
+		</dict>
+		<key>trash_icon.png</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			jWCb6wTWDxUkj2x8Z+E7cTQKy+Dml5A2JVpA262LeV8=
 			</data>
 		</dict>
 		<key>uk/Microsoft.Maui.Controls.resources.dll</key>

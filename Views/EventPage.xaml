@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage
        x:Class="BoardGamerApp.Views.EventPage"
+       xmlns:local="clr-namespace:BoardGamerApp.Views"
        xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
        xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
        BackgroundColor="#F8F5F0">
@@ -29,36 +30,53 @@
                                    <CollectionView.ItemTemplate>
                                           <DataTemplate>
 
-                                                 <!-- Abstand zwischen Items -->
-                                                 <Frame CornerRadius="12"
-                                                        Padding="15"
-                                                        Margin="0,0,0,15"
-                                                        BackgroundColor="White"
-                                                        HasShadow="False">
+                                                 <SwipeView>
+                                                        <SwipeView.RightItems>
+                                                               <SwipeItems Mode="Reveal">
+                                                                      <SwipeItem
+                                                                             Text="Löschen"
+                                                                             BackgroundColor="Red"
+                                                                             IconImageSource="trash_icon.png"
+                                                                             Command="{Binding Source={RelativeSource AncestorType={x:Type local:EventPage}}, Path=BindingContext.DeleteEventCommand}"
+                                                                             CommandParameter="{Binding}"/>
+                                                               </SwipeItems>
+                                                        </SwipeView.RightItems>
 
-                                                        <VerticalStackLayout Spacing="6">
+                                                        <Frame CornerRadius="12"
+                                                               Padding="15"
+                                                               Margin="0,0,0,15"
+                                                               BackgroundColor="White"
+                                                               HasShadow="False">
 
-                                                               <Label Text="{Binding DisplayDate}"
-                                                                      FontAttributes="Bold"
-                                                                      FontSize="16"
-                                                                      TextColor="#0F172A"/>
+                                                               <Frame.GestureRecognizers>
+                                                                      <TapGestureRecognizer
+                                                                             Command="{Binding Source={RelativeSource AncestorType={x:Type local:EventPage}}, Path=BindingContext.EventClickedCommand}"
+                                                                             CommandParameter="{Binding}"/>
+                                                               </Frame.GestureRecognizers>
 
-                                                               <Label Text="{Binding Location, StringFormat='Ort: {0}'}"
-                                                                      FontSize="14"
-                                                                      TextColor="#334155"/>
+                                                               <VerticalStackLayout Spacing="6">
+                                                                      <Label Text="{Binding DisplayDate}"
+                                                                             FontAttributes="Bold"
+                                                                             FontSize="16"
+                                                                             TextColor="#0F172A"/>
 
-                                                               <Label Text="{Binding Game, StringFormat='Spiel: {0}'}"
-                                                                      FontSize="14"
-                                                                      TextColor="#334155"/>
+                                                                      <Label Text="{Binding Location, StringFormat='Ort: {0}'}"
+                                                                             FontSize="14"
+                                                                             TextColor="#334155"/>
 
-                                                               <Label Text="{Binding Host, StringFormat='Veranstalter: {0}'}"
-                                                                      FontSize="14"
-                                                                      TextColor="#1E3A8A"
-                                                                      FontAttributes="Bold"/>
+                                                                      <Label Text="{Binding Game, StringFormat='Spiel: {0}'}"
+                                                                             FontSize="14"
+                                                                             TextColor="#334155"/>
 
-                                                        </VerticalStackLayout>
+                                                                      <Label Text="{Binding Host, StringFormat='Veranstalter: {0}'}"
+                                                                             FontSize="14"
+                                                                             TextColor="#1E3A8A"
+                                                                             FontAttributes="Bold"/>
+                                                               </VerticalStackLayout>
 
-                                                 </Frame>
+                                                        </Frame>
+                                                 </SwipeView>
+
 
                                           </DataTemplate>
                                    </CollectionView.ItemTemplate>
