@@ -82,4 +82,10 @@
 		<MauiXaml Include="Views/NewEventPopup.xaml" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <MauiXaml Update="Views\GameLibrary.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
+	</ItemGroup>
+
 </Project>
