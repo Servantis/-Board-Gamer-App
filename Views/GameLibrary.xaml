@@ -1,48 +1,71 @@
 <?xml version="1.0" encoding="utf-8" ?>
+
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:models="clr-namespace:BoardGamerApp.Models"
              x:Class="BoardGamerApp.Views.GameLibrary"
-             Title="GameLibrary">
-    <ScrollView>
-        <VerticalStackLayout Padding="30,20"
-                         Spacing="20">
+             Title="Spiele"
+             BackgroundColor="#F8F5F0">
+
+    <Grid RowDefinitions="Auto,*"
+          Padding="30,20"
+          RowSpacing="20">
+
+        <VerticalStackLayout Grid.Row="0"
+                             Spacing="6">
 
             <Label Text="Spieleverwaltung"
-               FontSize="22"
-               FontAttributes="Bold"
-               TextColor="#3B2E25" />
+                   FontSize="22"
+                   FontAttributes="Bold"
+                   TextColor="#3B2E25" />
 
-            <Label Text="Hier können später Spiele angelegt, bearbeitet und für Termine vorgeschlagen werden."
-               FontSize="14"
-               TextColor="#7C6A58" />
-
-            <Border StrokeThickness="0"
-                BackgroundColor="#FFFFFF"
-                StrokeShape="RoundRectangle 12"
-                Padding="15">
-
-                <VerticalStackLayout Spacing="8">
-                    <Label Text="Catan"
-                       FontSize="18"
-                       FontAttributes="Bold"
-                       TextColor="#0F172A" />
-
-                    <Label Text="Kategorie: Strategiespiel"
-                       FontSize="14"
-                       TextColor="#334155" />
-
-                    <Label Text="Spieler: 3–4"
-                       FontSize="14"
-                       TextColor="#334155" />
-                </VerticalStackLayout>
-
-            </Border>
-
-            <Button Text="Spiel hinzufügen"
-                BackgroundColor="#8B5E3C"
-                TextColor="White"
-                CornerRadius="12" />
+            <Label Text="Alle gespeicherten Brettspiele aus der lokalen SQLite-Datenbank."
+                   FontSize="14"
+                   TextColor="#7C6A58" />
 
         </VerticalStackLayout>
-    </ScrollView>
+
+        <CollectionView Grid.Row="1"
+                        ItemsSource="{Binding Games}"
+                        EmptyView="Noch keine Spiele vorhanden.">
+
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="models:games">
+
+                    <Border StrokeThickness="0"
+                            BackgroundColor="#FFFFFF"
+                            StrokeShape="RoundRectangle 12"
+                            Padding="15"
+                            Margin="0,0,0,12">
+
+                        <VerticalStackLayout Spacing="6">
+
+                            <Label Text="{Binding title}"
+                                   FontSize="18"
+                                   FontAttributes="Bold"
+                                   TextColor="#0F172A" />
+
+                            <Label Text="{Binding game_genre, StringFormat='Kategorie: {0}'}"
+                                   FontSize="14"
+                                   TextColor="#334155" />
+
+                            <Label Text="{Binding PlayerRange, StringFormat='Spieler: {0}'}"
+                                   FontSize="14"
+                                   TextColor="#334155" />
+
+                            <Label Text="{Binding DurationText, StringFormat='Dauer: {0}'}"
+                                   FontSize="14"
+                                   TextColor="#334155" />
+
+
+                        </VerticalStackLayout>
+
+                    </Border>
+
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+
+        </CollectionView>
+
+    </Grid>
 </ContentPage>
