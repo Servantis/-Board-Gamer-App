@@ -20,6 +20,10 @@ public partial class EventPage : ContentPage
 
     private async void OnPreviousEventsClicked(object? sender, EventArgs e)
     {
-        await Shell.Current.GoToAsync(nameof(PreviousEventsPage));
+        await Shell.Current.GoToAsync(nameof(PreviousEventsPage),
+            new Dictionary<string, object>
+            {
+            { "Events", ViewModel.Events }
+            });
     }
 }

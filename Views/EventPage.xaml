@@ -26,7 +26,7 @@
                      <!-- Abstand zum Rand -->
                      <VerticalStackLayout Padding="20">
 
-                            <CollectionView ItemsSource="{Binding Events}">
+                            <CollectionView ItemsSource="{Binding UpcomingEvents}">
                                    <CollectionView.ItemTemplate>
                                           <DataTemplate>
 

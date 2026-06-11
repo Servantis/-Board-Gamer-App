@@ -80,6 +80,7 @@
 		<MauiXaml Include="Views/MessagePage.xaml" />
 		<MauiXaml Include="Views/RatingPage.xaml" />
 		<MauiXaml Include="Views/NewEventPopup.xaml" />
+		<MauiXaml Include="Views/PreviousEventsPage.xaml" />
 	</ItemGroup>
 
 </Project>
