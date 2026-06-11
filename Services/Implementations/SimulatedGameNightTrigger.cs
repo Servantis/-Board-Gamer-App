@@ -14,6 +14,7 @@ namespace BoardGamerApp.Services.Implementations
               return DateTime.Now >= _fixedEndTime;
           } */
 
+        // testweise auf true, damit Logik nach Eventtrigger getestet werden kann
         public bool IsGameNightOver()
         {
             return true;

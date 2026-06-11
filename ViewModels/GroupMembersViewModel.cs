@@ -21,7 +21,9 @@ namespace BoardGamerApp.ViewModels
 
         // Letzte Gastgeber ermitteln, wenn Flag gesetzt ist
         public IEnumerable<GroupMember> LastHosts =>
-            Members.Where(m => m.HostedFlag);
+            Members
+           .Where(m => m.LastHostedDate != default)
+           .OrderByDescending(m => m.LastHostedDate);
 
         public GroupMembersViewModel(IHostSelectionService hostService, IHostScheduleService scheduleService)
         {
@@ -33,12 +35,6 @@ namespace BoardGamerApp.ViewModels
             _scheduleService.EnsureHost(Members.ToList());
             SelectNextHostCommand = new RelayCommand(SelectNextHost);
             SimulateTriggerCommand = new RelayCommand(SimulateTrigger);
-
-            System.Diagnostics.Debug.WriteLine(
-            $"VM Hash: {GetHashCode()}");
-
-            System.Diagnostics.Debug.WriteLine(
-                $"Members Hash: {Members.GetHashCode()}");
         }
 
         // Testdaten, später über DB oder Service
@@ -103,13 +99,7 @@ namespace BoardGamerApp.ViewModels
         private void SelectNextHost()
         {
             var selected = _hostService.SelectNextHost(Members.ToList());
-            System.Diagnostics.Debug.WriteLine("SelectNextHost wurde aufgerufen");
-            foreach (var member in Members)
-            {
-                System.Diagnostics.Debug.WriteLine(
-                    $"{member.DisplayName}: Hosted={member.HostedFlag}, NextHost={member.IsNextHost}");
-            }
-            // optional: UI-Update sichtbar machen (falls Service nur berechnet)
+          
             if (selected != null)
             {
                 foreach (var m in Members)
@@ -119,18 +109,23 @@ namespace BoardGamerApp.ViewModels
             }
         }
 
+        public ICommand ManageMembersCommand { get; }
+
+        public GroupMembersViewModel()
+        {
+            ManageMembersCommand = new RelayCommand(OpenMemberManagement);
+        }
+
+        // Aufruf zur MemberManagementPage
+        private async void OpenMemberManagement()
+        {
+            // Komponente muss noch implementiert werden
+           // await Shell.Current.GoToAsync(nameof(MemberManagementPage));
+        }
 
         private void SimulateTrigger()
         {
-            System.Diagnostics.Debug.WriteLine("=== TESTTRIGGER AUSGELÖST ===");
-
             _scheduleService.EnsureHost(Members.ToList());
-
-            foreach (var member in Members)
-            {
-                System.Diagnostics.Debug.WriteLine(
-                    $"TEST: {member.DisplayName} -> Hosted={member.HostedFlag}, NextHost={member.IsNextHost}");
-            }
         }
     }
 }

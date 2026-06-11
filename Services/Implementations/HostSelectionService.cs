@@ -15,10 +15,28 @@ namespace BoardGamerApp.Services.Implementations
             if (members == null || members.Count == 0)
                 return null;
 
-            // Nur Kandidaten mit HostedFlag == false
-            var candidates = members
-                .Where(m => m.HostedFlag == false)
-                .ToList();
+            // Letzter Host aus letzten Zyklus ermitteln
+            var lastHost = members
+                .OrderByDescending(m => m.LastHostedDate)
+                .FirstOrDefault();
+
+            var allHosted = members.All(m => m.HostedFlag);
+            List<GroupMember> candidates;
+
+            if (allHosted && lastHost != null)
+            {
+                // letzter Host wird ausgeschlossen
+                candidates = members
+                    .Where(m => m != lastHost)
+                    .ToList();
+            }
+            else
+            {
+                // normaler Zyklus
+                candidates = members
+                    .Where(m => !m.HostedFlag)
+                    .ToList();
+            }
 
             if (!candidates.Any())
                 return null;

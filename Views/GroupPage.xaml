@@ -11,13 +11,32 @@
             <VerticalStackLayout Padding="30,0"
                                  Spacing="25">
 
-                <Label Text="Gruppe"
-                       Style="{StaticResource SubHeadline}"
-                       FontSize="18"
-                       Margin="0,15,0,0"
-                       HorizontalTextAlignment="Start"
-                       HorizontalOptions="Start"
-                       SemanticProperties.HeadingLevel="Level1"/>
+                <Grid ColumnDefinitions="*,Auto"
+                     Margin="0,15,0,0">
+
+                    <!-- Titel -->
+                    <Label Text="Gruppe"
+                           Style="{StaticResource SubHeadline}"
+                           FontSize="18"
+                           HorizontalOptions="Start"
+                           VerticalOptions="Center"
+                           SemanticProperties.HeadingLevel="Level1"/>
+
+                    <!-- Button rechts -->
+                    <Button Grid.Column="1"
+                            BackgroundColor="Transparent"
+                            Padding="10"
+                            Command="{Binding ManageMembersCommand}">
+
+                        <Button.ImageSource>
+                            <FontImageSource Glyph="👥"
+                             Size="22"
+                             Color="#3B2E25"/>
+                        </Button.ImageSource>
+
+                    </Button>
+
+                </Grid>
 
                 <Border StrokeThickness="0"
                         BackgroundColor="#FFFFFF"
@@ -77,7 +96,6 @@
                                             <Label Text="{Binding Email}"
                                                FontSize="14"
                                                TextColor="#7C6A58"/>
-                                            <Label Text="{Binding IsNextHost}" />
                                         </VerticalStackLayout>
                                         <!-- Host Badge -->
                                         <Frame Grid.Column="2"
@@ -185,7 +203,7 @@
                                            HorizontalOptions="End"
                                            HasShadow="False">
 
-                                            <Label Text="{Binding LastHostedDisplay}"
+                                            <Label Text="{Binding LastHostedDate, StringFormat='zuletzt: {0:dd.MM.yy}'}"
                                                FontSize="12"
                                                FontAttributes="Bold"
                                                TextColor="#7C6A58"/>
@@ -242,12 +260,6 @@
             <VerticalStackLayout Grid.Column="2"
                                  HorizontalOptions="Center"
                                  VerticalOptions="Center">
-                <!--
-           <VerticalStackLayout.GestureRecognizers> -->
-                <!--durch dazugehörige OnxxxxClicked-Methode ersetzen -->
-                <!--                  <TapGestureRecognizer Tapped="OnEventClicked"/>
-                </VerticalStackLayout.GestureRecognizers>
-                -->
                 <Image Source="group_icon.png"
                        HeightRequest="24"
                        WidthRequest="24"/>

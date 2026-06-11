@@ -27,13 +27,15 @@ namespace BoardGamerApp.Services.Implementations
             //  Wenn geplanter Termin vorbei: Flag-Zustand Änderung für letzten Host
             if (_trigger.IsGameNightOver())
             {
-                System.Diagnostics.Debug.WriteLine("TRIGGER FIRED");
                 var currentHost = members.FirstOrDefault(m => m.IsNextHost);
 
                 if (currentHost != null)
                 {
                     currentHost.HostedFlag = true;
                     currentHost.IsNextHost = false;
+                    currentHost.LastHostedDate = DateTime.Now;
+                    System.Diagnostics.Debug.WriteLine($"Hostname: {currentHost?.Name}");
+                    System.Diagnostics.Debug.WriteLine($"LastHostedDate: {currentHost?.LastHostedDate}");
                 }
 
                 _isHostSet = false;

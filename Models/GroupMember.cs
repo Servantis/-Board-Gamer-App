@@ -14,6 +14,7 @@ public class GroupMember : BaseSyncEntity
     {
         private bool _isNextHost;
         private bool _hostedFlag;
+        private DateTime _lastHostedDate;
 
         public string Name { get; set; } = string.Empty;
         public string LastName { get; set; } = string.Empty;
@@ -43,13 +44,15 @@ public class GroupMember : BaseSyncEntity
             }
         }
 
-    [NotNull]
-    public string Status { get; set; } = BoardGamerConstants.GroupMemberStatus.Active;
-        public DateTime LastHostedDate { get; set; }
-        public string LastHostedDateFormatted => 
-            LastHostedDate.ToString("dd.MM.yy");
-        public string LastHostedDisplay =>
-            $"zuletzt: {LastHostedDateFormatted}";
+        public DateTime LastHostedDate
+        {
+            get => _lastHostedDate;
+            set
+            {
+                _lastHostedDate = value;
+                OnPropertyChanged();
+            }
+        }
 
         public string DisplayName
         {
