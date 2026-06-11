@@ -392,3 +392,5 @@ temp
 # Gradle build reports
 src/Core/AndroidNative/build/reports/
 
+/obj/Debug/net10.0-ios/iossimulator-arm64/BoardGamerApp.AssemblyInfo.cs
+/obj/Debug/net10.0-ios/iossimulator-arm64/BoardGamerApp.AssemblyInfoInputs.cache
