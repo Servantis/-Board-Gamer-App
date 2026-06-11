@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8" ?>
+
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:models="clr-namespace:BoardGamerApp.Models"
+             x:Class="BoardGamerApp.Views.GameLibrary"
+             Title="Spiele"
+             BackgroundColor="#F8F5F0">
+
+    <Grid RowDefinitions="Auto,*"
+          Padding="30,20"
+          RowSpacing="20">
+
+        <VerticalStackLayout Grid.Row="0"
+                             Spacing="6">
+
+            <Label Text="Spieleverwaltung"
+                   FontSize="22"
+                   FontAttributes="Bold"
+                   TextColor="#3B2E25" />
+
+            <Label Text="Alle gespeicherten Brettspiele aus der lokalen SQLite-Datenbank."
+                   FontSize="14"
+                   TextColor="#7C6A58" />
+
+        </VerticalStackLayout>
+
+        <CollectionView Grid.Row="1"
+                        ItemsSource="{Binding Games}"
+                        EmptyView="Noch keine Spiele vorhanden.">
+
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="models:games">
+
+                    <Border StrokeThickness="0"
+                            BackgroundColor="#FFFFFF"
+                            StrokeShape="RoundRectangle 12"
+                            Padding="15"
+                            Margin="0,0,0,12">
+
+                        <VerticalStackLayout Spacing="6">
+
+                            <Label Text="{Binding title}"
+                                   FontSize="18"
+                                   FontAttributes="Bold"
+                                   TextColor="#0F172A" />
+
+                            <Label Text="{Binding game_genre, StringFormat='Kategorie: {0}'}"
+                                   FontSize="14"
+                                   TextColor="#334155" />
+
+                            <Label Text="{Binding PlayerRange, StringFormat='Spieler: {0}'}"
+                                   FontSize="14"
+                                   TextColor="#334155" />
+
+                            <Label Text="{Binding DurationText, StringFormat='Dauer: {0}'}"
+                                   FontSize="14"
+                                   TextColor="#334155" />
+
+
+                        </VerticalStackLayout>
+
+                    </Border>
+
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+
+        </CollectionView>
+
+    </Grid>
+</ContentPage>
