@@ -6,6 +6,7 @@
     <ActiveDebugProfile>Medium Phone API 36.0 (Android 16.0 - API 36)</ActiveDebugProfile>
     <SelectedPlatformGroup>Emulator</SelectedPlatformGroup>
     <DefaultDevice>Medium_Phone_API_36.0</DefaultDevice>
+    <SelectedDevice>Simulator</SelectedDevice>
   </PropertyGroup>
   <PropertyGroup Condition="'$(TargetPlatformIdentifier)'=='iOS'">
     <RuntimeIdentifier>iossimulator-x64</RuntimeIdentifier>

@@ -109,14 +109,14 @@
                                    HorizontalOptions="Center"/>
                      </Frame>
 
-                     <!-- Gruppe -->
-                     <VerticalStackLayout Grid.Column="2"
-                                          HorizontalOptions="Center"
-                                          VerticalOptions="Center">
-
-                            <VerticalStackLayout.GestureRecognizers>
-                                   <TapGestureRecognizer Tapped="OnEventClicked"/>
-                            </VerticalStackLayout.GestureRecognizers>
+            <!-- Gruppe -->
+            <VerticalStackLayout Grid.Column="2"
+                                 HorizontalOptions="Center"
+                                 VerticalOptions="Center">
+            <!-- OnClick Methode für Gruppenansicht -->
+                <VerticalStackLayout.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="OnGroupClicked"/>
+                </VerticalStackLayout.GestureRecognizers>
 
                             <Image Source="group_icon.png"
                                    HeightRequest="24"
