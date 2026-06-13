@@ -1,11 +1,13 @@
 ﻿using BoardGamerApp.Models;
 using BoardGamerApp.Services.Interfaces;
 using CommunityToolkit.Mvvm.Input;
+using System.Threading.Tasks;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows.Input;
+using BoardGamerApp.Services.Services.Database;
 
 namespace BoardGamerApp.ViewModels
 {
@@ -13,6 +15,7 @@ namespace BoardGamerApp.ViewModels
     {
         private readonly IHostSelectionService _hostService;
         private readonly IHostScheduleService _scheduleService;
+        private readonly PlayerRepository _playerRepository;
 
         public ObservableCollection<GroupMember> Members { get; private set; }
 
@@ -25,16 +28,20 @@ namespace BoardGamerApp.ViewModels
            .Where(m => m.LastHostedDate != default)
            .OrderByDescending(m => m.LastHostedDate);
 
-        public GroupMembersViewModel(IHostSelectionService hostService, IHostScheduleService scheduleService)
+        public GroupMembersViewModel(IHostSelectionService hostService, IHostScheduleService scheduleService, PlayerRepository playerRepository)
         {
             _hostService = hostService;
             _scheduleService = scheduleService;
+            _playerRepository = playerRepository;
 
-            InitializeMembers();
+            // InitializeMembers();
+            Members = new ObservableCollection<GroupMember>();
 
             _scheduleService.EnsureHost(Members.ToList());
             SelectNextHostCommand = new RelayCommand(SelectNextHost);
             SimulateTriggerCommand = new RelayCommand(SimulateTrigger);
+
+            _ = LoadMembersAsync();
         }
 
         // Testdaten, später über DB oder Service
@@ -88,6 +95,21 @@ namespace BoardGamerApp.ViewModels
                     IsNextHost = false
                 }
             };
+        }
+        private async Task LoadMembersAsync()
+        {
+            var players = await _playerRepository.GetPlayersAsync();
+            System.Diagnostics.Debug.WriteLine("LoadMembers: " + players );
+            Members.Clear();
+
+            foreach (var player in players)
+            {
+                Members.Add(player);
+                System.Diagnostics.Debug.WriteLine(
+             $"{player.Name} | LastName='{player.LastName}'");
+            }
+
+            _scheduleService.EnsureHost(Members.ToList());
         }
 
         // zentrale Datenzugriffsmethode (später über DB)
