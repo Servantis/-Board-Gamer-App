@@ -1034,7 +1034,16 @@
         }
       },
       "runtimes": {
-        "iossimulator-arm64": {
+        "android-arm64": {
+          "#import": []
+        },
+        "android-x64": {
+          "#import": []
+        },
+        "iossimulator-x64": {
+          "#import": []
+        },
+        "maccatalyst-arm64": {
           "#import": []
         }
       }

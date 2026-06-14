@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "Rq/ERA9t7PI=",
+  "dgSpecHash": "vyJ2gXZSJCY=",
   "success": true,
   "projectFilePath": "/Users/sebastianstark/MauiProject/BoardGamerApp/BoardGamerApp.csproj",
   "expectedPackageFiles": [
@@ -130,5 +130,15 @@
     "/Users/sebastianstark/.nuget/packages/xamarin.kotlinx.serialization.core/1.9.0.1/xamarin.kotlinx.serialization.core.1.9.0.1.nupkg.sha512",
     "/Users/sebastianstark/.nuget/packages/xamarin.kotlinx.serialization.core.jvm/1.9.0.1/xamarin.kotlinx.serialization.core.jvm.1.9.0.1.nupkg.sha512"
   ],
-  "logs": []
+  "logs": [
+    {
+      "code": "Undefined",
+      "level": "Warning",
+      "message": "Problem beim Lesen der Cachedatei \"/Users/sebastianstark/MauiProject/BoardGamerApp/obj/project.nuget.cache\": '<' is an invalid start of a property name. Expected a '\"'. Path: $ | LineNumber: 2 | BytePositionInLine: 0.",
+      "projectPath": "/Users/sebastianstark/MauiProject/BoardGamerApp/BoardGamerApp.csproj",
+      "warningLevel": 1,
+      "filePath": "/Users/sebastianstark/MauiProject/BoardGamerApp/BoardGamerApp.csproj",
+      "targetGraphs": []
+    }
+  ]
 }
