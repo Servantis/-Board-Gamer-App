@@ -26,4 +26,9 @@ public partial class EventPage : ContentPage
             { "Events", ViewModel.Events }
             });
     }
+
+    private async void OnGamesClicked(object? sender, EventArgs e)
+    {
+        await Shell.Current.GoToAsync(nameof(GamesPage));
+    }
 }

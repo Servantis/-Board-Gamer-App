@@ -21,9 +21,30 @@ public class EventViewModel
             new BoardGameEvent
             {
                 Date = new DateTime(2026, 6, 12, 19, 0, 0),
-                Location = "Annastraße 5, 12345 Musterstadt",
+                Location = "Annastraße 67, 12345 Musterstadt",
                 Game = "Catan",
                 Host = "Anna"
+            },
+            new BoardGameEvent
+            {
+                Date = new DateTime(2026, 6, 16, 19, 0, 0),
+                Location = "Horststraße 17, 12345 Musterstadt",
+                Game = "Schach",
+                Host = "Horst"
+            },
+            new BoardGameEvent
+            {
+                Date = new DateTime(2026, 6, 17, 19, 0, 0),
+                Location = "Mannistraße 17, 12345 Musterstadt",
+                Game = "Skat",
+                Host = "Manni"
+            },
+            new BoardGameEvent
+            {
+                Date = new DateTime(2026, 6, 18, 19, 0, 0),
+                Location = "Dieterstraße 17, 12345 Musterstadt",
+                Game = "Mensch ärgere dich nicht",
+                Host = "Dieter"
             },
             new BoardGameEvent
             {
@@ -66,4 +87,8 @@ public class EventViewModel
             Console.WriteLine($"Event gelöscht: {evt.Game} bei {evt.Host}");
         }
     }
+
+    public IEnumerable<BoardGameEvent> Top3UpcomingEvents =>
+    UpcomingEvents.OrderBy(e => e.Date).Take(3);
+
 }

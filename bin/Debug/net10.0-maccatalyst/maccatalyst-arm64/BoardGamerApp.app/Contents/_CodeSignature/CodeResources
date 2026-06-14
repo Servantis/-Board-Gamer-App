@@ -24,6 +24,10 @@
 		<data>
 		kFL0PyhvAIhw+9oAN04jwwtJ378=
 		</data>
+		<key>Resources/SQLite.db</key>
+		<data>
+		zfZJ/+A78JvwG1nOioaWLjnTkxY=
+		</data>
 		<key>Resources/appicon.icns</key>
 		<data>
 		UqrI40wY1qqMz407YpQETWoVltw=
@@ -35,6 +39,10 @@
 		<key>Resources/calender_icon.png</key>
 		<data>
 		j1cIlZY2o/Sz3M/uH8AypU3EPtk=
+		</data>
+		<key>Resources/checkmark_icon.png</key>
+		<data>
+		Io2d5tVLgfqCCC8NqQLjLDsBark=
 		</data>
 		<key>Resources/dotnet_bot.png</key>
 		<data>
@@ -51,6 +59,10 @@
 		<key>Resources/envelope_icon.png</key>
 		<data>
 		MZ/H2uB7L3bM+k2xQ+4qecQkBv4=
+		</data>
+		<key>Resources/exmark_icon.png</key>
+		<data>
+		6b1XMkm214rbXAj25BYGNqZC+tw=
 		</data>
 		<key>Resources/group_icon.png</key>
 		<data>
@@ -83,14 +95,14 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			JK6Nyq1bOvwcXgn/J0Pim4+Lu7AFSAKV3cjCmO7rn+8=
+			8tAN7Z6iN5f5B6liFtdhUpHIFWhavNS2oaisBFiMxHY=
 			</data>
 		</dict>
 		<key>MonoBundle/BoardGamerApp.pdb</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			9OM5aG8tPEPDxQUkviCcSjP4iN9mh/gkriSQIPyuHgk=
+			bpFk6irGc5+atFbEooW2hdH8IaOgwAvBuVa4gUKKp7Q=
 			</data>
 		</dict>
 		<key>MonoBundle/CommunityToolkit.Maui.Core.dll</key>
@@ -280,6 +292,34 @@
 			<key>hash2</key>
 			<data>
 			if4b8dsO2nHJTEdFfF9NtoMyRHasd4GF5Wbi5pv2n3I=
+			</data>
+		</dict>
+		<key>MonoBundle/SQLite-net.dll</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			/0h0FMSssyqe6OCqk97walP3tX35PS56JgVOGN+Fcj4=
+			</data>
+		</dict>
+		<key>MonoBundle/SQLitePCLRaw.batteries_v2.dll</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			kylPuIiR6IKN27UfH1K8VCl9n9pSQbikaTX+p10gtqM=
+			</data>
+		</dict>
+		<key>MonoBundle/SQLitePCLRaw.core.dll</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			l57cyQVqwG1fUrEtm3czsSF5FKtQvxI6sxLgJ+esV6U=
+			</data>
+		</dict>
+		<key>MonoBundle/SQLitePCLRaw.provider.e_sqlite3.dll</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			RwA/P9Qppbadb8bP0Wv82XkQMhcB5eeoiQYWQ8gdCGU=
 			</data>
 		</dict>
 		<key>MonoBundle/System.AppContext.dll</key>
@@ -1563,6 +1603,13 @@
 			jElyLyp89nyML3JCQgNU8SgVscVGohBgdOCt047SkZo=
 			</data>
 		</dict>
+		<key>MonoBundle/libe_sqlite3.dylib</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			MNvyjg5Gho2oyULM8BYo8ASm1lRyl4CJuG5bb4sUr5k=
+			</data>
+		</dict>
 		<key>MonoBundle/ms/Microsoft.Maui.Controls.resources.dll</key>
 		<dict>
 			<key>hash2</key>
@@ -1738,6 +1785,13 @@
 			5DTxWXZgi7O6U7FsoWmi4QPeUgD8xLiyxRgf9YJyvoY=
 			</data>
 		</dict>
+		<key>Resources/SQLite.db</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			Diio7WpemvphWcGBP8G+lp5zZag0ud8INS9wC/InnHg=
+			</data>
+		</dict>
 		<key>Resources/appicon.icns</key>
 		<dict>
 			<key>hash2</key>
@@ -1757,6 +1811,13 @@
 			<key>hash2</key>
 			<data>
 			mQqhxIMHfe7oNRpUUtq/nnaLC5tccn+y4eNiaC68ueA=
+			</data>
+		</dict>
+		<key>Resources/checkmark_icon.png</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			LOQpOVKeJXBA3+iWn0pWXXiPKFYXtijNTxceSCYDz/k=
 			</data>
 		</dict>
 		<key>Resources/dotnet_bot.png</key>
@@ -1785,6 +1846,13 @@
 			<key>hash2</key>
 			<data>
 			Fg7HTt6HmKZbvLGm/uyv3thwJsrllRBbhslU5b1szYw=
+			</data>
+		</dict>
+		<key>Resources/exmark_icon.png</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			/PuqjHm5paKXv7HB6nila0SlXv3y0tKlm1WqDktLjc4=
 			</data>
 		</dict>
 		<key>Resources/group_icon.png</key>

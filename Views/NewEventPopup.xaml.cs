@@ -1,4 +1,90 @@
 using CommunityToolkit.Maui.Views;
+using System.ComponentModel;
+
+namespace BoardGamerApp.Views;
+
+public partial class NewEventPopup : Popup
+{
+    private readonly EventViewModel _viewModel;
+
+    private DateTime _selectedDateTime;
+
+    public NewEventPopup(EventViewModel vm)
+    {
+        InitializeComponent();
+        _viewModel = vm;
+
+        _selectedDateTime = DateTime.Now;
+
+        HiddenDatePicker.Date = DateTime.Now;
+        HiddenTimePicker.Time = new TimeSpan(12, 0, 0);
+
+        HiddenDatePicker.DateSelected += OnDateSelected;
+        HiddenDatePicker.Unfocused += OnDatePickerClosed_iOS;
+
+        HiddenTimePicker.PropertyChanged += OnTimeChanged;
+    }
+
+    private void OnDateTimeTapped(object sender, TappedEventArgs e)
+    {
+        HiddenDatePicker.Focus();
+    }
+
+    private void OnDateSelected(object sender, DateChangedEventArgs e)
+    {
+        // Android: sofort wechseln
+        if (OperatingSystem.IsAndroid())
+        {
+            HiddenTimePicker.Focus();
+        }
+    }
+
+    private void OnDatePickerClosed_iOS(object sender, FocusEventArgs e)
+    {
+        // iOS: erst wechseln, wenn der Nutzer den Picker schließt
+        if (OperatingSystem.IsIOS())
+        {
+            HiddenTimePicker.Focus();
+        }
+    }
+
+    private void OnTimeChanged(object sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(TimePicker.Time))
+        {
+            ApplyDateTime();
+        }
+    }
+
+    private void ApplyDateTime()
+    {
+        DateTime date = HiddenDatePicker.Date ?? DateTime.Now;
+        TimeSpan time = HiddenTimePicker.Time ?? new TimeSpan(12, 0, 0);
+
+        _selectedDateTime = date + time;
+
+        DateTimeLabel.Text = _selectedDateTime.ToString("dd.MM.yyyy HH:mm");
+        DateTimeLabel.TextColor = Colors.Black;
+    }
+
+    private void OnSaveClicked(object sender, EventArgs e)
+    {
+        var newEvent = new BoardGameEvent
+        {
+            Date = _selectedDateTime,
+            Location = LocationEntry.Text,
+            Game = GameEntry.Text,
+            Host = HostEntry.Text
+        };
+
+        _viewModel.AddEvent(newEvent);
+        Close();
+    }
+}
+
+
+/*
+using CommunityToolkit.Maui.Views;
 
 namespace BoardGamerApp.Views;
 
@@ -74,3 +160,4 @@ public partial class NewEventPopup : Popup
         Close();
     }
 }
+*/

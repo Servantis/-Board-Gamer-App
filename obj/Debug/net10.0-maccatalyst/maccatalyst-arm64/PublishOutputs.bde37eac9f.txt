@@ -53,6 +53,10 @@
 /Users/sebastianstark/MauiProject/BoardGamerApp/bin/Debug/net10.0-maccatalyst/maccatalyst-arm64/publish/../BoardGamerApp.app/Contents/MonoBundle/Microsoft.Maui.dll
 /Users/sebastianstark/MauiProject/BoardGamerApp/bin/Debug/net10.0-maccatalyst/maccatalyst-arm64/publish/../BoardGamerApp.app/Contents/MonoBundle/Microsoft.Maui.Essentials.dll
 /Users/sebastianstark/MauiProject/BoardGamerApp/bin/Debug/net10.0-maccatalyst/maccatalyst-arm64/publish/../BoardGamerApp.app/Contents/MonoBundle/Microsoft.Maui.Graphics.dll
+/Users/sebastianstark/MauiProject/BoardGamerApp/bin/Debug/net10.0-maccatalyst/maccatalyst-arm64/publish/../BoardGamerApp.app/Contents/MonoBundle/SQLite-net.dll
+/Users/sebastianstark/MauiProject/BoardGamerApp/bin/Debug/net10.0-maccatalyst/maccatalyst-arm64/publish/../BoardGamerApp.app/Contents/MonoBundle/SQLitePCLRaw.batteries_v2.dll
+/Users/sebastianstark/MauiProject/BoardGamerApp/bin/Debug/net10.0-maccatalyst/maccatalyst-arm64/publish/../BoardGamerApp.app/Contents/MonoBundle/SQLitePCLRaw.core.dll
+/Users/sebastianstark/MauiProject/BoardGamerApp/bin/Debug/net10.0-maccatalyst/maccatalyst-arm64/publish/../BoardGamerApp.app/Contents/MonoBundle/SQLitePCLRaw.provider.e_sqlite3.dll
 /Users/sebastianstark/MauiProject/BoardGamerApp/bin/Debug/net10.0-maccatalyst/maccatalyst-arm64/publish/../BoardGamerApp.app/Contents/MonoBundle/BoardGamerApp.dll
 /Users/sebastianstark/MauiProject/BoardGamerApp/bin/Debug/net10.0-maccatalyst/maccatalyst-arm64/publish/../BoardGamerApp.app/Contents/MonoBundle/Microsoft.CSharp.dll
 /Users/sebastianstark/MauiProject/BoardGamerApp/bin/Debug/net10.0-maccatalyst/maccatalyst-arm64/publish/../BoardGamerApp.app/Contents/MonoBundle/Microsoft.VisualBasic.Core.dll
@@ -229,5 +233,6 @@
 /Users/sebastianstark/MauiProject/BoardGamerApp/bin/Debug/net10.0-maccatalyst/maccatalyst-arm64/publish/../BoardGamerApp.app/Contents/MonoBundle/Microsoft.MacCatalyst.dll
 /Users/sebastianstark/MauiProject/BoardGamerApp/bin/Debug/net10.0-maccatalyst/maccatalyst-arm64/publish/../BoardGamerApp.app/Contents/MonoBundle/BoardGamerApp.pdb
 /Users/sebastianstark/MauiProject/BoardGamerApp/bin/Debug/net10.0-maccatalyst/maccatalyst-arm64/publish/../BoardGamerApp.app/Contents/MonoBundle/Microsoft.MacCatalyst.pdb
+/Users/sebastianstark/MauiProject/BoardGamerApp/bin/Debug/net10.0-maccatalyst/maccatalyst-arm64/publish/../BoardGamerApp.app/Contents/MonoBundle/libe_sqlite3.dylib
 /Users/sebastianstark/MauiProject/BoardGamerApp/bin/Debug/net10.0-maccatalyst/maccatalyst-arm64/publish/../BoardGamerApp.app/Contents/MonoBundle/System.Private.CoreLib.aotdata.arm64
 /Users/sebastianstark/MauiProject/BoardGamerApp/bin/Debug/net10.0-maccatalyst/maccatalyst-arm64/publish/../BoardGamerApp.app/Contents/MacOS//BoardGamerApp

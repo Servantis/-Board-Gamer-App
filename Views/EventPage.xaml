@@ -12,7 +12,7 @@
               <Grid Grid.Row="0"
                     BackgroundColor="#EDE6DD"
                     Padding="20,40,20,20">
-                     <Label Text="TERMINÜBERSICHT"
+                     <Label Text="TERMINVERWALTUNG"
                             TextColor="#3B2E25"
                             FontAttributes="Bold"
                             FontSize="20"
@@ -49,9 +49,7 @@
                                                                HasShadow="False">
 
                                                                <Frame.GestureRecognizers>
-                                                                      <TapGestureRecognizer
-                                                                             Command="{Binding Source={RelativeSource AncestorType={x:Type local:EventPage}}, Path=BindingContext.EventClickedCommand}"
-                                                                             CommandParameter="{Binding}"/>
+                                                                      <TapGestureRecognizer Tapped="OnGamesClicked"/>
                                                                </Frame.GestureRecognizers>
 
                                                                <VerticalStackLayout Spacing="6">
