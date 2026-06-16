@@ -1,13 +1,16 @@
-﻿using BoardGamerApp.Models;
+﻿using BoardGamerApp.Data;
+using BoardGamerApp.Models;
+using BoardGamerApp.Services.Implementations;
 using BoardGamerApp.Services.Interfaces;
+using BoardGamerApp.Services.Services.Database;
 using CommunityToolkit.Mvvm.Input;
-using System.Threading.Tasks;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows.Input;
-using BoardGamerApp.Services.Services.Database;
 
 namespace BoardGamerApp.ViewModels
 {
@@ -15,7 +18,7 @@ namespace BoardGamerApp.ViewModels
     {
         private readonly IHostSelectionService _hostService;
         private readonly IHostScheduleService _scheduleService;
-        private readonly PlayerRepository _playerRepository;
+        private readonly IPlayerService _playerService;
 
         public ObservableCollection<GroupMember> Members { get; private set; }
 
@@ -28,11 +31,11 @@ namespace BoardGamerApp.ViewModels
            .Where(m => m.LastHostedDate != default)
            .OrderByDescending(m => m.LastHostedDate);
 
-        public GroupMembersViewModel(IHostSelectionService hostService, IHostScheduleService scheduleService, PlayerRepository playerRepository)
+        public GroupMembersViewModel(IHostSelectionService hostService, IHostScheduleService scheduleService, IPlayerService playerService)
         {
             _hostService = hostService;
             _scheduleService = scheduleService;
-            _playerRepository = playerRepository;
+            _playerService = playerService;
 
             // InitializeMembers();
             Members = new ObservableCollection<GroupMember>();
@@ -41,72 +44,23 @@ namespace BoardGamerApp.ViewModels
             SelectNextHostCommand = new RelayCommand(SelectNextHost);
             SimulateTriggerCommand = new RelayCommand(SimulateTrigger);
 
+            ManageMembersCommand = new RelayCommand(OpenMemberManagement);
+
             _ = LoadMembersAsync();
         }
 
-        // Testdaten, später über DB oder Service
-        private void InitializeMembers()
-        {
-            Members = new ObservableCollection<GroupMember>
-            {
-                new()
-                {
-                    Name = "Max",
-                    LastName = "Mustermann",
-                    Email = "max@test.de",
-                    HostedFlag = true,
-                    LastHostedDate = new DateTime(2026, 5, 1),
-                    IsNextHost = false
-                },
-                new()
-                {
-                    Name = "Anna",
-                    LastName = "Meyer",
-                    Email = "anna@test.de",
-                    HostedFlag = false,
-                    LastHostedDate = new DateTime(2023, 1, 1),
-                    IsNextHost = false
-                },
-                new()
-                {
-                    Name = "Paul",
-                    LastName = "Schmidt",
-                    Email = "paul@test.de",
-                    HostedFlag = true,
-                    LastHostedDate = new DateTime(2026, 3, 1),
-                    IsNextHost = false
-                },
-                new()
-                {
-                    Name = "Tom",
-                    LastName = "Tester",
-                    Email = "tom@test.de",
-                    HostedFlag = false,
-                    LastHostedDate = new DateTime(2022, 1, 1),
-                    IsNextHost = false
-                },
-                new()
-                {
-                    Name = "Richard",
-                    LastName = "Müller",
-                    Email = "richard@test.de",
-                    HostedFlag = true,
-                    LastHostedDate = new DateTime(2026, 4, 1),
-                    IsNextHost = false
-                }
-            };
-        }
         private async Task LoadMembersAsync()
         {
-            var players = await _playerRepository.GetPlayersAsync();
+            var players = await _playerService.GetPlayersAsync();
             System.Diagnostics.Debug.WriteLine("LoadMembers: " + players );
             Members.Clear();
 
             foreach (var player in players)
             {
+
+                // Änderungen an den Eigenschaften eines Mitglieds überwachen
+                player.PropertyChanged += OnMemberPropertyChanged;
                 Members.Add(player);
-                System.Diagnostics.Debug.WriteLine(
-             $"{player.Name} | LastName='{player.LastName}'");
             }
 
             _scheduleService.EnsureHost(Members.ToList());
@@ -131,12 +85,13 @@ namespace BoardGamerApp.ViewModels
             }
         }
 
-        public ICommand ManageMembersCommand { get; }
 
-        public GroupMembersViewModel()
+        private async Task PersistHostStateAsync()
         {
-            ManageMembersCommand = new RelayCommand(OpenMemberManagement);
+            await _playerService.SavePlayersAsync(Members);
         }
+
+        public ICommand ManageMembersCommand { get; }
 
         // Aufruf zur MemberManagementPage
         private async void OpenMemberManagement()
@@ -148,6 +103,25 @@ namespace BoardGamerApp.ViewModels
         private void SimulateTrigger()
         {
             _scheduleService.EnsureHost(Members.ToList());
+        }
+
+        private async void OnMemberPropertyChanged(
+            object? sender,
+            PropertyChangedEventArgs e)
+        {
+            if (sender is not GroupMember member)
+                return;
+            System.Diagnostics.Debug.WriteLine(
+    $"PropertyChanged: {member.Name} -> {e.PropertyName}");
+
+            await _playerService.SavePlayerAsync(member);
+
+            // DEBUGGING: gibt mir das aus, was in der Tabelle plyer persistiert wurde
+            var reloaded = await _playerService.GetPlayerByIdAsync(member.Id);
+
+            System.Diagnostics.Debug.WriteLine(
+                $"DB CHECK → {reloaded.Name} | Hosted={reloaded.HostedFlag} | Next={reloaded.IsNextHost} | DatumType ={reloaded.LastHostedDate}");
+
         }
     }
 }

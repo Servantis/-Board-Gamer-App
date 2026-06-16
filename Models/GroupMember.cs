@@ -36,6 +36,9 @@ public class GroupMember : BaseSyncEntity
             get => _hostedFlag;
             set
             {
+                if (_hostedFlag == value)
+                    return;
+
                 _hostedFlag = value;
                 OnPropertyChanged();
             }
@@ -47,6 +50,9 @@ public class GroupMember : BaseSyncEntity
             get => _isNextHost;
             set
             {
+                if (_isNextHost == value)
+                    return;
+
                 _isNextHost = value;
                 OnPropertyChanged();
             }
@@ -58,6 +64,9 @@ public class GroupMember : BaseSyncEntity
             get => _lastHostedDate;
             set
             {
+                if (_lastHostedDate == value)
+                    return;
+
                 _lastHostedDate = value;
                 OnPropertyChanged();
             }

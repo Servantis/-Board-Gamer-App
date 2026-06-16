@@ -1,5 +1,6 @@
 ﻿using BoardGamerApp.Data;
 using BoardGamerApp.Models;
+using BoardGamerApp.Services.Interfaces;
 using SQLite;
 using System;
 using System.Collections.Generic;
@@ -7,7 +8,7 @@ using System.Text;
 
 namespace BoardGamerApp.Services.Services.Database
 {
-    public class PlayerRepository
+    public class PlayerRepository : IPlayerRepository
     {
         private SQLiteAsyncConnection? _database;
 
@@ -30,8 +31,8 @@ namespace BoardGamerApp.Services.Services.Database
         {
             string targetPath = DatabaseConstants.DatabasePath;
 
-            //if (File.Exists(targetPath))
-            //  return;
+            if (File.Exists(targetPath))
+              return;
 
             using Stream inputStream =
                 await FileSystem.Current.OpenAppPackageFileAsync(DatabaseConstants.DatabaseFilename);
@@ -47,14 +48,20 @@ namespace BoardGamerApp.Services.Services.Database
             var raw = await _database!.QueryAsync<GroupMember>("SELECT * FROM players");
             foreach (var p in raw)
             {
-                System.Diagnostics.Debug.WriteLine($"RAW: {p.Name} - {p.IsNextHost}");
+                System.Diagnostics.Debug.WriteLine($"RAW: {p.LastName} - {p.IsNextHost}");
+            }
+            foreach (var p in raw)
+            {
+                System.Diagnostics.Debug.WriteLine(
+                    $"{p.Name} | LastName={p.LastName} | NextHost={p.IsNextHost}");
             }
             return await _database!
                 .Table<GroupMember>()
                 .ToListAsync();
+
         }
 
-        public async Task<GroupMember?> GetPlayerAsync(int id)
+        public async Task<GroupMember?> GetPlayerByIdAsync(int id)
         {
             await InitAsync();
 
@@ -67,6 +74,9 @@ namespace BoardGamerApp.Services.Services.Database
         public async Task<int> SavePlayerAsync(GroupMember player)
         {
             await InitAsync();
+
+            System.Diagnostics.Debug.WriteLine(
+                $"SAVE: {player.Name} NextHost={player.IsNextHost}");
 
             if (player.Id != 0)
                 return await _database!.UpdateAsync(player);

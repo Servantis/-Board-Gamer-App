@@ -54,8 +54,9 @@ namespace BoardGamerApp.Services.Implementations
 
             selected.IsNextHost = true;
 
-      /*      System.Diagnostics.Debug.WriteLine($"Hosted Flag: {selected?.HostedFlag}");
-            System.Diagnostics.Debug.WriteLine($"IsNextHost Flag: {selected?.IsNextHost}"); */
+            // Persistierung auslagern 
+            //_ = PersistHostStateAsync();
+
             return selected;
         }
     }

@@ -46,6 +46,8 @@ public static class MauiProgram
         builder.Services.AddSingleton<IHostSelectionService, HostSelectionService>();
         builder.Services.AddSingleton<IHostScheduleService, HostScheduleService>();
         builder.Services.AddSingleton<IGameNightTrigger, SimulatedGameNightTrigger>();
+        builder.Services.AddSingleton<IPlayerRepository, PlayerRepository>();
+        builder.Services.AddSingleton<IPlayerService, PlayerService>();
 
         builder.Services.AddTransient<GroupMembersViewModel>();
         builder.Services.AddTransient<GroupPage>();
