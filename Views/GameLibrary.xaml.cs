@@ -1,49 +1,26 @@
-using BoardGamerApp.Data;
-using BoardGamerApp.Models;
-using System.Collections.ObjectModel;
+using BoardGamerApp.ViewModels;
 
 namespace BoardGamerApp.Views;
 
 public partial class GameLibrary : ContentPage
 {
-    private readonly GameDatabase _database;
+    private readonly GameLibraryViewModel _viewModel;
 
-    public ObservableCollection<games> Games { get; } = new();
-
-    public GameLibrary(GameDatabase database)
+    public GameLibrary(GameLibraryViewModel viewModel)
     {
         InitializeComponent();
 
-        _database = database;
-        BindingContext = this;
+        _viewModel = viewModel;
+        BindingContext = _viewModel;
     }
 
-    protected override async void OnAppearing()
+    protected override void OnAppearing()
     {
         base.OnAppearing();
 
-        await LoadGamesAsync();
-    }
-
-    private async Task LoadGamesAsync()
-    {
-        try
+        if (!_viewModel.LoadGamesCommand.IsRunning)
         {
-            Games.Clear();
-
-            var gamesFromDatabase = await _database.GetGamesAsync();
-
-            foreach (var game in gamesFromDatabase)
-            {
-                Games.Add(game);
-            }
-        }
-        catch (Exception ex)
-        {
-            await DisplayAlertAsync(
-                "Fehler",
-                $"Die Spiele konnten nicht geladen werden: {ex.Message}",
-                "OK");
+            _viewModel.LoadGamesCommand.Execute(null);
         }
     }
 }

@@ -18,19 +18,16 @@ public class GameDatabase
             DatabaseConstants.DatabasePath,
             DatabaseConstants.Flags);
 
-        // Optional: nur wenn du sicherstellen willst, dass die Tabelle existiert.
-        // Bei einer fertigen Ressourcen-DB kann man das auch weglassen.
-        // await _database.CreateTableAsync<BoardGame>();
-
-        System.Diagnostics.Debug.WriteLine($"SQLite DB Path: {DatabaseConstants.DatabasePath}");
+        // Bei vorbereiteter Ressourcen-DB optional.
+        // await _database.CreateTableAsync<Game>();
     }
 
     private static async Task CopyDatabaseToAppDataDirectoryAsync()
     {
         string targetPath = DatabaseConstants.DatabasePath;
 
-        //if (File.Exists(targetPath))
-          //  return;
+        if (File.Exists(targetPath))
+            return;
 
         using Stream inputStream =
             await FileSystem.Current.OpenAppPackageFileAsync(DatabaseConstants.DatabaseFilename);
@@ -40,27 +37,17 @@ public class GameDatabase
         await inputStream.CopyToAsync(outputStream);
     }
 
-    public async Task<List<games>> GetGamesAsync()
+    public async Task<List<Game>> GetGamesAsync()
     {
         await InitAsync();
 
         return await _database!
-            .Table<games>()
-            .OrderBy(game => game.title)
+            .Table<Game>()
+            .OrderBy(game => game.Title)
             .ToListAsync();
     }
 
-    public async Task<games?> GetGameAsync(int id)
-    {
-        await InitAsync();
-
-        return await _database!
-            .Table<games>()
-            .Where(game => game.Id == id)
-            .FirstOrDefaultAsync();
-    }
-
-    public async Task<int> SaveGameAsync(games game)
+    public async Task<int> SaveGameAsync(Game game)
     {
         await InitAsync();
 
@@ -70,7 +57,7 @@ public class GameDatabase
         return await _database!.InsertAsync(game);
     }
 
-    public async Task<int> DeleteGameAsync(games game)
+    public async Task<int> DeleteGameAsync(Game game)
     {
         await InitAsync();
 

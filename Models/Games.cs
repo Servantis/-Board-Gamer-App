@@ -1,36 +1,39 @@
 ﻿using SQLite;
-using System.ComponentModel.DataAnnotations.Schema;
-using TableAttribute = System.ComponentModel.DataAnnotations.Schema.TableAttribute;
 
 namespace BoardGamerApp.Models;
 
 [Table("games")]
-public class games
+public class Game
 {
     [PrimaryKey, AutoIncrement]
+    [Column("id")]
     public int Id { get; set; }
 
     [NotNull]
-    public string title { get; set; } = string.Empty;
+    [Column("title")]
+    public string Title { get; set; } = string.Empty;
 
-    public string game_genre { get; set; } = string.Empty;
+    [Column("game_genre")]
+    public string GameGenre { get; set; } = string.Empty;
 
-    public int min_players { get; set; }
+    [Column("min_players")]
+    public int MinPlayers { get; set; }
 
-    public int max_players { get; set; }
+    [Column("max_players")]
+    public int MaxPlayers { get; set; }
 
-    public int duration_minutes { get; set; }
+    [Column("duration_minutes")]
+    public int DurationMinutes { get; set; }
 
-    public int owner_player_id { get; set; }
-
-
+    [Column("owner_player_id")]
+    public int OwnerPlayerId { get; set; }
 
     [Ignore]
     public string PlayerRange =>
-        min_players == max_players
-            ? $"{min_players}"
-            : $"{min_players}–{max_players}";
+        MinPlayers == MaxPlayers
+            ? $"{MinPlayers}"
+            : $"{MinPlayers}–{MaxPlayers}";
 
     [Ignore]
-    public string DurationText => $"{duration_minutes} Min.";
+    public string DurationText => $"{DurationMinutes} Min.";
 }

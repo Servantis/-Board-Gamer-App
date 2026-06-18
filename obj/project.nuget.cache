@@ -1,11 +1,12 @@
 {
   "version": 2,
-  "dgSpecHash": "s2Sf6AUoRew=",
+  "dgSpecHash": "Mot1PxtAE0o=",
   "success": true,
   "projectFilePath": "C:\\Users\\louis\\source\\repos\\Servantis\\-Board-Gamer-App\\BoardGamerApp.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\louis\\.nuget\\packages\\communitytoolkit.maui\\9.0.0\\communitytoolkit.maui.9.0.0.nupkg.sha512",
     "C:\\Users\\louis\\.nuget\\packages\\communitytoolkit.maui.core\\9.0.0\\communitytoolkit.maui.core.9.0.0.nupkg.sha512",
+    "C:\\Users\\louis\\.nuget\\packages\\communitytoolkit.mvvm\\8.4.2\\communitytoolkit.mvvm.8.4.2.nupkg.sha512",
     "C:\\Users\\louis\\.nuget\\packages\\googlegson\\2.13.1.1\\googlegson.2.13.1.1.nupkg.sha512",
     "C:\\Users\\louis\\.nuget\\packages\\microsoft.extensions.configuration\\10.0.0\\microsoft.extensions.configuration.10.0.0.nupkg.sha512",
     "C:\\Users\\louis\\.nuget\\packages\\microsoft.extensions.configuration.abstractions\\10.0.0\\microsoft.extensions.configuration.abstractions.10.0.0.nupkg.sha512",
@@ -31,7 +32,7 @@
     "C:\\Users\\louis\\.nuget\\packages\\microsoft.maui.graphics\\10.0.20\\microsoft.maui.graphics.10.0.20.nupkg.sha512",
     "C:\\Users\\louis\\.nuget\\packages\\microsoft.maui.graphics.win2d.winui.desktop\\10.0.20\\microsoft.maui.graphics.win2d.winui.desktop.10.0.20.nupkg.sha512",
     "C:\\Users\\louis\\.nuget\\packages\\microsoft.maui.resizetizer\\10.0.20\\microsoft.maui.resizetizer.10.0.20.nupkg.sha512",
-    "C:\\Users\\louis\\.nuget\\packages\\microsoft.net.illink.tasks\\10.0.8\\microsoft.net.illink.tasks.10.0.8.nupkg.sha512",
+    "C:\\Users\\louis\\.nuget\\packages\\microsoft.net.illink.tasks\\10.0.9\\microsoft.net.illink.tasks.10.0.9.nupkg.sha512",
     "C:\\Users\\louis\\.nuget\\packages\\microsoft.web.webview2\\1.0.3179.45\\microsoft.web.webview2.1.0.3179.45.nupkg.sha512",
     "C:\\Users\\louis\\.nuget\\packages\\microsoft.windows.sdk.buildtools\\10.0.22621.756\\microsoft.windows.sdk.buildtools.10.0.22621.756.nupkg.sha512",
     "C:\\Users\\louis\\.nuget\\packages\\microsoft.windowsappsdk\\1.7.250909003\\microsoft.windowsappsdk.1.7.250909003.nupkg.sha512",
