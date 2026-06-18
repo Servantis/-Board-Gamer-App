@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8" ?>
+
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:viewModels="clr-namespace:BoardGamerApp.ViewModels"
+             xmlns:models="clr-namespace:BoardGamerApp.Models"
+             x:Class="BoardGamerApp.Views.SyncOutboxDebugView"
+             x:DataType="viewModels:SyncOutboxDebugViewModel"
+             Title="Sync Outbox Debug"
+             BackgroundColor="#F8F5F0">
+
+    <Grid RowDefinitions="Auto,*"
+          Padding="20"
+          RowSpacing="16">
+
+        <VerticalStackLayout Spacing="4">
+            <Label Text="Sync Outbox"
+                   FontSize="26"
+                   FontAttributes="Bold"
+                   TextColor="#2F2A25" />
+
+            <Label Text="{Binding EntryCount, StringFormat='Offene Einträge: {0}'}"
+                   FontSize="14"
+                   TextColor="#6B6258" />
+        </VerticalStackLayout>
+
+        <RefreshView Grid.Row="1"
+                     Command="{Binding LoadCommand}"
+                     IsRefreshing="{Binding IsBusy}">
+
+            <CollectionView ItemsSource="{Binding Entries}"
+                            EmptyView="Keine offenen Sync-Outbox-Einträge vorhanden.">
+
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="models:SyncOutboxEntry">
+
+                        <Border Margin="0,0,0,12"
+                                Padding="14"
+                                BackgroundColor="White"
+                                StrokeShape="RoundRectangle 16"
+                                Stroke="#E0D8CE">
+
+                            <VerticalStackLayout Spacing="8">
+
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <Label Text="{Binding Operation}"
+                                           FontSize="16"
+                                           FontAttributes="Bold"
+                                           TextColor="#7A4E2D" />
+
+                                    <Label Grid.Column="1"
+                                           Text="{Binding RetryCount, StringFormat='Retries: {0}'}"
+                                           FontSize="12"
+                                           TextColor="#6B6258" />
+                                </Grid>
+
+                                <Label Text="{Binding EntityName}"
+                                       FontSize="15"
+                                       FontAttributes="Bold"
+                                       TextColor="#2F2A25" />
+
+                                <Label Text="{Binding EntityId}"
+                                       FontSize="12"
+                                       TextColor="#6B6258"
+                                       LineBreakMode="TailTruncation" />
+
+                                <Label Text="{Binding CreatedAt}"
+                                       FontSize="12"
+                                       TextColor="#6B6258" />
+
+                                <Label Text="{Binding LastError}"
+                                       FontSize="12"
+                                       TextColor="Red"
+                                       IsVisible="{Binding LastError, Converter={StaticResource StringNotNullOrEmptyConverter}}" />
+
+                                <Grid ColumnDefinitions="*,*"
+                                      ColumnSpacing="10"
+                                      Margin="0,8,0,0">
+
+                                    <Button Text="Details"
+                                            Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.ShowDetailsCommand}"
+                                            CommandParameter="{Binding .}"
+                                            BackgroundColor="#D8D0C6"
+                                            TextColor="#2F2A25"
+                                            CornerRadius="12" />
+
+                                    <Button Grid.Column="1"
+                                            Text="Payload"
+                                            Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.ShowPayloadCommand}"
+                                            CommandParameter="{Binding .}"
+                                            BackgroundColor="#7A4E2D"
+                                            TextColor="White"
+                                            CornerRadius="12" />
+
+                                </Grid>
+
+                            </VerticalStackLayout>
+
+                        </Border>
+
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+
+        </RefreshView>
+
+    </Grid>
+
+</ContentPage>
