@@ -14,7 +14,7 @@ public partial class GameLibraryViewModel : ObservableObject
     private readonly GameDatabase _database;
     private readonly IDialogService _dialogService;
 
-    public ObservableCollection<Game> Games { get; } = new();
+    public ObservableCollection<BoardGame> Games { get; } = new();
 
     [ObservableProperty]
     private bool isBusy;
@@ -44,9 +44,9 @@ public partial class GameLibraryViewModel : ObservableObject
 
             Games.Clear();
 
-            List<Game> gamesFromDatabase = await _database.GetGamesAsync();
+            List<BoardGame> gamesFromDatabase = await _database.GetGamesAsync();
 
-            foreach (Game game in gamesFromDatabase)
+            foreach (BoardGame game in gamesFromDatabase)
             {
                 Games.Add(game);
             }
@@ -68,7 +68,7 @@ public partial class GameLibraryViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private async Task DeleteGameAsync(Game? game)
+    private async Task DeleteGameAsync(BoardGame ? game)
     {
         if (game is null || IsBusy)
             return;

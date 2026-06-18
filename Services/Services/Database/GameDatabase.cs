@@ -37,27 +37,27 @@ public class GameDatabase
         await inputStream.CopyToAsync(outputStream);
     }
 
-    public async Task<List<Game>> GetGamesAsync()
+    public async Task<List<BoardGame>> GetGamesAsync()
     {
         await InitAsync();
 
         return await _database!
-            .Table<Game>()
+            .Table<BoardGame>()
             .OrderBy(game => game.Title)
             .ToListAsync();
     }
 
-    public async Task<int> SaveGameAsync(Game game)
+    public async Task<int> SaveGameAsync(BoardGame game)
     {
         await InitAsync();
 
-        if (game.Id != 0)
+        if (game.Id is null)
             return await _database!.UpdateAsync(game);
 
         return await _database!.InsertAsync(game);
     }
 
-    public async Task<int> DeleteGameAsync(Game game)
+    public async Task<int> DeleteGameAsync(BoardGame game)
     {
         await InitAsync();
 

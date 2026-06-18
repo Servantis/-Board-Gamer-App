@@ -85,7 +85,7 @@ public partial class AddGameViewModel : ObservableObject
                 return;
             }
 
-            Game newGame = new()
+            BoardGame newGame = new()
             {
                 Title = Title.Trim(),
                 GameGenre = GameGenre.Trim(),
@@ -96,7 +96,9 @@ public partial class AddGameViewModel : ObservableObject
                 // Wichtig:
                 // Falls owner_player_id in deiner Datenbank Pflicht ist,
                 // muss hier eine gültige Player-ID rein.
-                OwnerPlayerId = 1
+
+                //Noch hardcodet weil die Benutzerverwaltung noch nicht implementiert ist. Sobald die Benutzerverwaltung da ist, muss hier die ID des aktuell angemeldeten Benutzers rein.
+                OwnerPlayerId = "player-max-001"
             };
 
             await _database.SaveGameAsync(newGame);

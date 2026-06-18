@@ -3,7 +3,7 @@
 namespace BoardGamerApp.Models;
 
 [Table("games")]
-public class Game
+public class BoardGame : BaseSyncEntity
 {
     [Indexed]
     [NotNull]
@@ -24,11 +24,41 @@ public class Game
     public string? OwnerPlayerId { get; set; }
 
     [Ignore]
-    public string PlayerRange =>
-        MinPlayers == MaxPlayers
-            ? $"{MinPlayers}"
-            : $"{MinPlayers}–{MaxPlayers}";
+    public string PlayerRange
+    {
+        get
+        {
+            if (MinPlayers.HasValue && MaxPlayers.HasValue)
+                return $"{MinPlayers.Value} - {MaxPlayers.Value} Spieler";
+
+            if (MinPlayers.HasValue)
+                return $"ab {MinPlayers.Value} Spieler";
+
+            if (MaxPlayers.HasValue)
+                return $"bis {MaxPlayers.Value} Spieler";
+
+            return "Keine Angabe";
+        }
+    }
 
     [Ignore]
-    public string DurationText => $"{DurationMinutes} Min.";
+    public string DurationText
+    {
+        get
+        {
+            if (!DurationMinutes.HasValue)
+                return "Keine Angabe";
+
+            if (DurationMinutes.Value < 60)
+                return $"{DurationMinutes.Value} Min.";
+
+            int hours = DurationMinutes.Value / 60;
+            int minutes = DurationMinutes.Value % 60;
+
+            if (minutes == 0)
+                return $"{hours} Std.";
+
+            return $"{hours} Std. {minutes} Min.";
+        }
+    }
 }
