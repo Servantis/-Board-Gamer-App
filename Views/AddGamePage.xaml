@@ -53,11 +53,11 @@
                     FontSize="13" />
 
                     <Button Text="Spiel speichern"
-        Command="{Binding SaveGameCommand}"
-        BackgroundColor="#8B5E3C"
-        TextColor="White"
-        CornerRadius="12"
-        HeightRequest="48" />
+                    Command="{Binding SaveGameCommand}"
+                    BackgroundColor="#8B5E3C"
+                    TextColor="White"
+                    CornerRadius="12"
+                    HeightRequest="48" />
 
                 </VerticalStackLayout>
 

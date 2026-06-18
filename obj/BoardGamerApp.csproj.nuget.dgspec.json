@@ -1,29 +1,36 @@
 {
   "format": 1,
   "restore": {
-    "/Users/sebastianstark/MauiProject/BoardGamerApp/BoardGamerApp.csproj": {}
+    "C:\\Users\\louis\\source\\repos\\Servantis\\-Board-Gamer-App\\BoardGamerApp.csproj": {}
   },
   "projects": {
-    "/Users/sebastianstark/MauiProject/BoardGamerApp/BoardGamerApp.csproj": {
+    "C:\\Users\\louis\\source\\repos\\Servantis\\-Board-Gamer-App\\BoardGamerApp.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/Users/sebastianstark/MauiProject/BoardGamerApp/BoardGamerApp.csproj",
+        "projectUniqueName": "C:\\Users\\louis\\source\\repos\\Servantis\\-Board-Gamer-App\\BoardGamerApp.csproj",
         "projectName": "BoardGamerApp",
-        "projectPath": "/Users/sebastianstark/MauiProject/BoardGamerApp/BoardGamerApp.csproj",
-        "packagesPath": "/Users/sebastianstark/.nuget/packages/",
-        "outputPath": "/Users/sebastianstark/MauiProject/BoardGamerApp/obj/",
+        "projectPath": "C:\\Users\\louis\\source\\repos\\Servantis\\-Board-Gamer-App\\BoardGamerApp.csproj",
+        "packagesPath": "C:\\Users\\louis\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\louis\\source\\repos\\Servantis\\-Board-Gamer-App\\obj\\",
         "projectStyle": "PackageReference",
         "crossTargeting": true,
+        "fallbackFolders": [
+          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+        ],
         "configFilePaths": [
-          "/Users/sebastianstark/.nuget/NuGet/NuGet.Config"
+          "C:\\Users\\louis\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [
           "net10.0-android",
           "net10.0-ios",
-          "net10.0-maccatalyst"
+          "net10.0-maccatalyst",
+          "net10.0-windows10.0.19041.0"
         ],
         "sources": {
-          "/usr/local/share/dotnet/library-packs": {},
+          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+          "C:\\Program Files\\dotnet\\library-packs": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
@@ -40,6 +47,11 @@
           "net10.0-maccatalyst": {
             "framework": "net10.0-maccatalyst26.5",
             "targetAlias": "net10.0-maccatalyst",
+            "projectReferences": {}
+          },
+          "net10.0-windows10.0.19041.0": {
+            "framework": "net10.0-windows10.0.19041",
+            "targetAlias": "net10.0-windows10.0.19041.0",
             "projectReferences": {}
           }
         },
@@ -109,11 +121,7 @@
               "privateAssets": "all"
             }
           },
-<<<<<<< HEAD
           "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.301/PortableRuntimeIdentifierGraph.json",
-=======
-          "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/10.0.300/PortableRuntimeIdentifierGraph.json",
->>>>>>> 00a98667c20fd4b12b9aeff825b3122bf546e4df
           "packagesToPrune": {
             "Microsoft.CSharp": "(,4.7.32767]",
             "Microsoft.VisualBasic": "(,10.4.32767]",
@@ -442,11 +450,7 @@
               "privateAssets": "all"
             }
           },
-<<<<<<< HEAD
           "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.301/PortableRuntimeIdentifierGraph.json",
-=======
-          "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/10.0.300/PortableRuntimeIdentifierGraph.json",
->>>>>>> 00a98667c20fd4b12b9aeff825b3122bf546e4df
           "packagesToPrune": {
             "Microsoft.CSharp": "(,4.7.32767]",
             "Microsoft.VisualBasic": "(,10.4.32767]",
@@ -776,7 +780,6 @@
               "privateAssets": "all"
             }
           },
-<<<<<<< HEAD
           "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.301/PortableRuntimeIdentifierGraph.json",
           "packagesToPrune": {
             "Microsoft.CSharp": "(,4.7.32767]",
@@ -1104,9 +1107,6 @@
             }
           },
           "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.301/PortableRuntimeIdentifierGraph.json",
-=======
-          "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/10.0.300/PortableRuntimeIdentifierGraph.json",
->>>>>>> 00a98667c20fd4b12b9aeff825b3122bf546e4df
           "packagesToPrune": {
             "Microsoft.CSharp": "(,4.7.32767]",
             "Microsoft.VisualBasic": "(,10.4.32767]",
@@ -1393,7 +1393,10 @@
         "iossimulator-x64": {
           "#import": []
         },
-        "maccatalyst-arm64": {
+        "maccatalyst-x64": {
+          "#import": []
+        },
+        "win-x64": {
           "#import": []
         }
       }

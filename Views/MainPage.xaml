@@ -22,11 +22,11 @@
                                             IsVisible="{Binding HasUpcomingEvents}">
                                    <CollectionView.ItemTemplate>
                                           <DataTemplate>
-                                                 <Frame CornerRadius="12"
+                                            <Border StrokeShape="RoundRectangle 12"
                                                         Padding="15"
                                                         Margin="0,0,0,15"
                                                         BackgroundColor="White"
-                                                        HasShadow="False">
+                                                        >
 
                                                         <Border.GestureRecognizers>
                                                                <TapGestureRecognizer Tapped="OnGamesClicked"/>
@@ -52,7 +52,7 @@
                                                                       FontAttributes="Bold"/>
                                                         </VerticalStackLayout>
 
-                                                 </Frame>
+                                                 </Border>
                                           </DataTemplate>
                                    </CollectionView.ItemTemplate>
                             </CollectionView>
