@@ -144,6 +144,16 @@ build_metadata.AdditionalFiles.EnableDiagnostics =
 build_metadata.AdditionalFiles.LineInfo = 
 build_metadata.AdditionalFiles.LineInfo = 
 
+[C:/Users/fzirk/Desktop/Projects/Mobiles_Software_Engineering/Views/GroupManagementPage.xaml]
+build_metadata.AdditionalFiles.GenKind = Xaml
+build_metadata.AdditionalFiles.ManifestResourceName = BoardGamerApp.Views.GroupManagementPage.xaml
+build_metadata.AdditionalFiles.TargetPath = Views\GroupManagementPage.xaml
+build_metadata.AdditionalFiles.RelativePath = Views\GroupManagementPage.xaml
+build_metadata.AdditionalFiles.Inflator = SourceGen
+build_metadata.AdditionalFiles.NoWarn = 
+build_metadata.AdditionalFiles.EnableDiagnostics = 
+build_metadata.AdditionalFiles.LineInfo = 
+
 [C:/Users/fzirk/Desktop/Projects/Mobiles_Software_Engineering/Views/GroupPage.xaml]
 build_metadata.AdditionalFiles.GenKind = Xaml
 build_metadata.AdditionalFiles.ManifestResourceName = BoardGamerApp.Views.GroupPage.xaml
