@@ -98,6 +98,16 @@ build_metadata.AdditionalFiles.NoWarn =
 build_metadata.AdditionalFiles.EnableDiagnostics = 
 build_metadata.AdditionalFiles.LineInfo = 
 
+[C:/Users/fzirk/Desktop/Projects/Mobiles_Software_Engineering/Views/DebugView/SyncOutboxDebugView.xaml]
+build_metadata.AdditionalFiles.GenKind = Xaml
+build_metadata.AdditionalFiles.ManifestResourceName = BoardGamerApp.Views.DebugView.SyncOutboxDebugView.xaml
+build_metadata.AdditionalFiles.TargetPath = Views\DebugView\SyncOutboxDebugView.xaml
+build_metadata.AdditionalFiles.RelativePath = Views\DebugView\SyncOutboxDebugView.xaml
+build_metadata.AdditionalFiles.Inflator = SourceGen
+build_metadata.AdditionalFiles.NoWarn = 
+build_metadata.AdditionalFiles.EnableDiagnostics = 
+build_metadata.AdditionalFiles.LineInfo = 
+
 [C:/Users/fzirk/Desktop/Projects/Mobiles_Software_Engineering/Views/EventPage.xaml]
 build_metadata.AdditionalFiles.GenKind = Xaml
 build_metadata.AdditionalFiles.GenKind = Xaml

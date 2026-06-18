@@ -46,6 +46,8 @@ public static class MauiProgram
 
 #if DEBUG
         builder.Logging.AddDebug();
+        builder.Services.AddTransient<SyncOutboxDebugViewModel>();
+        builder.Services.AddTransient<SyncOutboxDebugView>();
 #endif
         // Service-Registration
         builder.Services.AddSingleton<IHostSelectionService, HostSelectionService>();

@@ -30,4 +30,16 @@
 
     </FlyoutItem>
 
+    <!-- Debug-Bereich: standardmäßig unsichtbar -->
+    <FlyoutItem x:Name="DebugFlyoutItem"
+                Title="Debug"
+                Route="debug"
+                IsVisible="False">
+
+        <ShellContent Title="Sync Outbox"
+                      Route="syncOutboxDebug"
+                      ContentTemplate="{DataTemplate views:SyncOutboxDebugView}" />
+
+    </FlyoutItem>
+
 </Shell>

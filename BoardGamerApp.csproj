@@ -90,6 +90,9 @@
 	  <MauiXaml Update="Views\AddGameView.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
+	  <MauiXaml Update="Views\DebugView\SyncOutboxDebugView.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
 	  <MauiXaml Update="Views\GameLibrary.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
