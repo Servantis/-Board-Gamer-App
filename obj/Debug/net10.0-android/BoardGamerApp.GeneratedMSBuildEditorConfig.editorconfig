@@ -88,11 +88,11 @@ build_metadata.AdditionalFiles.NoWarn =
 build_metadata.AdditionalFiles.EnableDiagnostics = 
 build_metadata.AdditionalFiles.LineInfo = 
 
-[C:/Users/fzirk/Desktop/Projects/Mobiles_Software_Engineering/Views/AddGamePage.xaml]
+[C:/Users/fzirk/Desktop/Projects/Mobiles_Software_Engineering/Views/AddGameView.xaml]
 build_metadata.AdditionalFiles.GenKind = Xaml
-build_metadata.AdditionalFiles.ManifestResourceName = BoardGamerApp.Views.AddGamePage.xaml
-build_metadata.AdditionalFiles.TargetPath = Views\AddGamePage.xaml
-build_metadata.AdditionalFiles.RelativePath = Views\AddGamePage.xaml
+build_metadata.AdditionalFiles.ManifestResourceName = BoardGamerApp.Views.AddGameView.xaml
+build_metadata.AdditionalFiles.TargetPath = Views\AddGameView.xaml
+build_metadata.AdditionalFiles.RelativePath = Views\AddGameView.xaml
 build_metadata.AdditionalFiles.Inflator = SourceGen
 build_metadata.AdditionalFiles.NoWarn = 
 build_metadata.AdditionalFiles.EnableDiagnostics = 

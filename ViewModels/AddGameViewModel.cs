@@ -1,5 +1,6 @@
-﻿using BoardGamerApp.Data;
-using BoardGamerApp.Models;
+﻿using BoardGamerApp.Models;
+using BoardGamerApp.Repositories;
+using BoardGamerApp.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
@@ -7,39 +8,62 @@ namespace BoardGamerApp.ViewModels;
 
 public partial class AddGameViewModel : ObservableObject
 {
-    private readonly GameDatabase _database;
+    private readonly BoardGameRepository _boardGameRepository;
+    private readonly DatabaseService _databaseService;
 
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(HasError))]
-    private string? errorMessage;
-
-    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(PreviewTitle))]
+    [NotifyPropertyChangedFor(nameof(PreviewDetails))]
     private string title = string.Empty;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(PreviewDetails))]
+    private string minPlayers = string.Empty;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(PreviewDetails))]
+    private string maxPlayers = string.Empty;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(PreviewDetails))]
+    private string durationMinutes = string.Empty;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(PreviewDetails))]
     private string gameGenre = string.Empty;
-
-    [ObservableProperty]
-    private string minPlayersText = string.Empty;
-
-    [ObservableProperty]
-    private string maxPlayersText = string.Empty;
-
-    [ObservableProperty]
-    private string durationMinutesText = string.Empty;
 
     [ObservableProperty]
     private bool isBusy;
 
-    public bool HasError => !string.IsNullOrWhiteSpace(ErrorMessage);
+    public string PreviewTitle =>
+        string.IsNullOrWhiteSpace(Title)
+            ? "Noch kein Titel"
+            : Title.Trim();
 
-    public AddGameViewModel(GameDatabase database)
+    public string PreviewDetails
     {
-        _database = database;
+        get
+        {
+            var playerText = BuildPlayerText();
+            var durationText = BuildDurationText();
+            var genreText = string.IsNullOrWhiteSpace(GameGenre)
+                ? "Kein Genre"
+                : GameGenre.Trim();
+
+            return $"{playerText} · {durationText} · {genreText}";
+        }
+    }
+
+    public AddGameViewModel(
+        BoardGameRepository boardGameRepository,
+        DatabaseService databaseService)
+    {
+        _boardGameRepository = boardGameRepository;
+        _databaseService = databaseService;
     }
 
     [RelayCommand]
-    private async Task SaveGameAsync()
+    private async Task SaveAsync()
     {
         if (IsBusy)
             return;
@@ -47,71 +71,95 @@ public partial class AddGameViewModel : ObservableObject
         try
         {
             IsBusy = true;
-            ErrorMessage = null;
 
             if (string.IsNullOrWhiteSpace(Title))
             {
-                ErrorMessage = "Bitte gib einen Spielnamen ein.";
+                await Shell.Current.DisplayAlert(
+                    "Eingabe fehlt",
+                    "Bitte gib einen Namen für das Spiel ein.",
+                    "OK");
+
                 return;
             }
 
-            if (!int.TryParse(MinPlayersText, out int minPlayers))
+            int? minPlayersValue = ParseNullableInt(MinPlayers);
+            int? maxPlayersValue = ParseNullableInt(MaxPlayers);
+            int? durationValue = ParseNullableInt(DurationMinutes);
+
+            if (minPlayersValue.HasValue && minPlayersValue.Value <= 0)
             {
-                ErrorMessage = "Bitte gib eine gültige minimale Spieleranzahl ein.";
+                await Shell.Current.DisplayAlert(
+                    "Ungültige Eingabe",
+                    "Die minimale Spieleranzahl muss größer als 0 sein.",
+                    "OK");
+
                 return;
             }
 
-            if (!int.TryParse(MaxPlayersText, out int maxPlayers))
+            if (maxPlayersValue.HasValue && maxPlayersValue.Value <= 0)
             {
-                ErrorMessage = "Bitte gib eine gültige maximale Spieleranzahl ein.";
+                await Shell.Current.DisplayAlert(
+                    "Ungültige Eingabe",
+                    "Die maximale Spieleranzahl muss größer als 0 sein.",
+                    "OK");
+
                 return;
             }
 
-            if (!int.TryParse(DurationMinutesText, out int durationMinutes))
+            if (minPlayersValue.HasValue &&
+                maxPlayersValue.HasValue &&
+                maxPlayersValue.Value < minPlayersValue.Value)
             {
-                ErrorMessage = "Bitte gib eine gültige Spieldauer ein.";
+                await Shell.Current.DisplayAlert(
+                    "Ungültige Eingabe",
+                    "Die maximale Spieleranzahl darf nicht kleiner als die minimale Spieleranzahl sein.",
+                    "OK");
+
                 return;
             }
 
-            if (minPlayers <= 0 || maxPlayers <= 0)
+            if (durationValue.HasValue && durationValue.Value <= 0)
             {
-                ErrorMessage = "Die Spieleranzahl muss größer als 0 sein.";
+                await Shell.Current.DisplayAlertAsync(
+                    "Ungültige Eingabe",
+                    "Die Spieldauer muss größer als 0 Minuten sein.",
+                    "OK");
+
                 return;
             }
 
-            if (minPlayers > maxPlayers)
+            var group = await GetDefaultGroupAsync();
+
+            if (group is null)
             {
-                ErrorMessage = "Die minimale Spieleranzahl darf nicht größer als die maximale Spieleranzahl sein.";
+                await Shell.Current.DisplayAlertAsync(
+                    "Keine Gruppe vorhanden",
+                    "Es wurde keine Spielgruppe gefunden. Bitte lege zuerst eine Gruppe an.",
+                    "OK");
+
                 return;
             }
 
-            BoardGame newGame = new()
+            var newGame = new BoardGame
             {
+                GroupId = group.Id,
                 Title = Title.Trim(),
-                GameGenre = GameGenre.Trim(),
-                MinPlayers = minPlayers,
-                MaxPlayers = maxPlayers,
-                DurationMinutes = durationMinutes,
-
-                // Wichtig:
-                // Falls owner_player_id in deiner Datenbank Pflicht ist,
-                // muss hier eine gültige Player-ID rein.
-
-                //Noch hardcodet weil die Benutzerverwaltung noch nicht implementiert ist. Sobald die Benutzerverwaltung da ist, muss hier die ID des aktuell angemeldeten Benutzers rein.
-                OwnerPlayerId = "player-max-001"
+                MinPlayers = minPlayersValue,
+                MaxPlayers = maxPlayersValue,
+                DurationMinutes = durationValue,
+                GameGenre = string.IsNullOrWhiteSpace(GameGenre) ? null : GameGenre.Trim(),
+                OwnerPlayerId = null
             };
 
-            await _database.SaveGameAsync(newGame);
+            await _boardGameRepository.AddAsync(newGame);
 
-            await Shell.Current.GoToAsync("//games");
+            await Shell.Current.GoToAsync("..");
         }
         catch (Exception ex)
         {
-            ErrorMessage = $"Das Spiel konnte nicht gespeichert werden: {ex.Message}";
-
             await Shell.Current.DisplayAlertAsync(
-                "Fehler beim Speichern",
-                ex.ToString(),
+                "Fehler",
+                $"Das Spiel konnte nicht gespeichert werden.\n{ex.Message}",
                 "OK");
         }
         finally
@@ -123,6 +171,59 @@ public partial class AddGameViewModel : ObservableObject
     [RelayCommand]
     private async Task CancelAsync()
     {
-        await Shell.Current.GoToAsync("//games");
+        await Shell.Current.GoToAsync("..");
+    }
+
+    private async Task<GamingGroup?> GetDefaultGroupAsync()
+    {
+        var groups = await _databaseService.GetNotDeletedAsync<GamingGroup>();
+        return groups.FirstOrDefault();
+    }
+
+    private static int? ParseNullableInt(string value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+            return null;
+
+        if (int.TryParse(value.Trim(), out int result))
+            return result;
+
+        return null;
+    }
+
+    private string BuildPlayerText()
+    {
+        int? min = ParseNullableInt(MinPlayers);
+        int? max = ParseNullableInt(MaxPlayers);
+
+        if (min.HasValue && max.HasValue)
+            return $"{min.Value} - {max.Value} Spieler";
+
+        if (min.HasValue)
+            return $"ab {min.Value} Spieler";
+
+        if (max.HasValue)
+            return $"bis {max.Value} Spieler";
+
+        return "Keine Spieleranzahl";
+    }
+
+    private string BuildDurationText()
+    {
+        int? duration = ParseNullableInt(DurationMinutes);
+
+        if (!duration.HasValue)
+            return "Keine Dauer";
+
+        if (duration.Value < 60)
+            return $"{duration.Value} Min.";
+
+        int hours = duration.Value / 60;
+        int minutes = duration.Value % 60;
+
+        if (minutes == 0)
+            return $"{hours} Std.";
+
+        return $"{hours} Std. {minutes} Min.";
     }
 }

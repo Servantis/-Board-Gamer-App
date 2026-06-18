@@ -1,7 +1,6 @@
-﻿using BoardGamerApp.Data;
-using BoardGamerApp.Models;
+﻿using BoardGamerApp.Models;
+using BoardGamerApp.Repositories;
 using BoardGamerApp.Services;
-using BoardGamerApp.Services.Interfaces;
 using BoardGamerApp.Views;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -11,28 +10,24 @@ namespace BoardGamerApp.ViewModels;
 
 public partial class GameLibraryViewModel : ObservableObject
 {
-    private readonly GameDatabase _database;
-    private readonly IDialogService _dialogService;
+    private readonly BoardGameRepository _boardGameRepository;
+    private readonly DatabaseService _databaseService;
 
     public ObservableCollection<BoardGame> Games { get; } = new();
 
     [ObservableProperty]
     private bool isBusy;
 
-    [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(HasError))]
-    private string? errorMessage;
-
-    public bool HasError => !string.IsNullOrWhiteSpace(ErrorMessage);
-
-    public GameLibraryViewModel(GameDatabase database, IDialogService dialogService)
+    public GameLibraryViewModel(
+        BoardGameRepository boardGameRepository,
+        DatabaseService databaseService)
     {
-        _database = database;
-        _dialogService = dialogService;
+        _boardGameRepository = boardGameRepository;
+        _databaseService = databaseService;
     }
 
     [RelayCommand]
-    private async Task LoadGamesAsync()
+    public async Task LoadGamesAsync()
     {
         if (IsBusy)
             return;
@@ -40,20 +35,22 @@ public partial class GameLibraryViewModel : ObservableObject
         try
         {
             IsBusy = true;
-            ErrorMessage = null;
 
             Games.Clear();
 
-            List<BoardGame> gamesFromDatabase = await _database.GetGamesAsync();
+            var games = await _boardGameRepository.GetAllAsync();
 
-            foreach (BoardGame game in gamesFromDatabase)
+            foreach (var game in games)
             {
                 Games.Add(game);
             }
         }
         catch (Exception ex)
         {
-            ErrorMessage = $"Die Spiele konnten nicht geladen werden: {ex.Message}";
+            await Shell.Current.DisplayAlertAsync(
+                "Fehler",
+                $"Die Spiele konnten nicht geladen werden.\n{ex.Message}",
+                "OK");
         }
         finally
         {
@@ -64,45 +61,43 @@ public partial class GameLibraryViewModel : ObservableObject
     [RelayCommand]
     private async Task AddGameAsync()
     {
-        await Shell.Current.GoToAsync(nameof(AddGamePage));
+        await Shell.Current.GoToAsync(nameof(AddGameView));
     }
+    
 
     [RelayCommand]
-    private async Task DeleteGameAsync(BoardGame ? game)
+    private async Task DeleteGameAsync(BoardGame? game)
     {
-        if (game is null || IsBusy)
+        if (game is null)
             return;
 
-        bool confirmed = await _dialogService.ConfirmAsync(
+        bool confirm = await Shell.Current.DisplayAlertAsync(
             "Spiel löschen",
             $"Möchtest du \"{game.Title}\" wirklich löschen?",
             "Löschen",
             "Abbrechen");
 
-        if (!confirmed)
+        if (!confirm)
             return;
 
         try
         {
-            IsBusy = true;
-            ErrorMessage = null;
-
-            await _database.DeleteGameAsync(game);
+            await _boardGameRepository.SoftDeleteAsync(game);
 
             Games.Remove(game);
         }
         catch (Exception ex)
         {
-            ErrorMessage = $"Das Spiel konnte nicht gelöscht werden: {ex.Message}";
-
-            await _dialogService.ShowAlertAsync(
+            await Shell.Current.DisplayAlertAsync(
                 "Fehler",
-                ErrorMessage,
+                $"Das Spiel konnte nicht gelöscht werden.\n{ex.Message}",
                 "OK");
         }
-        finally
-        {
-            IsBusy = false;
-        }
+    }
+
+    private async Task<GamingGroup?> GetDefaultGroupAsync()
+    {
+        var groups = await _databaseService.GetNotDeletedAsync<GamingGroup>();
+        return groups.FirstOrDefault();
     }
 }

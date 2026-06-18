@@ -14,13 +14,10 @@ public partial class GameLibrary : ContentPage
         BindingContext = _viewModel;
     }
 
-    protected override void OnAppearing()
+    protected override async void OnAppearing()
     {
         base.OnAppearing();
 
-        if (!_viewModel.LoadGamesCommand.IsRunning)
-        {
-            _viewModel.LoadGamesCommand.Execute(null);
-        }
+        await _viewModel.LoadGamesAsync();
     }
 }

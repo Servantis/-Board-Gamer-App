@@ -87,7 +87,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <MauiXaml Update="Views\AddGamePage.xaml">
+	  <MauiXaml Update="Views\AddGameView.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	  <MauiXaml Update="Views\GameLibrary.xaml">

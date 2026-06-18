@@ -52,7 +52,7 @@
                             EmptyView="Noch keine Spiele vorhanden.">
 
                 <CollectionView.ItemTemplate>
-                    <DataTemplate x:DataType="models:Game">
+                    <DataTemplate x:DataType="models:BoardGame">
 
                         <Border StrokeThickness="0"
             BackgroundColor="#FFFFFF"
@@ -67,24 +67,24 @@
 
                                 <!-- Titel -->
                                 <Label Grid.Row="0"
-                   Grid.Column="0"
-                   Text="{Binding Title}"
-                   FontSize="18"
-                   FontAttributes="Bold"
-                   TextColor="#0F172A" />
+                                Grid.Column="0"
+                                Text="{Binding Title}"
+                                FontSize="18"
+                                FontAttributes="Bold"
+                                TextColor="#0F172A" />
 
                                 <!-- Löschen-Button -->
                                 <ImageButton Grid.Row="0"
-                         Grid.Column="1"
-                         Source="trash_icon_red.png"
-                         HeightRequest="24"
-                         WidthRequest="24"
-                         Padding="0"
-                         BackgroundColor="Transparent"
-                         VerticalOptions="Start"
-                         HorizontalOptions="End"
-                         Command="{Binding Source={x:Reference GamesCollectionView}, Path=BindingContext.DeleteGameCommand}"
-                         CommandParameter="{Binding .}" />
+                                Grid.Column="1"
+                                Source="trash_icon_red.png"
+                                HeightRequest="24"
+                                WidthRequest="24"
+                                Padding="0"
+                                BackgroundColor="Transparent"
+                                VerticalOptions="Start"
+                                HorizontalOptions="End"
+                                Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.DeleteGameCommand}"
+                                CommandParameter="{Binding .}" />
 
                                 <Label Grid.Row="1"
                                 Grid.Column="0"

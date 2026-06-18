@@ -2,9 +2,9 @@ using BoardGamerApp.ViewModels;
 
 namespace BoardGamerApp.Views;
 
-public partial class AddGamePage : ContentPage
+public partial class AddGameView : ContentPage
 {
-    public AddGamePage(AddGameViewModel viewModel)
+    public AddGameView(AddGameViewModel viewModel)
     {
         InitializeComponent();
         BindingContext = viewModel;
