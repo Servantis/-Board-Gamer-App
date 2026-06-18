@@ -6,6 +6,7 @@ public partial class MainPage : ContentPage
 	{
 		InitializeComponent();
 		BindingContext = new RatingViewModel();
+		BindingContext = new EventViewModel();
 	}
 
 	// Navigiert zur Spieleseite wenn auf den nächsten Termin geklickt wird.

@@ -70,6 +70,7 @@
                                  IsVisible="False"/>
                      <TimePicker x:Name="HiddenTimePicker"
                                  IsVisible="False"/>
+
               </Grid>
        </Border>
 </toolkit:Popup>

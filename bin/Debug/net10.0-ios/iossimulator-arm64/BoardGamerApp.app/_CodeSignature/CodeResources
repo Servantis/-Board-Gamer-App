@@ -14,11 +14,11 @@
 		</data>
 		<key>BoardGamerApp.dll</key>
 		<data>
-		Jn431FKWWwBF+ySgwG33l3KDaNE=
+		nQ9V0WM68LdvsFTTjZ9jG24t/Rs=
 		</data>
 		<key>BoardGamerApp.pdb</key>
 		<data>
-		L8Pbih3bNyKefvwCG+/IesFkd+8=
+		ZTb7947rKNQgEUn9kMk9/jSwwiw=
 		</data>
 		<key>CommunityToolkit.Maui.Core.dll</key>
 		<data>
@@ -167,6 +167,26 @@
 		<key>PrivacyInfo.xcprivacy</key>
 		<data>
 		+59cRc8ev+HwAO70fp1P8R6hyjc=
+		</data>
+		<key>SQLite-net.dll</key>
+		<data>
+		42PRq5815Oe9aTbb+iFnhBSgP3U=
+		</data>
+		<key>SQLite.db</key>
+		<data>
+		zfZJ/+A78JvwG1nOioaWLjnTkxY=
+		</data>
+		<key>SQLitePCLRaw.batteries_v2.dll</key>
+		<data>
+		3eEu2R87cwTQ+GCZvNn72iYjcHw=
+		</data>
+		<key>SQLitePCLRaw.core.dll</key>
+		<data>
+		AEiE31IYMpCWbi+2HDV13xHlgUg=
+		</data>
+		<key>SQLitePCLRaw.provider.sqlite3.dll</key>
+		<data>
+		/OqigeuXI2L9prgtVOnnxCqgE0E=
 		</data>
 		<key>Settings.bundle/Root.plist</key>
 		<data>
@@ -860,6 +880,10 @@
 		<data>
 		j1cIlZY2o/Sz3M/uH8AypU3EPtk=
 		</data>
+		<key>checkmark_icon.png</key>
+		<data>
+		Io2d5tVLgfqCCC8NqQLjLDsBark=
+		</data>
 		<key>cs/Microsoft.Maui.Controls.resources.dll</key>
 		<data>
 		yLiK70PQX4t3tZQgUIsZy8NftGo=
@@ -872,18 +896,6 @@
 		<data>
 		eV5p0x3bouvVnU9DWXw9YvZtYqY=
 		</data>
-		<key>dotnet_bot.png</key>
-		<data>
-		7XA0DBxHt4f3rgG7sHwMI5VUDN0=
-		</data>
-		<key>dotnet_bot@2x.png</key>
-		<data>
-		czsW/Oi42ZskPwvS8wfclLHCDUM=
-		</data>
-		<key>dotnet_bot@3x.png</key>
-		<data>
-		fI641eL9jR0ctyTre3xTwKkfsn8=
-		</data>
 		<key>el/Microsoft.Maui.Controls.resources.dll</key>
 		<data>
 		jIBTNipHEFaMgQ1c5Eaw5RBtmxM=
@@ -895,6 +907,10 @@
 		<key>es/Microsoft.Maui.Controls.resources.dll</key>
 		<data>
 		uVcIo0P8YW/yUoimBQph4ImU5oU=
+		</data>
+		<key>exmark_icon.png</key>
+		<data>
+		6b1XMkm214rbXAj25BYGNqZC+tw=
 		</data>
 		<key>fi/Microsoft.Maui.Controls.resources.dll</key>
 		<data>
@@ -1117,14 +1133,14 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			iqsgIHATQgLutp3jIZjigiQj1KokN5apxygd+6RwFOQ=
+			WNFwFI5kOqbWcBZ5gIbWEImF3E+6Levw/hycbzIDzE0=
 			</data>
 		</dict>
 		<key>BoardGamerApp.pdb</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			nfh3YltN+WN+yTnskjzEogWDE56CTj34Al1qwPDnjNc=
+			KwHr2gKajPF1m+0gDZ/55QFuHTQwr/IlF4WRYCd92WA=
 			</data>
 		</dict>
 		<key>CommunityToolkit.Maui.Core.dll</key>
@@ -1370,6 +1386,41 @@
 			<key>hash2</key>
 			<data>
 			vSdOCYnhm9fj+qcbPQi0IfGVKZjXx/f8EMHfqNdMxU8=
+			</data>
+		</dict>
+		<key>SQLite-net.dll</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			/0h0FMSssyqe6OCqk97walP3tX35PS56JgVOGN+Fcj4=
+			</data>
+		</dict>
+		<key>SQLite.db</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			Diio7WpemvphWcGBP8G+lp5zZag0ud8INS9wC/InnHg=
+			</data>
+		</dict>
+		<key>SQLitePCLRaw.batteries_v2.dll</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			GYVNzEX4ezJINQlWnBSCySOFfyn3DBc3murImG1EqeU=
+			</data>
+		</dict>
+		<key>SQLitePCLRaw.core.dll</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			l57cyQVqwG1fUrEtm3czsSF5FKtQvxI6sxLgJ+esV6U=
+			</data>
+		</dict>
+		<key>SQLitePCLRaw.provider.sqlite3.dll</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			Sn+GJwMFQ/ifB8eT2UGrF/BVLBi4yR3wYIKY7ADv96Y=
 			</data>
 		</dict>
 		<key>Settings.bundle/Root.plist</key>
@@ -2583,6 +2634,13 @@
 			mQqhxIMHfe7oNRpUUtq/nnaLC5tccn+y4eNiaC68ueA=
 			</data>
 		</dict>
+		<key>checkmark_icon.png</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			LOQpOVKeJXBA3+iWn0pWXXiPKFYXtijNTxceSCYDz/k=
+			</data>
+		</dict>
 		<key>cs/Microsoft.Maui.Controls.resources.dll</key>
 		<dict>
 			<key>hash2</key>
@@ -2604,27 +2662,6 @@
 			uoPh2EBWP1szpQKhBMDFz+PE3/BDlOQZY8xqctvEy4g=
 			</data>
 		</dict>
-		<key>dotnet_bot.png</key>
-		<dict>
-			<key>hash2</key>
-			<data>
-			7YWJ1W4GuCS20xv6UHDzgwn24QJzPXXIoQL3nLWEjBk=
-			</data>
-		</dict>
-		<key>dotnet_bot@2x.png</key>
-		<dict>
-			<key>hash2</key>
-			<data>
-			7rl2v9YuPZswM4PzCEKE59B3SLUqQvgSfHh79oLLpY4=
-			</data>
-		</dict>
-		<key>dotnet_bot@3x.png</key>
-		<dict>
-			<key>hash2</key>
-			<data>
-			rSLn1k43aQXR7mL0G0rG/4hhLC1hBtjJ3USgbIFRDnk=
-			</data>
-		</dict>
 		<key>el/Microsoft.Maui.Controls.resources.dll</key>
 		<dict>
 			<key>hash2</key>
@@ -2644,6 +2681,13 @@
 			<key>hash2</key>
 			<data>
 			/T5XJpLqIF77jOtCd12e0KxgAm1te2v049I6gsQoghM=
+			</data>
+		</dict>
+		<key>exmark_icon.png</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			/PuqjHm5paKXv7HB6nila0SlXv3y0tKlm1WqDktLjc4=
 			</data>
 		</dict>
 		<key>fi/Microsoft.Maui.Controls.resources.dll</key>

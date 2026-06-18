@@ -50,19 +50,12 @@
                                            VerticalOptions="Center"
                                            HorizontalOptions="Center"
                                            HasShadow="False">
-                                        <VerticalStackLayout VerticalOptions="Center"
-                                                             HorizontalOptions="Center"
-                                                             Spacing="0">
-                                            <Label Text="{Binding Date, StringFormat='{0:dd}'}"
-                                                   FontAttributes="Bold"
-                                                   FontSize="16"
-                                                   TextColor="#3B2E25"
-                                                   HorizontalOptions="Center"/>
-                                            <Label Text="{Binding Date, StringFormat='{0:MMM}'}"
-                                                   FontSize="12"
-                                                   TextColor="#7C6A58"
-                                                   HorizontalOptions="Center"/>
-                                        </VerticalStackLayout>
+
+                                        <Image Source="exmark_icon.png"
+                                               WidthRequest="28"
+                                               HeightRequest="28"
+                                               VerticalOptions="Center"
+                                               HorizontalOptions="Center"/>
                                     </Frame>
 
                                     <!-- Termintext -->
