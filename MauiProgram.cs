@@ -42,8 +42,10 @@ public static class MauiProgram
 
 #if DEBUG
         builder.Logging.AddDebug();
+        builder.Services.AddTransient<SyncOutboxDebugViewModel>();
+        builder.Services.AddTransient<SyncOutboxDebugView>();
 #endif
 
-		return builder.Build();
+        return builder.Build();
 	}
 }

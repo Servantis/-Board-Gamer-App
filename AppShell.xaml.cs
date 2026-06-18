@@ -1,4 +1,5 @@
 ﻿using BoardGamerApp.Views;
+using System.Diagnostics;
 
 namespace BoardGamerApp;
 
@@ -21,6 +22,16 @@ public partial class AppShell : Shell
 		Routing.RegisterRoute(nameof(Views.EventPage), typeof(Views.EventPage));
 		Routing.RegisterRoute(nameof(Views.MessagePage), typeof(Views.MessagePage));
 		Routing.RegisterRoute(nameof(Views.PreviousEventsPage), typeof(Views.PreviousEventsPage));
-        
+
+
+#if DEBUG
+        Routing.RegisterRoute(nameof(SyncOutboxDebugView), typeof(SyncOutboxDebugView));
+        DebugFlyoutItem.IsVisible = Debugger.IsAttached;
+#else
+        DebugFlyoutItem.IsVisible = false;
+
+#endif
+
+
     }
 }
