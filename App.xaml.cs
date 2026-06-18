@@ -1,16 +1,42 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using BoardGamerApp.Services;
 
 namespace BoardGamerApp;
 
 public partial class App : Application
 {
-	public App()
-	{
-		InitializeComponent();
-	}
+    private readonly DatabaseService _databaseService;
+    private readonly AppShell _appShell;
 
-	protected override Window CreateWindow(IActivationState? activationState)
-	{
-		return new Window(new AppShell());
-	}
+    public App(DatabaseService databaseService, AppShell appShell)
+    {
+        InitializeComponent();
+
+        _databaseService = databaseService;
+        _appShell = appShell;
+
+        _ = InitializeDatabaseAsync();
+    }
+
+    protected override Window CreateWindow(IActivationState? activationState)
+    {
+        return new Window(_appShell);
+    }
+
+    private async Task InitializeDatabaseAsync()
+    {
+        try
+        {
+            await _databaseService.InitializeAsync();
+
+            System.Diagnostics.Debug.WriteLine(
+                $"Datenbank initialisiert: {_databaseService.GetDatabasePath()}"
+            );
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine(
+                $"Fehler beim Initialisieren der Datenbank: {ex.Message}"
+            );
+        }
+    }
 }

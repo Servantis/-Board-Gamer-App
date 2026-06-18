@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="utf-8" ?>
+
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:viewModels="clr-namespace:BoardGamerApp.ViewModels"
+             x:Class="BoardGamerApp.Views.AddGameView"
+             x:DataType="viewModels:AddGameViewModel"
+             Title="Spiel hinzufügen"
+             BackgroundColor="#F8F5F0">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="24"
+                             Spacing="18">
+
+            <Label Text="Neues Spiel"
+                   FontSize="28"
+                   FontAttributes="Bold"
+                   TextColor="#2F2A25" />
+
+            <Label Text="Füge ein Brettspiel zu deiner Sammlung hinzu."
+                   FontSize="14"
+                   TextColor="#6B6258" />
+
+            <!-- Titel -->
+            <VerticalStackLayout Spacing="6">
+                <Label Text="Name des Spiels"
+                       FontAttributes="Bold"
+                       TextColor="#2F2A25" />
+
+                <Entry Text="{Binding Title}"
+                       Placeholder="z. B. Catan"
+                       BackgroundColor="White"
+                       TextColor="#2F2A25" />
+            </VerticalStackLayout>
+
+            <!-- Spieleranzahl -->
+            <Grid ColumnDefinitions="*,*"
+                  ColumnSpacing="12">
+
+                <VerticalStackLayout Spacing="6">
+                    <Label Text="Min. Spieler"
+                           FontAttributes="Bold"
+                           TextColor="#2F2A25" />
+
+                    <Entry Text="{Binding MinPlayers}"
+                           Placeholder="2"
+                           Keyboard="Numeric"
+                           BackgroundColor="White"
+                           TextColor="#2F2A25" />
+                </VerticalStackLayout>
+
+                <VerticalStackLayout Grid.Column="1"
+                                     Spacing="6">
+                    <Label Text="Max. Spieler"
+                           FontAttributes="Bold"
+                           TextColor="#2F2A25" />
+
+                    <Entry Text="{Binding MaxPlayers}"
+                           Placeholder="4"
+                           Keyboard="Numeric"
+                           BackgroundColor="White"
+                           TextColor="#2F2A25" />
+                </VerticalStackLayout>
+
+            </Grid>
+
+            <!-- Dauer -->
+            <VerticalStackLayout Spacing="6">
+                <Label Text="Dauer in Minuten"
+                       FontAttributes="Bold"
+                       TextColor="#2F2A25" />
+
+                <Entry Text="{Binding DurationMinutes}"
+                       Placeholder="z. B. 60"
+                       Keyboard="Numeric"
+                       BackgroundColor="White"
+                       TextColor="#2F2A25" />
+            </VerticalStackLayout>
+
+            <!-- Genre -->
+            <VerticalStackLayout Spacing="6">
+                <Label Text="Genre / Kategorie"
+                       FontAttributes="Bold"
+                       TextColor="#2F2A25" />
+
+                <Entry Text="{Binding GameGenre}"
+                       Placeholder="z. B. Strategie, Partyspiel, Deckbuilding"
+                       BackgroundColor="White"
+                       TextColor="#2F2A25" />
+            </VerticalStackLayout>
+
+            <!-- Vorschau -->
+            <Border BackgroundColor="#EFE7DC"
+                    Padding="16"
+                    StrokeShape="RoundRectangle 16"
+                    StrokeThickness="0">
+
+                <VerticalStackLayout Spacing="4">
+                    <Label Text="Vorschau"
+                           FontAttributes="Bold"
+                           TextColor="#2F2A25" />
+
+                    <Label Text="{Binding PreviewTitle}"
+                           FontSize="18"
+                           FontAttributes="Bold"
+                           TextColor="#2F2A25" />
+
+                    <Label Text="{Binding PreviewDetails}"
+                           FontSize="13"
+                           TextColor="#6B6258" />
+                </VerticalStackLayout>
+
+            </Border>
+
+            <!-- Buttons -->
+            <Grid ColumnDefinitions="*,*"
+                  ColumnSpacing="12"
+                  Margin="0,12,0,0">
+
+                <Button Text="Abbrechen"
+                        Command="{Binding CancelCommand}"
+                        BackgroundColor="#D8D0C6"
+                        TextColor="#2F2A25"
+                        CornerRadius="16"
+                        HeightRequest="48" />
+
+                <Button Grid.Column="1"
+                        Text="Speichern"
+                        Command="{Binding SaveCommand}"
+                        BackgroundColor="#7A4E2D"
+                        TextColor="White"
+                        CornerRadius="16"
+                        HeightRequest="48" />
+
+            </Grid>
+
+        </VerticalStackLayout>
+    </ScrollView>
+
+</ContentPage>

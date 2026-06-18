@@ -5,6 +5,8 @@ using BoardGamerApp.ViewModels;
 using BoardGamerApp.Views;
 using CommunityToolkit.Maui;
 using Microsoft.Extensions.Logging;
+using BoardGamerApp.Repositories;
+
 
 namespace BoardGamerApp;
 
@@ -25,15 +27,18 @@ public static class MauiProgram
         //--Dialog Services
         builder.Services.AddSingleton<IDialogService, DialogService>();
         //--Game Library Services
-        builder.Services.AddSingleton<GameDatabase>();
         builder.Services.AddTransient<GameLibraryViewModel>();
         builder.Services.AddTransient<AddGameViewModel>();
-        builder.Services.AddTransient<AddGamePage>();
+        builder.Services.AddTransient<AddGameView>();
         builder.Services.AddTransient<GameLibrary>();
+		//--Database Service
+        builder.Services.AddSingleton<DatabaseService>();
 
-
+        //Repositories
+        builder.Services.AddSingleton<BoardGameRepository>();
 
         builder.Services.AddTransient<MainPage>();
+        builder.Services.AddSingleton<AppShell>();
 
 #if DEBUG
         builder.Logging.AddDebug();
