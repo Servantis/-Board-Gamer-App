@@ -1,17 +1,12 @@
 ﻿using BoardGamerApp.Models;
 using BoardGamerApp.Services.Interfaces;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace BoardGamerApp.Services.Implementations
 {
-    public class HostScheduleService: IHostScheduleService
+    public class HostScheduleService : IHostScheduleService
     {
         private readonly IHostSelectionService _selectionService;
         private readonly IGameNightTrigger _trigger;
-
-        private bool _isHostSet = false;
 
         public HostScheduleService(
             IHostSelectionService selectionService,
@@ -19,12 +14,11 @@ namespace BoardGamerApp.Services.Implementations
         {
             _selectionService = selectionService;
             _trigger = trigger;
-
         }
 
-        public void EnsureHost(List<GroupMember> members)
+        public void ProcessHostChange(List<GroupMember> members)
         {
-            //  Wenn geplanter Termin vorbei: Flag-Zustand Änderung für letzten Host
+            // Wenn geplanter Termin vorbei: letzten Host abschließen
             if (_trigger.IsGameNightOver())
             {
                 var currentHost = members.FirstOrDefault(m => m.IsNextHost);
@@ -34,14 +28,16 @@ namespace BoardGamerApp.Services.Implementations
                     currentHost.HostedFlag = true;
                     currentHost.IsNextHost = false;
                     currentHost.LastHostedDate = DateTime.Now;
-                    System.Diagnostics.Debug.WriteLine($"Hostname: {currentHost?.Name}");
-                    System.Diagnostics.Debug.WriteLine($"LastHostedDate: {currentHost?.LastHostedDate}");
-                }
 
-                _isHostSet = false;
+                    System.Diagnostics.Debug.WriteLine(
+                        $"Hostname: {currentHost.Name}");
+
+                    System.Diagnostics.Debug.WriteLine(
+                        $"LastHostedDate: {currentHost.LastHostedDate}");
+                }
             }
 
-            // Wenn alle einmal Gastgeber waren reset des HostedFlags
+            // Wenn alle einmal Gastgeber waren -> Reset
             if (members.All(m => m.HostedFlag))
             {
                 foreach (var m in members)
@@ -50,16 +46,10 @@ namespace BoardGamerApp.Services.Implementations
                 }
             }
 
-            // Nur einmal pro Zyklus berechnen
-            if (!_isHostSet)
+            // Nur auswählen, wenn aktuell niemand als nächster Host markiert ist
+            if (!members.Any(m => m.IsNextHost))
             {
-                var selected = _selectionService.SelectNextHost(members);
-
-                if (selected != null)
-                {
-                    selected.IsNextHost = true;
-                    _isHostSet = true;
-                }
+                _selectionService.SelectNextHost(members);
             }
         }
     }

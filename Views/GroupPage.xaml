@@ -54,7 +54,7 @@
 
                         <!-- Ansicht generiert-->
                         <CollectionView
-                                HeightRequest="300"
+                                MaximumHeightRequest="300"
                                 ItemsSource="{Binding Members}">
                             <CollectionView.ItemTemplate>
                                 <DataTemplate>
@@ -153,7 +153,7 @@
 
                         <CollectionView ItemsSource="{Binding LastHosts}"
                               Margin="0,30,0,0"
-                              HeightRequest="250">
+                              MaximumHeightRequest="250">
 
                             <CollectionView.ItemTemplate>
                                 <DataTemplate>

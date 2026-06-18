@@ -1,20 +1,13 @@
-﻿using BoardGamerApp.Data;
-using BoardGamerApp.Models;
-using BoardGamerApp.Services.Implementations;
+﻿using BoardGamerApp.Models;
 using BoardGamerApp.Services.Interfaces;
-using BoardGamerApp.Services.Services.Database;
 using CommunityToolkit.Mvvm.Input;
-using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.ComponentModel;
-using System.Linq;
-using System.Threading.Tasks;
 using System.Windows.Input;
+using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace BoardGamerApp.ViewModels
 {
-    public class GroupMembersViewModel
+    public class GroupMembersViewModel : ObservableObject
     {
         private readonly IHostSelectionService _hostService;
         private readonly IHostScheduleService _scheduleService;
@@ -28,8 +21,8 @@ namespace BoardGamerApp.ViewModels
         // Letzte Gastgeber ermitteln, wenn Flag gesetzt ist
         public IEnumerable<GroupMember> LastHosts =>
             Members
-           .Where(m => m.LastHostedDate != default)
-           .OrderByDescending(m => m.LastHostedDate);
+            .Where(m => m.HostedFlag)
+        .OrderByDescending(m => m.LastHostedDate);
 
         public GroupMembersViewModel(IHostSelectionService hostService, IHostScheduleService scheduleService, IPlayerService playerService)
         {
@@ -37,10 +30,9 @@ namespace BoardGamerApp.ViewModels
             _scheduleService = scheduleService;
             _playerService = playerService;
 
-            // InitializeMembers();
+            // Initialize Members
             Members = new ObservableCollection<GroupMember>();
 
-            _scheduleService.EnsureHost(Members.ToList());
             SelectNextHostCommand = new RelayCommand(SelectNextHost);
             SimulateTriggerCommand = new RelayCommand(SimulateTrigger);
 
@@ -57,38 +49,13 @@ namespace BoardGamerApp.ViewModels
 
             foreach (var player in players)
             {
-
-                // Änderungen an den Eigenschaften eines Mitglieds überwachen
-                player.PropertyChanged += OnMemberPropertyChanged;
                 Members.Add(player);
             }
-
-            _scheduleService.EnsureHost(Members.ToList());
-        }
-
-        // zentrale Datenzugriffsmethode (später über DB)
-        public List<GroupMember> GetMembers()
-        {
-            return Members.ToList();
         }
 
         private void SelectNextHost()
         {
-            var selected = _hostService.SelectNextHost(Members.ToList());
-          
-            if (selected != null)
-            {
-                foreach (var m in Members)
-                    m.IsNextHost = false;
-
-                selected.IsNextHost = true;
-            }
-        }
-
-
-        private async Task PersistHostStateAsync()
-        {
-            await _playerService.SavePlayersAsync(Members);
+            _hostService.SelectNextHost(Members.ToList());
         }
 
         public ICommand ManageMembersCommand { get; }
@@ -100,28 +67,13 @@ namespace BoardGamerApp.ViewModels
            // await Shell.Current.GoToAsync(nameof(MemberManagementPage));
         }
 
-        private void SimulateTrigger()
+        private async void SimulateTrigger()
         {
-            _scheduleService.EnsureHost(Members.ToList());
-        }
+            _scheduleService.ProcessHostChange(Members.ToList());
 
-        private async void OnMemberPropertyChanged(
-            object? sender,
-            PropertyChangedEventArgs e)
-        {
-            if (sender is not GroupMember member)
-                return;
-            System.Diagnostics.Debug.WriteLine(
-    $"PropertyChanged: {member.Name} -> {e.PropertyName}");
+            OnPropertyChanged(nameof(LastHosts));
 
-            await _playerService.SavePlayerAsync(member);
-
-            // DEBUGGING: gibt mir das aus, was in der Tabelle plyer persistiert wurde
-            var reloaded = await _playerService.GetPlayerByIdAsync(member.Id);
-
-            System.Diagnostics.Debug.WriteLine(
-                $"DB CHECK → {reloaded.Name} | Hosted={reloaded.HostedFlag} | Next={reloaded.IsNextHost} | DatumType ={reloaded.LastHostedDate}");
-
+            await _playerService.SavePlayersAsync(Members);
         }
     }
 }

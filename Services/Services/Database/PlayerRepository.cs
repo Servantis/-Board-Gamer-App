@@ -45,20 +45,10 @@ namespace BoardGamerApp.Services.Services.Database
         public async Task<List<GroupMember>> GetPlayersAsync()
         {
             await InitAsync();
-            var raw = await _database!.QueryAsync<GroupMember>("SELECT * FROM players");
-            foreach (var p in raw)
-            {
-                System.Diagnostics.Debug.WriteLine($"RAW: {p.LastName} - {p.IsNextHost}");
-            }
-            foreach (var p in raw)
-            {
-                System.Diagnostics.Debug.WriteLine(
-                    $"{p.Name} | LastName={p.LastName} | NextHost={p.IsNextHost}");
-            }
+
             return await _database!
                 .Table<GroupMember>()
                 .ToListAsync();
-
         }
 
         public async Task<GroupMember?> GetPlayerByIdAsync(int id)
