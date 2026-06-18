@@ -7,9 +7,6 @@ using SQLite;
 
 namespace BoardGamerApp.Models;
 
-[Table("group_members")]
-public class GroupMember : BaseSyncEntity
-{
     [Table("players")]
     public class GroupMember: INotifyPropertyChanged
     {
@@ -111,4 +108,3 @@ public class GroupMember : BaseSyncEntity
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
     }
-}
