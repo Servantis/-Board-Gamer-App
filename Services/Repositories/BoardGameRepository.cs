@@ -151,6 +151,8 @@ public class BoardGameRepository
             throw new InvalidOperationException("Die Spieldauer muss größer als 0 sein.");
     }
 
+
+    //Auslagern in DatabaseService oder SyncService
     private static async Task AddToSyncOutboxAsync(
         SQLiteAsyncConnection database,
         BoardGame game,

@@ -1,5 +1,6 @@
 using BoardGamerApp.Services.Interfaces;
 using BoardGamerApp.ViewModels;
+using System.Diagnostics;
 
 namespace BoardGamerApp.Views;
 
@@ -10,6 +11,12 @@ public partial class GroupPage : ContentPage
         InitializeComponent();
 
         BindingContext = viewModel;
+#if DEBUG
+        DebugTrigger.IsVisible = Debugger.IsAttached;
+#else
+        DebugFlyoutItem.IsVisible = false;
+
+#endif
     }
 
     protected override void OnAppearing()
@@ -33,4 +40,6 @@ public partial class GroupPage : ContentPage
     {
         await Shell.Current.GoToAsync(nameof(MessagePage));
     }
+
+
 }

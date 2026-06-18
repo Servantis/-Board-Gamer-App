@@ -32777,24 +32777,24 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\fzirk\\.nuget\\packages\\": {},
+    "C:\\Users\\louis\\.nuget\\packages\\": {},
     "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\fzirk\\Desktop\\Projects\\Mobiles_Software_Engineering\\BoardGamerApp.csproj",
+      "projectUniqueName": "C:\\Users\\louis\\source\\repos\\Servantis\\-Board-Gamer-App\\BoardGamerApp.csproj",
       "projectName": "BoardGamerApp",
-      "projectPath": "C:\\Users\\fzirk\\Desktop\\Projects\\Mobiles_Software_Engineering\\BoardGamerApp.csproj",
-      "packagesPath": "C:\\Users\\fzirk\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\fzirk\\Desktop\\Projects\\Mobiles_Software_Engineering\\obj\\",
+      "projectPath": "C:\\Users\\louis\\source\\repos\\Servantis\\-Board-Gamer-App\\BoardGamerApp.csproj",
+      "packagesPath": "C:\\Users\\louis\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\louis\\source\\repos\\Servantis\\-Board-Gamer-App\\obj\\",
       "projectStyle": "PackageReference",
       "crossTargeting": true,
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
       ],
       "configFilePaths": [
-        "C:\\Users\\fzirk\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Users\\louis\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],

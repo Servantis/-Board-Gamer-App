@@ -74,7 +74,7 @@ public partial class AddGameViewModel : ObservableObject
 
             if (string.IsNullOrWhiteSpace(Title))
             {
-                await Shell.Current.DisplayAlert(
+                await Shell.Current.DisplayAlertAsync(
                     "Eingabe fehlt",
                     "Bitte gib einen Namen für das Spiel ein.",
                     "OK");
@@ -88,7 +88,7 @@ public partial class AddGameViewModel : ObservableObject
 
             if (minPlayersValue.HasValue && minPlayersValue.Value <= 0)
             {
-                await Shell.Current.DisplayAlert(
+                await Shell.Current.DisplayAlertAsync(
                     "Ungültige Eingabe",
                     "Die minimale Spieleranzahl muss größer als 0 sein.",
                     "OK");
@@ -98,7 +98,7 @@ public partial class AddGameViewModel : ObservableObject
 
             if (maxPlayersValue.HasValue && maxPlayersValue.Value <= 0)
             {
-                await Shell.Current.DisplayAlert(
+                await Shell.Current.DisplayAlertAsync(
                     "Ungültige Eingabe",
                     "Die maximale Spieleranzahl muss größer als 0 sein.",
                     "OK");
@@ -110,7 +110,7 @@ public partial class AddGameViewModel : ObservableObject
                 maxPlayersValue.HasValue &&
                 maxPlayersValue.Value < minPlayersValue.Value)
             {
-                await Shell.Current.DisplayAlert(
+                await Shell.Current.DisplayAlertAsync(
                     "Ungültige Eingabe",
                     "Die maximale Spieleranzahl darf nicht kleiner als die minimale Spieleranzahl sein.",
                     "OK");
