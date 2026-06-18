@@ -20,7 +20,8 @@ public partial class AppShell : Shell
         Routing.RegisterRoute(nameof(Views.RatingPage), typeof(Views.RatingPage));
 		Routing.RegisterRoute(nameof(Views.EventPage), typeof(Views.EventPage));
         Routing.RegisterRoute(nameof(Views.GroupPage), typeof(Views.GroupPage));
-		Routing.RegisterRoute(nameof(Views.MessagePage), typeof(Views.MessagePage));
+        Routing.RegisterRoute(nameof(Views.GroupManagementPage), typeof(Views.GroupManagementPage));
+        Routing.RegisterRoute(nameof(Views.MessagePage), typeof(Views.MessagePage));
 		Routing.RegisterRoute(nameof(Views.PreviousEventsPage), typeof(Views.PreviousEventsPage));
 	}
 }

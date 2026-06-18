@@ -24,18 +24,16 @@
 
                     <!-- Button rechts -->
                     <Button Grid.Column="1"
-                            BackgroundColor="Transparent"
-                            Padding="10"
-                            Command="{Binding ManageMembersCommand}">
-
+                                BackgroundColor="Transparent"
+                                Padding="10"
+                                Command="{Binding ManageMembersCommand}">
                         <Button.ImageSource>
                             <FontImageSource Glyph="👥"
-                             Size="22"
-                             Color="#3B2E25"/>
+                                 Size="22"
+                                 Color="#3B2E25"/>
                         </Button.ImageSource>
 
                     </Button>
-
                 </Grid>
 
                 <Border StrokeThickness="0"

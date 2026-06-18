@@ -3,6 +3,7 @@ using BoardGamerApp.Services.Interfaces;
 using CommunityToolkit.Mvvm.Input;
 using System.Collections.ObjectModel;
 using System.Windows.Input;
+using BoardGamerApp.Views;
 using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace BoardGamerApp.ViewModels
@@ -60,11 +61,10 @@ namespace BoardGamerApp.ViewModels
 
         public ICommand ManageMembersCommand { get; }
 
-        // Aufruf zur MemberManagementPage
+        // Aufruf zur GroupManagementPage
         private async void OpenMemberManagement()
         {
-            // Komponente muss noch implementiert werden
-           // await Shell.Current.GoToAsync(nameof(MemberManagementPage));
+           await Shell.Current.GoToAsync(nameof(GroupManagementPage));
         }
 
         private async void SimulateTrigger()
