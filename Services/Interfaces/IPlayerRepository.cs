@@ -1,16 +1,10 @@
 ﻿using BoardGamerApp.Models;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
-namespace BoardGamerApp.Services.Interfaces
+namespace BoardGamerApp.Repositories;
+
+public interface IPlayerRepository
 {
-    public interface IPlayerRepository
-    {
-        Task<List<GroupMember>> GetPlayersAsync();
-        Task<GroupMember?> GetPlayerByIdAsync(int id);
-        Task<int> SavePlayerAsync(GroupMember player);
-        Task SavePlayersAsync(IEnumerable<GroupMember> players);
-        Task<int> DeletePlayerAsync(int playerId);
-    }
+    Task<List<Player>> GetActivePlayersAsync();
+
+    Task<Player?> GetPlayerByInstallationIdAsync(string installationId);
 }

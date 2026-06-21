@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="utf-8" ?>
+
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:models="clr-namespace:BoardGamerApp.Models"
+             xmlns:viewModels="clr-namespace:BoardGamerApp.ViewModels"
+             x:Class="BoardGamerApp.Views.PlayerSelectionPage"
+             x:Name="PlayerSelectionRoot"
+             x:DataType="viewModels:PlayerSelectionViewModel"
+             Title="Spieler auswählen"
+             BackgroundColor="#F8F5F0">
+
+    <Grid RowDefinitions="Auto,Auto,*"
+          Padding="30,20"
+          RowSpacing="18">
+
+        <VerticalStackLayout Grid.Row="0"
+                             Spacing="6">
+
+            <Label Text="Debug-Spielerzuordnung"
+                   FontSize="24"
+                   FontAttributes="Bold"
+                   TextColor="#2B2B2B" />
+
+            <Label Text="Diese Seite ist nur verfügbar, wenn der Debugger verbunden ist."
+                   FontSize="14"
+                   TextColor="#666666" />
+
+        </VerticalStackLayout>
+
+        <VerticalStackLayout Grid.Row="1"
+                             Spacing="10">
+
+            <ActivityIndicator IsRunning="{Binding IsBusy}"
+                               IsVisible="{Binding IsBusy}"
+                               HorizontalOptions="Start" />
+
+            <Label Text="{Binding StatusText}"
+                   FontSize="14"
+                   TextColor="#666666" />
+
+        </VerticalStackLayout>
+
+        <CollectionView Grid.Row="2"
+                        ItemsSource="{Binding Players}"
+                        SelectionMode="None">
+
+            <CollectionView.EmptyView>
+                <VerticalStackLayout Padding="0,40"
+                                     Spacing="12"
+                                     HorizontalOptions="Center"
+                                     VerticalOptions="Center">
+
+                    <Label Text="Keine Spieler gefunden"
+                           FontSize="18"
+                           FontAttributes="Bold"
+                           HorizontalTextAlignment="Center" />
+
+                    <Label Text="In der lokalen Datenbank sind aktuell keine aktiven Spieler vorhanden."
+                           FontSize="14"
+                           TextColor="#777777"
+                           HorizontalTextAlignment="Center" />
+
+                </VerticalStackLayout>
+            </CollectionView.EmptyView>
+
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="models:Player">
+
+                    <Border Stroke="#DDDDDD"
+                            StrokeThickness="1"
+                            BackgroundColor="White"
+                            Padding="16"
+                            Margin="0,0,0,12">
+
+                        <Border.StrokeShape>
+                            <RoundRectangle CornerRadius="14" />
+                        </Border.StrokeShape>
+
+                        <Grid ColumnDefinitions="*,Auto"
+                              ColumnSpacing="12">
+
+                            <VerticalStackLayout Grid.Column="0"
+                                                 Spacing="4"
+                                                 VerticalOptions="Center">
+
+                                <Label Text="{Binding Name}"
+                                       FontSize="18"
+                                       FontAttributes="Bold"
+                                       TextColor="#2B2B2B" />
+
+                                <Label Text="{Binding Email}"
+                                       FontSize="13"
+                                       TextColor="#777777" />
+
+                            </VerticalStackLayout>
+
+                            <Button Grid.Column="1"
+                                    Text="Verknüpfen"
+                                    VerticalOptions="Center"
+                                    Command="{Binding BindingContext.LinkPlayerCommand, Source={x:Reference PlayerSelectionRoot}}"
+                                    CommandParameter="{Binding .}" />
+
+                        </Grid>
+
+                    </Border>
+
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+
+        </CollectionView>
+
+    </Grid>
+
+</ContentPage>

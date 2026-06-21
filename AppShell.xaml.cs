@@ -28,6 +28,8 @@ public partial class AppShell : Shell
 
 #if DEBUG
         Routing.RegisterRoute(nameof(SyncOutboxDebugView), typeof(SyncOutboxDebugView));
+        Routing.RegisterRoute(nameof(PlayerSelectionPage), typeof(PlayerSelectionPage));
+        Routing.RegisterRoute(nameof(LoadingPage), typeof(LoadingPage));
         DebugFlyoutItem.IsVisible = Debugger.IsAttached;
 #else
         DebugFlyoutItem.IsVisible = false;

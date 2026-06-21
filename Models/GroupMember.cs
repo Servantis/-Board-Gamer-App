@@ -21,8 +21,6 @@ namespace BoardGamerApp.Models;
         [Column("name")]
         public string Name { get; set; } = string.Empty;
 
-        [Column("last_name")]
-        public string LastName { get; set; } = string.Empty;
 
         [Column("email")]
         public string Email { get; set; } = string.Empty;
@@ -84,11 +82,11 @@ namespace BoardGamerApp.Models;
                 if (string.IsNullOrWhiteSpace(Name))
                     return string.Empty;
          
-                var initial = !string.IsNullOrWhiteSpace(LastName)
-                    ? $"{LastName[0]}."
-                    : "";
+                //var initial = !string.IsNullOrWhiteSpace(LastName)
+                  //  ? $"{LastName[0]}."
+                   // : "";
 
-                return $"{Name} {initial}".Trim();
+                return $"{Name}".Trim();
             }
         }
 
@@ -96,8 +94,8 @@ namespace BoardGamerApp.Models;
         [Ignore]
         public string Initials =>
             string.Concat(
-                string.IsNullOrWhiteSpace(Name) ? "" : Name.Trim()[0].ToString(),
-                string.IsNullOrWhiteSpace(LastName) ? "" : LastName.Trim()[0].ToString()
+                string.IsNullOrWhiteSpace(Name) ? "" : Name.Trim()[0].ToString()//,
+               // string.IsNullOrWhiteSpace(LastName) ? "" : LastName.Trim()[0].ToString()
             ).ToUpper();
 
         // Update die Flag sobald sich diese ändert

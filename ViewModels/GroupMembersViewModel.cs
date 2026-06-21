@@ -1,79 +1,83 @@
 ﻿using BoardGamerApp.Models;
+using BoardGamerApp.Repositories;
 using BoardGamerApp.Services.Interfaces;
+using BoardGamerApp.Views;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using System.Collections.ObjectModel;
 using System.Windows.Input;
-using BoardGamerApp.Views;
-using CommunityToolkit.Mvvm.ComponentModel;
 
-namespace BoardGamerApp.ViewModels
+namespace BoardGamerApp.ViewModels;
+
+public class GroupMembersViewModel : ObservableObject
 {
-    public class GroupMembersViewModel : ObservableObject
+    private readonly IHostSelectionService _hostService;
+    private readonly IHostScheduleService _scheduleService;
+    private readonly IGroupMemberRepository _groupMemberRepository;
+
+    public ObservableCollection<GroupMember> Members { get; private set; }
+
+    public ICommand SelectNextHostCommand { get; }
+    public ICommand SimulateTriggerCommand { get; }
+    public ICommand ManageMembersCommand { get; }
+
+    public IEnumerable<GroupMember> LastHosts =>
+        Members
+            .Where(member => member.HostedFlag)
+            .OrderByDescending(member => member.LastHostedDate);
+
+    public GroupMembersViewModel(
+        IHostSelectionService hostService,
+        IHostScheduleService scheduleService,
+        IGroupMemberRepository groupMemberRepository)
     {
-        private readonly IHostSelectionService _hostService;
-        private readonly IHostScheduleService _scheduleService;
-        private readonly IPlayerService _playerService;
+        _hostService = hostService;
+        _scheduleService = scheduleService;
+        _groupMemberRepository = groupMemberRepository;
 
-        public ObservableCollection<GroupMember> Members { get; private set; }
+        Members = new ObservableCollection<GroupMember>();
 
-        public ICommand SelectNextHostCommand { get; }
-        public ICommand SimulateTriggerCommand { get; }
+        SelectNextHostCommand = new RelayCommand(SelectNextHost);
+        SimulateTriggerCommand = new RelayCommand(SimulateTrigger);
+        ManageMembersCommand = new RelayCommand(OpenMemberManagement);
 
-        // Letzte Gastgeber ermitteln, wenn Flag gesetzt ist
-        public IEnumerable<GroupMember> LastHosts =>
-            Members
-            .Where(m => m.HostedFlag)
-        .OrderByDescending(m => m.LastHostedDate);
+        _ = LoadMembersAsync();
+    }
 
-        public GroupMembersViewModel(IHostSelectionService hostService, IHostScheduleService scheduleService, IPlayerService playerService)
+    private async Task LoadMembersAsync()
+    {
+        var members = await _groupMemberRepository.GetMembersAsync();
+
+        System.Diagnostics.Debug.WriteLine($"LoadMembers: {members.Count}");
+
+        Members.Clear();
+
+        foreach (var member in members)
         {
-            _hostService = hostService;
-            _scheduleService = scheduleService;
-            _playerService = playerService;
-
-            // Initialize Members
-            Members = new ObservableCollection<GroupMember>();
-
-            SelectNextHostCommand = new RelayCommand(SelectNextHost);
-            SimulateTriggerCommand = new RelayCommand(SimulateTrigger);
-
-            ManageMembersCommand = new RelayCommand(OpenMemberManagement);
-
-            _ = LoadMembersAsync();
+            Members.Add(member);
         }
 
-        private async Task LoadMembersAsync()
-        {
-            var players = await _playerService.GetPlayersAsync();
-            System.Diagnostics.Debug.WriteLine("LoadMembers: " + players );
-            Members.Clear();
+        OnPropertyChanged(nameof(LastHosts));
+    }
 
-            foreach (var player in players)
-            {
-                Members.Add(player);
-            }
-        }
+    private void SelectNextHost()
+    {
+        _hostService.SelectNextHost(Members.ToList());
 
-        private void SelectNextHost()
-        {
-            _hostService.SelectNextHost(Members.ToList());
-        }
+        OnPropertyChanged(nameof(LastHosts));
+    }
 
-        public ICommand ManageMembersCommand { get; }
+    private async void OpenMemberManagement()
+    {
+        await Shell.Current.GoToAsync(nameof(GroupManagementPage));
+    }
 
-        // Aufruf zur GroupManagementPage
-        private async void OpenMemberManagement()
-        {
-           await Shell.Current.GoToAsync(nameof(GroupManagementPage));
-        }
+    private async void SimulateTrigger()
+    {
+        _scheduleService.ProcessHostChange(Members.ToList());
 
-        private async void SimulateTrigger()
-        {
-            _scheduleService.ProcessHostChange(Members.ToList());
+        OnPropertyChanged(nameof(LastHosts));
 
-            OnPropertyChanged(nameof(LastHosts));
-
-            await _playerService.SavePlayersAsync(Members);
-        }
+        await _groupMemberRepository.SaveMembersAsync(Members);
     }
 }

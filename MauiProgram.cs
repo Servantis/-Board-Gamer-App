@@ -1,12 +1,8 @@
 ﻿using BoardGamerApp.Services.Implementations;
 using BoardGamerApp.Services.Interfaces;
-using BoardGamerApp.Services.Services.Database;
 using BoardGamerApp.ViewModels;
 using BoardGamerApp.Views;
-using BoardGamerApp.Data;
 using BoardGamerApp.Services;
-using BoardGamerApp.ViewModels;
-using BoardGamerApp.Views;
 using CommunityToolkit.Maui;
 using Microsoft.Extensions.Logging;
 using BoardGamerApp.Repositories;
@@ -30,6 +26,9 @@ public static class MauiProgram
 
         //--Dialog Services
         builder.Services.AddSingleton<IDialogService, DialogService>();
+        //--Player and Installation Services
+        builder.Services.AddSingleton<InstallationService>();
+        builder.Services.AddSingleton<CurrentPlayerService>();
         //--Game Library Services
         builder.Services.AddTransient<GameLibraryViewModel>();
         builder.Services.AddTransient<AddGameViewModel>();
@@ -40,6 +39,9 @@ public static class MauiProgram
 
         //Repositories
         builder.Services.AddSingleton<BoardGameRepository>();
+        builder.Services.AddSingleton<IPlayerRepository, PlayerRepository>();
+        builder.Services.AddSingleton<IPlayerDeviceRepository, PlayerDeviceRepository>();
+        builder.Services.AddSingleton<IGroupMemberRepository, GroupMemberRepository>();
 
         builder.Services.AddTransient<MainPage>();
         builder.Services.AddSingleton<AppShell>();
@@ -53,12 +55,16 @@ public static class MauiProgram
         builder.Services.AddSingleton<IHostSelectionService, HostSelectionService>();
         builder.Services.AddSingleton<IHostScheduleService, HostScheduleService>();
         builder.Services.AddSingleton<IGameNightTrigger, SimulatedGameNightTrigger>();
-        builder.Services.AddSingleton<IPlayerRepository, PlayerRepository>();
-        builder.Services.AddSingleton<IPlayerService, PlayerService>();
+        
 
         builder.Services.AddTransient<GroupMembersViewModel>();
         builder.Services.AddTransient<GroupPage>();
         builder.Services.AddTransient<GroupManagementPage>();
+
+        builder.Services.AddTransient<LoadingPage>();
+        builder.Services.AddTransient<LoadingPageViewModel>();
+        builder.Services.AddTransient<PlayerSelectionPage>();
+        builder.Services.AddTransient<PlayerSelectionViewModel>();
 
 
         return builder.Build();

@@ -10,6 +10,23 @@
     Shell.ForegroundColor="White"
     Shell.TitleColor="White">
 
+    <FlyoutItem>
+
+        <ShellContent Title="Loading"
+              Route="loading"
+              Shell.FlyoutItemIsVisible="False"
+              ContentTemplate="{DataTemplate views:LoadingPage}" />
+    </FlyoutItem>
+    <FlyoutItem>
+    
+    
+    <ShellContent Title="Spieler auswählen"
+              Route="playerSelection"
+              Shell.FlyoutItemIsVisible="False"
+              ContentTemplate="{DataTemplate views:PlayerSelectionPage}" />
+    </FlyoutItem>
+
+
     <!-- Home-Seite -->
     <FlyoutItem Title="Home"
                 Route="home">
