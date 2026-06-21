@@ -1,8 +1,11 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:viewModels="clr-namespace:BoardGamerApp.ViewModels"
+             xmlns:models="clr-namespace:BoardGamerApp.Models"
              x:Class="BoardGamerApp.Views.GroupManagementPage"
-             Title="GroupManagementPage"
+             x:DataType="viewModels:GroupMembersViewModel"
+             Title="Gruppe"
              BackgroundColor="#F8F5F0">
     <Grid RowDefinitions="Auto,*,80">
 
@@ -52,7 +55,7 @@
                              MaximumHeightRequest="300"
                              ItemsSource="{Binding Members}">
                             <CollectionView.ItemTemplate>
-                                <DataTemplate>
+                                <DataTemplate x:DataType="models:GroupMemberListItem">
 
                                     <Grid ColumnDefinitions="Auto,*,Auto"
                                    Padding="10"

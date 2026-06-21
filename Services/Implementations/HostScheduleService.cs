@@ -4,7 +4,7 @@ using BoardGamerApp.Services.Interfaces;
 namespace BoardGamerApp.Services.Implementations
 {
     public class HostScheduleService : IHostScheduleService
-    {
+    {/*
         private readonly IHostSelectionService _selectionService;
         private readonly IGameNightTrigger _trigger;
 
@@ -51,6 +51,6 @@ namespace BoardGamerApp.Services.Implementations
             {
                 _selectionService.SelectNextHost(members);
             }
-        }
+        }*/
     }
 }

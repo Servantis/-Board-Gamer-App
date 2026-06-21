@@ -11,20 +11,20 @@ public partial class GroupManagementPage : ContentPage
         BindingContext = viewModel;
     }
 
-    // Navigiert zur Eventseite wenn auf den Termine-Button geklickt wird.
-    private async void OnEventClicked(object? sender, EventArgs e)
+    private async void OnEventClicked(object sender, TappedEventArgs e)
     {
-        await Shell.Current.GoToAsync(nameof(EventPage));
+        // Anpassen an deine echte Route
+        await Shell.Current.GoToAsync("//events");
     }
 
-    // Navigiert zur Groupseite wenn auf den Gruppen-Button geklickt wird.
-    private async void OnGroupClicked(object? sender, EventArgs e)
+    private async void OnMessageClicked(object sender, TappedEventArgs e)
     {
-        await Shell.Current.GoToAsync(nameof(GroupPage));
+        await DisplayAlertAsync("Nachricht", "Nachrichtenfunktion folgt später.", "OK");
     }
 
-    private async void OnMessageClicked(object? sender, EventArgs e)
+    private async void OnGroupClicked(object sender, TappedEventArgs e)
     {
-        await Shell.Current.GoToAsync(nameof(MessagePage));
+        // Du bist vermutlich schon auf der Gruppenseite.
+        await Shell.Current.GoToAsync("//group");
     }
 }

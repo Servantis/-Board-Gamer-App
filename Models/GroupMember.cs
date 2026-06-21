@@ -1,108 +1,23 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Runtime.CompilerServices;
-using System.Text;
-using SQLite;
+﻿using SQLite;
 
 namespace BoardGamerApp.Models;
 
-    [Table("players")]
-    public class GroupMember: INotifyPropertyChanged
-    {
-        private bool _isNextHost;
-        private bool _hostedFlag;
-        private DateTime _lastHostedDate;
+[Table("group_members")]
+public class GroupMember : BaseSyncEntity
+{
+    [Indexed(Name = "ux_group_members_group_player", Order = 1, Unique = true)]
+    [NotNull]
+    public string GroupId { get; set; } = string.Empty;
 
-        [PrimaryKey, AutoIncrement]
-        [Column("id")]
-        public int Id { get; set; }
+    [Indexed(Name = "ux_group_members_group_player", Order = 2, Unique = true)]
+    [NotNull]
+    public string PlayerId { get; set; } = string.Empty;
 
-        [Column("name")]
-        public string Name { get; set; } = string.Empty;
+    [NotNull]
+    public string Role { get; set; } = BoardGamerConstants.GroupRoles.Member;
 
+    [NotNull]
+    public string Status { get; set; } = BoardGamerConstants.GroupMemberStatus.Active;
 
-        [Column("email")]
-        public string Email { get; set; } = string.Empty;
-
-        [Column("hosted_flag")]
-        public bool HostedFlag
-        {
-            get => _hostedFlag;
-            set
-            {
-                if (_hostedFlag == value)
-                    return;
-
-                _hostedFlag = value;
-                OnPropertyChanged();
-            }
-        }
-
-        [Column("is_next_host")]
-        public bool IsNextHost
-        {
-            get => _isNextHost;
-            set
-            {
-                if (_isNextHost == value)
-                    return;
-
-                _isNextHost = value;
-                OnPropertyChanged();
-            }
-        }
-
-        [Column("last_hosted_date")]
-        public DateTime LastHostedDate
-        {
-            get => _lastHostedDate;
-            set
-            {
-                if (_lastHostedDate == value)
-                    return;
-
-                _lastHostedDate = value;
-                OnPropertyChanged();
-            }
-        }
-
-        [Column("is_active")]
-        public bool IsActive { get; set; }
-
-        [Column("rotation_order")]
-        public int RotationOrder { get; set; }
-
-        // Anzeige Format Name + erster Buchstabe des Nachnamens.
-        [Ignore]
-        public string DisplayName
-        {
-            get
-            {
-                if (string.IsNullOrWhiteSpace(Name))
-                    return string.Empty;
-         
-                //var initial = !string.IsNullOrWhiteSpace(LastName)
-                  //  ? $"{LastName[0]}."
-                   // : "";
-
-                return $"{Name}".Trim();
-            }
-        }
-
-        // Initialien aus erstem Buchstaben des Vor- und Nachnamens bilden
-        [Ignore]
-        public string Initials =>
-            string.Concat(
-                string.IsNullOrWhiteSpace(Name) ? "" : Name.Trim()[0].ToString()//,
-               // string.IsNullOrWhiteSpace(LastName) ? "" : LastName.Trim()[0].ToString()
-            ).ToUpper();
-
-        // Update die Flag sobald sich diese ändert
-        public event PropertyChangedEventHandler? PropertyChanged;
-
-        protected void OnPropertyChanged([CallerMemberName] string? propertyName = null)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
-    }
+    public int? RotationOrder { get; set; }
+}

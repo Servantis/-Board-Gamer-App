@@ -4,13 +4,25 @@ namespace BoardGamerApp.Repositories;
 
 public interface IGroupMemberRepository
 {
-    Task<List<GroupMember>> GetMembersAsync();
+    Task<GamingGroup?> GetDefaultGroupAsync();
 
-    Task<GroupMember?> GetMemberByIdAsync(int id);
+    Task<List<GroupMemberListItem>> GetMembersAsync();
 
-    Task<int> SaveMemberAsync(GroupMember member);
+    Task<List<GroupMemberListItem>> GetMembersByGroupIdAsync(string groupId);
 
-    Task SaveMembersAsync(IEnumerable<GroupMember> members);
+    Task<GroupMember?> GetMemberByIdAsync(string memberId);
 
-    Task<int> DeleteMemberAsync(int memberId);
+    Task AddMemberAsync(
+        string groupId,
+        string playerId,
+        string role = "member",
+        int? rotationOrder = null);
+
+    Task UpdateMemberAsync(GroupMember member);
+
+    Task UpdateMemberStatusAsync(string memberId, string status);
+
+    Task UpdateRotationOrderAsync(string memberId, int? rotationOrder);
+
+    Task SoftDeleteMemberAsync(string memberId);
 }

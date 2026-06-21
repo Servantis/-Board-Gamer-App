@@ -4,7 +4,7 @@ using BoardGamerApp.Services.Interfaces;
 namespace BoardGamerApp.Services.Implementations
 {
     public class HostSelectionService : IHostSelectionService
-    {
+    {/*
         private readonly Random _random = new Random();
 
         public GroupMember SelectNextHost(List<GroupMember> members)
@@ -49,6 +49,6 @@ namespace BoardGamerApp.Services.Implementations
             selected.IsNextHost = true;
 
             return selected;
-        }
+        }*/
     }
 }
