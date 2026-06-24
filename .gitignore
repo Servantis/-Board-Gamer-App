@@ -416,3 +416,6 @@ src/Core/AndroidNative/build/reports/
 *.cache
 /obj/Debug/net10.0-ios/iossimulator-arm64/BoardGamerApp.AssemblyInfo.cs
 /obj/Debug/net10.0-ios/iossimulator-arm64/BoardGamerApp.AssemblyInfoInputs.cache
+.DS_Store
+.DS_Store
+.DS_Store
