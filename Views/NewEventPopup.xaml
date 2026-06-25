@@ -4,14 +4,15 @@
        xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
        xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
        xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
-       xmlns:sys="clr-namespace:System;assembly=mscorlib"
-       Color="#80000000">
+       Color="Transparent">
 
-       <Border StrokeShape="RoundRectangle 20"
-               BackgroundColor="#F8F5F0"
-               Padding="20"
-               HorizontalOptions="Center"
-               VerticalOptions="Center">
+       <Border
+              StrokeShape="RoundRectangle 20"
+              BackgroundColor="#F8F5F0"
+              Padding="20"
+              HorizontalOptions="Center"
+              VerticalOptions="Center">
+
               <!-- Unsichtbare Picker außerhalb des sichtbaren Layouts -->
               <Grid>
                      <VerticalStackLayout Spacing="15"
@@ -24,27 +25,28 @@
                                    TextColor="#3B2E25"/>
 
                             <!-- Kombiniertes Datum/Uhrzeit-Feld -->
-                            <Border x:Name="DateTimeBorder"
-                                    StrokeShape="RoundRectangle 6"
-                                    BackgroundColor="#EDE6DD"
-                                    HeightRequest="48"
-                                    Padding="10">
-                                   <Border.GestureRecognizers>
-                                          <TapGestureRecognizer Tapped="OnDateTimeTapped"/>
-                                   </Border.GestureRecognizers>
+                            <VerticalStackLayout>
+                                   <Border x:Name="DateTimeBorder"
+                                           BackgroundColor="#EDE6DD"
+                                           Padding="10">
+                                          <Border.GestureRecognizers>
+                                                 <TapGestureRecognizer Tapped="OnDateTimeTapped"/>
+                                          </Border.GestureRecognizers>
 
-                                   <HorizontalStackLayout>
                                           <Label x:Name="DateTimeLabel"
-                                                 Text="Datum und Uhrzeit wählen"
-                                                 TextColor="#3B2E25"
-                                                 VerticalOptions="Center"/>
-                                          <Image Source="calendar.png"
-                                                 WidthRequest="20"
-                                                 HeightRequest="20"
-                                                 Margin="10,0,0,0"
-                                                 VerticalOptions="Center"/>
-                                   </HorizontalStackLayout>
-                            </Border>
+                                                 Text="Datum und Uhrzeit wählen"/>
+                                   </Border>
+
+                                   <DatePicker x:Name="InlineDatePicker"
+                                               IsVisible="False"
+                                               Format="dd.MM.yyyy"
+                                               DateSelected="OnInlineDateSelected"/>
+
+                                   <TimePicker x:Name="InlineTimePicker"
+                                               IsVisible="False"
+                                               Format="HH:mm"
+                                               TimeSelected="OnInlineTimeChanged"/>
+                            </VerticalStackLayout>
 
                             <Entry x:Name="LocationEntry"
                                    Placeholder="Ort"
@@ -67,10 +69,18 @@
 
                      <!-- Unsichtbare Picker außerhalb des sichtbaren Layouts -->
                      <DatePicker x:Name="HiddenDatePicker"
-                                 IsVisible="False"/>
-                     <TimePicker x:Name="HiddenTimePicker"
-                                 IsVisible="False"/>
+                                 Opacity="0.01"
+                                 TranslationX="-5000"
+                                 TranslationY="0"
+                                 WidthRequest="200"
+                                 HeightRequest="50"/>
 
+                     <TimePicker x:Name="HiddenTimePicker"
+                                 Opacity="0.01"
+                                 TranslationX="-5000"
+                                 TranslationY="0"
+                                 WidthRequest="200"
+                                 HeightRequest="50"/>
               </Grid>
        </Border>
 </toolkit:Popup>
