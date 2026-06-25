@@ -24,6 +24,9 @@ public static class MauiProgram
 				fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
 			});
 
+
+        //-- Appshell Services
+        builder.Services.AddSingleton<AppShell>();
         //--Dialog Services
         builder.Services.AddSingleton<IDialogService, DialogService>();
         //--Player and Installation Services
@@ -44,7 +47,6 @@ public static class MauiProgram
         builder.Services.AddSingleton<IGroupMemberRepository, GroupMemberRepository>();
 
         builder.Services.AddTransient<MainPage>();
-        builder.Services.AddSingleton<AppShell>();
 
 #if DEBUG
         builder.Logging.AddDebug();
@@ -60,6 +62,9 @@ public static class MauiProgram
         builder.Services.AddTransient<GroupMembersViewModel>();
         builder.Services.AddTransient<GroupPage>();
         builder.Services.AddTransient<GroupManagementPage>();
+
+        builder.Services.AddTransient<PlayerProfileViewModel>();
+        builder.Services.AddTransient<PlayerProfilePage>();
 
         builder.Services.AddTransient<LoadingPage>();
         builder.Services.AddTransient<LoadingPageViewModel>();

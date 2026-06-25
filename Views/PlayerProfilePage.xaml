@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="utf-8" ?>
+
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:viewModels="clr-namespace:BoardGamerApp.ViewModels"
+             x:Class="BoardGamerApp.Views.PlayerProfilePage"
+             x:DataType="viewModels:PlayerProfileViewModel"
+             BackgroundColor="#80000000"
+             Shell.NavBarIsVisible="False">
+
+    <Grid Padding="24"
+          VerticalOptions="Center"
+          HorizontalOptions="Fill">
+
+        <Border BackgroundColor="#F8F5F0"
+                StrokeThickness="0"
+                Padding="22"
+                StrokeShape="RoundRectangle 22">
+
+            <VerticalStackLayout Spacing="20">
+
+                <!-- Kopfbereich -->
+                <Grid ColumnDefinitions="Auto,*,Auto"
+                      ColumnSpacing="14">
+
+                    <Border Grid.Column="0"
+                            WidthRequest="64"
+                            HeightRequest="64"
+                            StrokeThickness="0"
+                            BackgroundColor="#EDE6DD"
+                            StrokeShape="RoundRectangle 32"
+                            VerticalOptions="Center">
+
+                        <Label Text="{Binding Initials}"
+                               FontSize="24"
+                               FontAttributes="Bold"
+                               TextColor="#7C6A58"
+                               HorizontalTextAlignment="Center"
+                               VerticalTextAlignment="Center" />
+
+                    </Border>
+
+                    <VerticalStackLayout Grid.Column="1"
+                                         VerticalOptions="Center"
+                                         Spacing="2">
+
+                        <Label Text="Spielerprofil"
+                               FontSize="20"
+                               FontAttributes="Bold"
+                               TextColor="#2B2B2B" />
+
+                        <Label Text="{Binding PlayerName}"
+                               FontSize="14"
+                               TextColor="#7C6A58" />
+
+                    </VerticalStackLayout>
+
+                    <Button Grid.Column="2"
+                            Text="✕"
+                            FontSize="18"
+                            BackgroundColor="Transparent"
+                            TextColor="#3B2E25"
+                            Command="{Binding CloseCommand}" />
+
+                </Grid>
+
+                <!-- Formular -->
+                <VerticalStackLayout Spacing="12">
+
+                    <Label Text="Name"
+                           FontAttributes="Bold"
+                           FontSize="14"
+                           TextColor="#3B2E25" />
+
+                    <Entry Text="{Binding PlayerName}"
+                           Placeholder="Name"
+                           BackgroundColor="White"
+                           TextColor="#2B2B2B" />
+
+                    <Label Text="E-Mail"
+                           FontAttributes="Bold"
+                           FontSize="14"
+                           TextColor="#3B2E25" />
+
+                    <Entry Text="{Binding Email}"
+                           Placeholder="E-Mail optional"
+                           Keyboard="Email"
+                           BackgroundColor="White"
+                           TextColor="#2B2B2B" />
+
+                </VerticalStackLayout>
+
+                <!-- Spieler-ID klein anzeigen -->
+                <VerticalStackLayout Spacing="4">
+                    <Label Text="Spieler-ID"
+                           FontSize="12"
+                           FontAttributes="Bold"
+                           TextColor="#7C6A58" />
+
+                    <Label Text="{Binding PlayerId}"
+                           FontSize="11"
+                           TextColor="#7C6A58"
+                           LineBreakMode="TailTruncation" />
+                </VerticalStackLayout>
+
+                <!-- Buttons -->
+                <Button Text="Profil speichern"
+                        BackgroundColor="#8B5E3C"
+                        TextColor="White"
+                        CornerRadius="14"
+                        HeightRequest="48"
+                        Command="{Binding SaveCommand}" />
+
+                <Button Text="Spielerzuordnung zurücksetzen"
+                        BackgroundColor="#E7D7C6"
+                        TextColor="#7C2D12"
+                        CornerRadius="14"
+                        HeightRequest="44"
+                        IsVisible="{Binding IsDebugVisible}"
+                        Command="{Binding ResetAssignmentCommand}" />
+
+                <ActivityIndicator IsRunning="{Binding IsBusy}"
+                                   IsVisible="{Binding IsBusy}" />
+
+            </VerticalStackLayout>
+
+        </Border>
+
+    </Grid>
+
+</ContentPage>

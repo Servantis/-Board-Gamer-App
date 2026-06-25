@@ -9,4 +9,7 @@ public interface IPlayerDeviceRepository
         string? platform);
 
     Task UpdateLastSeenAsync(string installationId);
+
+    Task UnlinkInstallationAsync(string installationId);
+
 }

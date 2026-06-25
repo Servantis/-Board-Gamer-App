@@ -101,4 +101,24 @@ public class PlayerDeviceRepository : IPlayerDeviceRepository
 
         await database.ExecuteAsync(sql, now, now, installationId);
     }
+
+    public async Task UnlinkInstallationAsync(string installationId)
+    {
+        var database = await _databaseService.GetConnectionAsync();
+
+        var now = DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ss.fffZ");
+
+        const string sql = """
+        UPDATE player_devices
+        SET is_active = 0,
+            updated_at = ?,
+            deleted_at = ?,
+            version = version + 1
+        WHERE installation_id = ?
+          AND deleted_at IS NULL;
+        """;
+
+        await database.ExecuteAsync(sql, now, now, installationId);
+    }
+
 }

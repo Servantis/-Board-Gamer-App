@@ -238,6 +238,16 @@ build_metadata.AdditionalFiles.EnableDiagnostics =
 build_metadata.AdditionalFiles.LineInfo = 
 build_metadata.AdditionalFiles.LineInfo = 
 
+[C:/Users/louis/source/repos/Servantis/-Board-Gamer-App/Views/PlayerProfilePage.xaml]
+build_metadata.AdditionalFiles.GenKind = Xaml
+build_metadata.AdditionalFiles.ManifestResourceName = BoardGamerApp.Views.PlayerProfilePage.xaml
+build_metadata.AdditionalFiles.TargetPath = Views\PlayerProfilePage.xaml
+build_metadata.AdditionalFiles.RelativePath = Views\PlayerProfilePage.xaml
+build_metadata.AdditionalFiles.Inflator = SourceGen
+build_metadata.AdditionalFiles.NoWarn = 
+build_metadata.AdditionalFiles.EnableDiagnostics = 
+build_metadata.AdditionalFiles.LineInfo = 
+
 [C:/Users/louis/source/repos/Servantis/-Board-Gamer-App/Views/PlayerSelectionPage.xaml]
 build_metadata.AdditionalFiles.GenKind = Xaml
 build_metadata.AdditionalFiles.ManifestResourceName = BoardGamerApp.Views.PlayerSelectionPage.xaml

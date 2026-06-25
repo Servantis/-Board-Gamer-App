@@ -3199,6 +3199,7 @@ int drawable tooltip_frame_dark 0x7f0700ee
 int drawable tooltip_frame_light 0x7f0700ef
 int drawable trash_icon 0x7f0700f0
 int drawable trash_icon_red 0x7f0700f1
+int drawable user_icon_round 0x7f0700f2
 int id ALT 0x7f080000
 int id BOTTOM_END 0x7f080001
 int id BOTTOM_START 0x7f080002

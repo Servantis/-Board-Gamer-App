@@ -1,41 +1,111 @@
-﻿using BoardGamerApp.Views;
+﻿using BoardGamerApp.Services;
+using BoardGamerApp.Views;
+using Microsoft.Extensions.DependencyInjection;
 using System.Diagnostics;
 
 namespace BoardGamerApp;
 
 public partial class AppShell : Shell
 {
-	public AppShell()
-	{
-		InitializeComponent();
+    private readonly CurrentPlayerService _currentPlayerService;
+    private readonly IServiceProvider _serviceProvider;
 
-        // Registriert die Navigationsrouten für die einzelnen Seiten.
-        // Dadurch kann die App später per Shell-Navigation (GoToAsync) 
-        // gezielt zu diesen Views wechseln.
+    private ToolbarItem? _playerToolbarItem;
 
-        //Game Library
-        Routing.RegisterRoute(nameof(Views.GameLibrary), typeof(Views.GameLibrary));
+    public AppShell(
+        CurrentPlayerService currentPlayerService,
+        IServiceProvider serviceProvider)
+    {
+        InitializeComponent();
+
+        _currentPlayerService = currentPlayerService;
+        _serviceProvider = serviceProvider;
+
+        _currentPlayerService.CurrentPlayerChanged += OnCurrentPlayerChanged;
+
+        RegisterRoutes();
+
+        UpdatePlayerToolbarItem();
+
+#if DEBUG
+        DebugFlyoutItem.IsVisible = Debugger.IsAttached;
+#else
+        DebugFlyoutItem.IsVisible = false;
+#endif
+    }
+
+    private void RegisterRoutes()
+    {
+        // Game Library
+        Routing.RegisterRoute(nameof(GameLibrary), typeof(GameLibrary));
         Routing.RegisterRoute(nameof(AddGameView), typeof(AddGameView));
 
-        Routing.RegisterRoute(nameof(Views.GamesPage), typeof(Views.GamesPage));
-        Routing.RegisterRoute(nameof(Views.RatingPage), typeof(Views.RatingPage));
-		Routing.RegisterRoute(nameof(Views.EventPage), typeof(Views.EventPage));
-        Routing.RegisterRoute(nameof(Views.GroupPage), typeof(Views.GroupPage));
-        Routing.RegisterRoute(nameof(Views.GroupManagementPage), typeof(Views.GroupManagementPage));
-        Routing.RegisterRoute(nameof(Views.MessagePage), typeof(Views.MessagePage));
-		Routing.RegisterRoute(nameof(Views.PreviousEventsPage), typeof(Views.PreviousEventsPage));
+        // Hauptseiten
+        Routing.RegisterRoute(nameof(GamesPage), typeof(GamesPage));
+        Routing.RegisterRoute(nameof(RatingPage), typeof(RatingPage));
+        Routing.RegisterRoute(nameof(EventPage), typeof(EventPage));
+        Routing.RegisterRoute(nameof(GroupPage), typeof(GroupPage));
+        Routing.RegisterRoute(nameof(GroupManagementPage), typeof(GroupManagementPage));
+        Routing.RegisterRoute(nameof(MessagePage), typeof(MessagePage));
+        Routing.RegisterRoute(nameof(PreviousEventsPage), typeof(PreviousEventsPage));
 
+        // Spielerprofil wird als Modal über DI geöffnet.
+        // Eine Shell-Route ist dafür nicht zwingend nötig.
+        // Falls du später per GoToAsync navigieren willst, kannst du sie trotzdem registrieren:
+        // Routing.RegisterRoute(nameof(PlayerProfilePage), typeof(PlayerProfilePage));
 
 #if DEBUG
         Routing.RegisterRoute(nameof(SyncOutboxDebugView), typeof(SyncOutboxDebugView));
         Routing.RegisterRoute(nameof(PlayerSelectionPage), typeof(PlayerSelectionPage));
         Routing.RegisterRoute(nameof(LoadingPage), typeof(LoadingPage));
-        DebugFlyoutItem.IsVisible = Debugger.IsAttached;
-#else
-        DebugFlyoutItem.IsVisible = false;
-
 #endif
+    }
 
+    private void OnCurrentPlayerChanged()
+    {
+        MainThread.BeginInvokeOnMainThread(UpdatePlayerToolbarItem);
+    }
 
+    private void UpdatePlayerToolbarItem()
+    {
+        if (_currentPlayerService.IsLoggedIn)
+        {
+            if (_playerToolbarItem is null)
+            {
+                _playerToolbarItem = new ToolbarItem
+                {
+                    Text = _currentPlayerService.PlayerName ?? "Spieler",
+                    IconImageSource = "player_default.png",
+                    Order = ToolbarItemOrder.Primary,
+                    Priority = 0
+                };
+
+                _playerToolbarItem.Clicked += OnPlayerToolbarItemClicked;
+
+                ToolbarItems.Add(_playerToolbarItem);
+            }
+
+            _playerToolbarItem.Text = _currentPlayerService.PlayerName ?? "Spieler";
+            return;
+        }
+
+        if (_playerToolbarItem is not null)
+        {
+            _playerToolbarItem.Clicked -= OnPlayerToolbarItemClicked;
+            ToolbarItems.Remove(_playerToolbarItem);
+            _playerToolbarItem = null;
+        }
+    }
+
+    private async void OnPlayerToolbarItemClicked(object? sender, EventArgs e)
+    {
+        if (!_currentPlayerService.IsLoggedIn)
+        {
+            return;
+        }
+
+        var profilePage = _serviceProvider.GetRequiredService<PlayerProfilePage>();
+
+        await Navigation.PushModalAsync(profilePage, true);
     }
 }
