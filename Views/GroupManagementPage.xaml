@@ -95,40 +95,14 @@
                                             FontSize="14"
                                             TextColor="#7C6A58"/>
                                         </VerticalStackLayout>
-                                        <!-- Host Badge -->
-                                        <Frame Grid.Column="2"
-                                        Padding="10,4"
-                                        CornerRadius="12"
-                                        BackgroundColor="#EDE6DD"
-                                        VerticalOptions="Center"
-                                        HorizontalOptions="End"
-                                        HasShadow="False"
-                                        IsVisible="{Binding HostedFlag}">
-
-                                            <Label Text="✓ Hat ausgerichtet"
-                                            FontSize="12"
-                                            FontAttributes="Bold"
-                                            TextColor="#7C6A58"
-                                            HorizontalOptions="Center"
-                                            VerticalOptions="Center"/>
-                                        </Frame>
-                                        <!-- IsNextHost Badge -->
-                                        <Frame Grid.Column="2"
-                                        Padding="10,4"
-                                        CornerRadius="12"
-                                        BackgroundColor="#EDE6DD"
-                                        VerticalOptions="Center"
-                                        HorizontalOptions="End"
-                                        HasShadow="False"
-                                        IsVisible="{Binding IsNextHost}">
-
-                                            <Label Text="nächster"
-                                            FontSize="12"
-                                            FontAttributes="Bold"
-                                            TextColor="#7C6A58"
-                                            HorizontalOptions="Center"
-                                            VerticalOptions="Center"/>
-                                        </Frame>
+                                        <ImageButton
+                                            Grid.Column="2"
+                                       Source="delete_icon.png"
+                                       BackgroundColor="Transparent"
+                                       WidthRequest="24"
+                                       HeightRequest="24"
+                                       Command="{Binding DeleteCommand}"
+                                       />
                                     </Grid>
                                 </DataTemplate>
                             </CollectionView.ItemTemplate>
