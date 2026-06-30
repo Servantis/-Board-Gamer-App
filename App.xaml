@@ -2,13 +2,16 @@
 <Application xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:local="clr-namespace:BoardGamerApp"
-             x:Class="BoardGamerApp.App">
+             x:Class="BoardGamerApp.App"
+             xmlns:converters="clr-namespace:BoardGamerApp.Converters">
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="Resources/Styles/Colors.xaml" />
-                <ResourceDictionary Source="Resources/Styles/Styles.xaml" />
+                <ResourceDictionary Source="Resources/Styles/Colors.xaml"/>
+                <ResourceDictionary Source="Resources/Styles/Styles.xaml"/>
+
             </ResourceDictionary.MergedDictionaries>
+            <converters:IsoToDisplayDateConverter x:Key="IsoToDisplayDateConverter"/>
         </ResourceDictionary>
     </Application.Resources>
 </Application>

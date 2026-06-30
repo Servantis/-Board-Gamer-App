@@ -2,6 +2,107 @@ namespace BoardGamerApp;
 
 using System.Collections.ObjectModel;
 using System.Windows.Input;
+using BoardGamerApp.Models;
+
+public class EventViewModel
+{
+    public ObservableCollection<GameNight> GameNights { get; set; }
+    public ObservableCollection<GameNight> UpcomingGameNights { get; set; }
+
+    public ICommand EventClickedCommand { get; }
+    public ICommand DeleteEventCommand { get; }
+
+    // Hilfs-Property: Vergangene Events
+    public IEnumerable<GameNight> PastGameNights
+        => GameNights.Where(n => ParseDate(n.ScheduledAt) < DateTime.Now);
+
+    public EventViewModel()
+    {
+        // Beispiel-Daten (nur Platzhalter, später aus DB laden)
+        GameNights = new ObservableCollection<GameNight>
+        {
+            new GameNight
+            {
+                GroupId = "default",
+                ScheduledAt = new DateTime(2026, 6, 12, 19, 0, 0).ToUniversalTime().ToString("o"),
+                LocationId = "Annastraße 67",
+                HostPlayerId = "Anna",
+                Notes = "Catan"
+            },
+            new GameNight
+            {
+                GroupId = "default",
+                ScheduledAt = new DateTime(2026, 6, 16, 19, 0, 0).ToUniversalTime().ToString("o"),
+                LocationId = "Horststraße 17",
+                HostPlayerId = "Horst",
+                Notes = "Schach"
+            },
+            new GameNight
+            {
+                GroupId = "default",
+                ScheduledAt = new DateTime(2026, 6, 17, 19, 0, 0).ToUniversalTime().ToString("o"),
+                LocationId = "Mannistraße 17",
+                HostPlayerId = "Manni",
+                Notes = "Skat"
+            }
+        };
+
+        UpcomingGameNights = new ObservableCollection<GameNight>(
+            GameNights.Where(n => ParseDate(n.ScheduledAt) >= DateTime.Now));
+
+        EventClickedCommand = new Command<GameNight>(OnEventClicked);
+        DeleteEventCommand = new Command<GameNight>(OnDeleteEvent);
+    }
+
+    public void AddGameNight(GameNight night)
+    {
+        GameNights.Add(night);
+
+        if (ParseDate(night.ScheduledAt) >= DateTime.Now)
+            UpcomingGameNights.Add(night);
+    }
+
+    private void OnEventClicked(GameNight night)
+    {
+        Console.WriteLine(
+            $"Event angeklickt: {night.Notes} bei {night.HostPlayerId} am {ParseDate(night.ScheduledAt)}"
+        );
+    }
+
+    private void OnDeleteEvent(GameNight night)
+    {
+        if (night != null && GameNights.Contains(night))
+        {
+            GameNights.Remove(night);
+
+            if (UpcomingGameNights.Contains(night))
+                UpcomingGameNights.Remove(night);
+
+            Console.WriteLine(
+                $"Event gelöscht: {night.Notes} bei {night.HostPlayerId}"
+            );
+        }
+    }
+
+    public IEnumerable<GameNight> Top3UpcomingGameNights =>
+        UpcomingGameNights
+            .OrderBy(n => ParseDate(n.ScheduledAt))
+            .Take(3);
+
+    // Hilfsmethode: ISO-String → DateTime
+    private static DateTime ParseDate(string isoString)
+    {
+        return DateTime.Parse(isoString, null, System.Globalization.DateTimeStyles.RoundtripKind)
+                       .ToLocalTime();
+    }
+}
+
+
+/*
+namespace BoardGamerApp;
+
+using System.Collections.ObjectModel;
+using System.Windows.Input;
 
 public class EventViewModel
 {
@@ -92,3 +193,4 @@ public class EventViewModel
     UpcomingEvents.OrderBy(e => e.Date).Take(3);
 
 }
+*/
