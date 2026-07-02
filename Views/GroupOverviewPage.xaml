@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:viewModels="clr-namespace:BoardGamerApp.ViewModels"
+             xmlns:models="clr-namespace:BoardGamerApp.Models"
+             x:Class="BoardGamerApp.Views.GroupOverviewPage"
+             x:DataType="viewModels:GroupOverviewViewModel"
+             Title="Meine Gruppen">
+    <Grid RowDefinitions="Auto,Auto,*"
+      Padding="30,20"
+      RowSpacing="16">
+
+        <!-- Kopfbereich -->
+        <VerticalStackLayout Grid.Row="0"
+                         Spacing="6">
+
+            <Label Text="Spieleverwaltung"
+               FontSize="22"
+               FontAttributes="Bold"
+               TextColor="#3B2E25" />
+
+            <Label Text="Alle gespeicherten Brettspiele aus der lokalen SQLite-Datenbank."
+               FontSize="14"
+               TextColor="#7C6A58" />
+
+        </VerticalStackLayout>
+
+        <!-- Lade- und Fehlerbereich -->
+        <VerticalStackLayout Grid.Row="1"
+                         Spacing="8">
+
+            <ActivityIndicator IsRunning="{Binding IsBusy}"
+                           IsVisible="{Binding IsBusy}" />
+
+            <Label Text="{Binding ErrorMessage}"
+               IsVisible="{Binding HasError}"
+               FontSize="13"
+               TextColor="DarkRed" />
+
+        </VerticalStackLayout>
+
+        <!-- Spieleliste -->
+        <RefreshView Grid.Row="2"
+                 IsRefreshing="{Binding IsBusy}"
+                 Command="{Binding LoadGamesCommand}">
+
+            <CollectionView x:Name="GamesCollectionView"
+                        ItemsSource="{Binding Games}"
+                        EmptyView="Noch keine Spiele vorhanden.">
+
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="models:GamingGroup">
+
+                        <Border StrokeThickness="0"
+        BackgroundColor="#FFFFFF"
+        StrokeShape="RoundRectangle 12"
+        Padding="15"
+        Margin="0,0,0,12">
+
+                            <Grid ColumnDefinitions="*,Auto"
+          RowDefinitions="Auto,Auto,Auto,Auto"
+          ColumnSpacing="10"
+          RowSpacing="6">
+
+                                <!-- Titel -->
+                                <Label Grid.Row="0"
+                            Grid.Column="0"
+                            Text="{Binding Title}"
+                            FontSize="18"
+                            FontAttributes="Bold"
+                            TextColor="#0F172A" />
+
+                                <!-- Löschen-Button -->
+                                <ImageButton Grid.Row="0"
+                            Grid.Column="1"
+                            Source="trash_icon_red.png"
+                            HeightRequest="24"
+                            WidthRequest="24"
+                            Padding="0"
+                            BackgroundColor="Transparent"
+                            VerticalOptions="Start"
+                            HorizontalOptions="End"
+                            Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.DeleteGameCommand}"
+                            CommandParameter="{Binding .}" />
+
+                                <Label Grid.Row="1"
+                            Grid.Column="0"
+                            Grid.ColumnSpan="2"
+                            Text="{Binding GameGenre, StringFormat='Kategorie: {0}'}"
+                            FontSize="14"
+                            TextColor="#334155" />
+
+                                <Label Grid.Row="2"
+                            Grid.Column="0"
+                            Grid.ColumnSpan="2"
+                            Text="{Binding PlayerRange, StringFormat='Spieler: {0}'}"
+                            FontSize="14"
+                            TextColor="#334155" />
+
+                                <Label Grid.Row="3"
+                            Grid.Column="0"
+                            Grid.ColumnSpan="2"
+                            Text="{Binding DurationText, StringFormat='Dauer: {0}'}"
+                            FontSize="14"
+                            TextColor="#334155" />
+
+                            </Grid>
+
+                        </Border>
+
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+
+            </CollectionView>
+
+        </RefreshView>
+
+        <!--Add-Button-->
+        <Border
+       Grid.Row="2"
+       WidthRequest="60"
+       HeightRequest="60"
+       StrokeShape="RoundRectangle 12"
+       BackgroundColor="#8B5E3C"
+       
+       VerticalOptions="End"
+       HorizontalOptions="Center"
+       InputTransparent="False">
+
+            <Border.GestureRecognizers>
+                <TapGestureRecognizer Command="{Binding AddGameCommand}" />
+            </Border.GestureRecognizers>
+
+            <Image Source="plus_icon.png"
+           HeightRequest="28"
+           WidthRequest="28"
+           VerticalOptions="Center"
+           HorizontalOptions="Center"
+           InputTransparent="True" />
+
+        </Border>
+    </Grid>
+</ContentPage>

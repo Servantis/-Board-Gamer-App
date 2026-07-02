@@ -14,29 +14,41 @@
             <VerticalStackLayout Padding="30,0"
                               Spacing="25">
 
-                <Grid ColumnDefinitions="*,Auto"
-                  Margin="0,15,0,0">
+                <Grid ColumnDefinitions="Auto,Auto,*"
+                  Margin="0,15,0,0"
+                  ColumnSpacing="8">
 
                     <!-- Titel -->
-                    <Label Text="Gruppe"
-                        Style="{StaticResource SubHeadline}"
-                        FontSize="18"
-                        HorizontalOptions="Start"
-                        VerticalOptions="Center"
-                        SemanticProperties.HeadingLevel="Level1"/>
+                    <Label Grid.Column="0"
+                       Text="Gruppe"
+                       Style="{StaticResource SubHeadline}"
+                       FontSize="18"
+                       VerticalOptions="Center"
+                       SemanticProperties.HeadingLevel="Level1"/>
 
-                    <!-- Button rechts -->
-                    <Button Grid.Column="1"
-                             BackgroundColor="Transparent"
-                             Padding="10"
-                             Command="{Binding ManageMembersCommand}">
+                    <!-- Plus-Button -->
+                    <ImageButton Grid.Column="1"
+                         Source="plus_icon.png"
+                         BackgroundColor="Transparent"
+                         WidthRequest="20"
+                         HeightRequest="20"
+                         Padding="9"
+                         VerticalOptions="Center"
+                         Command="{Binding AddGroupCommand}"/>
+
+                    <!-- Mitglieder-Button -->
+                    <Button Grid.Column="2"
+                        HorizontalOptions="End"
+                        BackgroundColor="Transparent"
+                        Padding="10"
+                        Command="{Binding ManageMembersCommand}">
                         <Button.ImageSource>
                             <FontImageSource Glyph="👥"
-                              Size="22"
-                              Color="#3B2E25"/>
+                             Size="22"
+                             Color="#3B2E25"/>
                         </Button.ImageSource>
-
                     </Button>
+
                 </Grid>
 
                 <Border StrokeThickness="0"
@@ -99,9 +111,10 @@
                                             Grid.Column="2"
                                        Source="delete_icon.png"
                                        BackgroundColor="Transparent"
-                                       WidthRequest="24"
-                                       HeightRequest="24"
-                                       Command="{Binding DeleteCommand}"
+                                       WidthRequest="20"
+                                       HeightRequest="20"
+                                       Padding="8"
+                                       Command="{Binding DeleteGroupMemberCommand}"
                                        />
                                     </Grid>
                                 </DataTemplate>
