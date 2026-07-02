@@ -62,13 +62,23 @@
                                     <VerticalStackLayout Grid.Column="1"
                                                          Padding="10,0"
                                                          VerticalOptions="Center">
-                                        <Label Text="{Binding DisplayDate}"
+
+                                        <!-- Datum -->
+                                        <Label Text="{Binding ScheduledAt, Converter={StaticResource IsoToDisplayDateConverter}}"
                                                FontAttributes="Bold"
                                                FontSize="16"
                                                TextColor="#3B2E25"/>
-                                        <Label Text="{Binding Location, StringFormat='{0}'}"
+
+                                        <!-- Ort -->
+                                        <Label Text="{Binding LocationId, StringFormat='{0}'}"
                                                FontSize="14"
                                                TextColor="#7C6A58"/>
+
+                                        <!-- Optional: Spielname -->
+                                        <Label Text="{Binding Notes, StringFormat='{0}'}"
+                                               FontSize="14"
+                                               TextColor="#7C6A58"/>
+
                                     </VerticalStackLayout>
 
                                     <!-- Bewertet-Badge -->

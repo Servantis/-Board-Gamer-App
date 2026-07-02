@@ -23,11 +23,9 @@
 
               <!-- Terminliste -->
               <ScrollView Grid.Row="1">
-
-                     <!-- Abstand zum Rand -->
                      <VerticalStackLayout Padding="20">
 
-                            <CollectionView ItemsSource="{Binding UpcomingEvents}">
+                            <CollectionView ItemsSource="{Binding UpcomingGameNights}">
                                    <CollectionView.ItemTemplate>
                                           <DataTemplate>
 
@@ -54,35 +52,39 @@
                                                                </Frame.GestureRecognizers>
 
                                                                <VerticalStackLayout Spacing="6">
-                                                                      <Label Text="{Binding DisplayDate}"
+
+                                                                      <!-- Datum -->
+                                                                      <Label Text="{Binding ScheduledAt, Converter={StaticResource IsoToDisplayDateConverter}}"
                                                                              FontAttributes="Bold"
                                                                              FontSize="16"
                                                                              TextColor="#0F172A"/>
 
-                                                                      <Label Text="{Binding Location, StringFormat='Ort: {0}'}"
+                                                                      <!-- Ort -->
+                                                                      <Label Text="{Binding LocationId, StringFormat='Ort: {0}'}"
                                                                              FontSize="14"
                                                                              TextColor="#334155"/>
 
-                                                                      <Label Text="{Binding Game, StringFormat='Spiel: {0}'}"
+                                                                      <!-- Spiel -->
+                                                                      <Label Text="{Binding Notes, StringFormat='Spiel: {0}'}"
                                                                              FontSize="14"
                                                                              TextColor="#334155"/>
 
-                                                                      <Label Text="{Binding Host, StringFormat='Veranstalter: {0}'}"
+                                                                      <!-- Veranstalter -->
+                                                                      <Label Text="{Binding HostPlayerId, StringFormat='Veranstalter: {0}'}"
                                                                              FontSize="14"
                                                                              TextColor="#1E3A8A"
                                                                              FontAttributes="Bold"/>
+
                                                                </VerticalStackLayout>
 
                                                         </Frame>
                                                  </SwipeView>
-
 
                                           </DataTemplate>
                                    </CollectionView.ItemTemplate>
                             </CollectionView>
 
                      </VerticalStackLayout>
-
               </ScrollView>
 
               <!-- Footer Navigation -->
@@ -120,7 +122,6 @@
                                           VerticalOptions="Center">
 
                             <VerticalStackLayout.GestureRecognizers>
-                                   <!--Durch dazugehörige OnxxxxClicked-Methode ersetzen-->
                                    <TapGestureRecognizer Tapped="OnPreviousEventsClicked"/>
                             </VerticalStackLayout.GestureRecognizers>
 
@@ -134,5 +135,6 @@
                                    HorizontalOptions="Center"/>
                      </VerticalStackLayout>
               </Grid>
+
        </Grid>
 </ContentPage>

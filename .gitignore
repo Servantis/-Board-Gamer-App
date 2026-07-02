@@ -419,3 +419,7 @@ src/Core/AndroidNative/build/reports/
 .DS_Store
 .DS_Store
 .DS_Store
+obj/Debug/net10.0-android/BoardGamerApp.AssemblyInfo.cs
+obj/Debug/net10.0-android/BoardGamerApp.AssemblyInfo.cs
+obj/Debug/net10.0-android/BoardGamerApp.AssemblyInfoInputs.cache
+obj/Debug/net10.0-android/BoardGamerApp.GeneratedMSBuildEditorConfig.editorconfig

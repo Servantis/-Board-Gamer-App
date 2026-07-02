@@ -13,8 +13,8 @@
               HorizontalOptions="Center"
               VerticalOptions="Center">
 
-              <!-- Unsichtbare Picker außerhalb des sichtbaren Layouts -->
               <Grid>
+
                      <VerticalStackLayout Spacing="15"
                                           HorizontalOptions="Fill"
                                           WidthRequest="300">
@@ -24,7 +24,7 @@
                                    FontAttributes="Bold"
                                    TextColor="#3B2E25"/>
 
-                            <!-- Kombiniertes Datum/Uhrzeit-Feld -->
+                            <!-- Datum/Uhrzeit -->
                             <VerticalStackLayout>
                                    <Border x:Name="DateTimeBorder"
                                            BackgroundColor="#EDE6DD"
@@ -48,16 +48,19 @@
                                                TimeSelected="OnInlineTimeChanged"/>
                             </VerticalStackLayout>
 
+                            <!-- Ort (LocationId) -->
                             <Entry x:Name="LocationEntry"
-                                   Placeholder="Ort"
+                                   Placeholder="Ort (LocationId)"
                                    BackgroundColor="#EDE6DD"/>
 
+                            <!-- Spiel (Notes) -->
                             <Entry x:Name="GameEntry"
-                                   Placeholder="Spiel"
+                                   Placeholder="Spiel (Notes)"
                                    BackgroundColor="#EDE6DD"/>
 
+                            <!-- Veranstalter (HostPlayerId) -->
                             <Entry x:Name="HostEntry"
-                                   Placeholder="Veranstalter"
+                                   Placeholder="Veranstalter (HostPlayerId)"
                                    BackgroundColor="#EDE6DD"/>
 
                             <Button Text="Speichern"
@@ -67,20 +70,19 @@
                                     Clicked="OnSaveClicked"/>
                      </VerticalStackLayout>
 
-                     <!-- Unsichtbare Picker außerhalb des sichtbaren Layouts -->
+                     <!-- Unsichtbare Picker -->
                      <DatePicker x:Name="HiddenDatePicker"
                                  Opacity="0.01"
                                  TranslationX="-5000"
-                                 TranslationY="0"
                                  WidthRequest="200"
                                  HeightRequest="50"/>
 
                      <TimePicker x:Name="HiddenTimePicker"
                                  Opacity="0.01"
                                  TranslationX="-5000"
-                                 TranslationY="0"
                                  WidthRequest="200"
                                  HeightRequest="50"/>
+
               </Grid>
        </Border>
 </toolkit:Popup>
