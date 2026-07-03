@@ -304,6 +304,95 @@ public partial class EventViewModel : ObservableObject
     }
 
     /// <summary>
+    /// Aktualisiert einen bereits vorhandenen Termin (z. B. nach dem Antippen eines
+    /// Termins auf EventPage und dem Bearbeiten im NewEventPopup). Im Unterschied zu
+    /// <see cref="AddGameNightAsync"/> wird hier KEIN neuer Datensatz angelegt, sondern
+    /// der übergebene "night" (gleiche Id!) in der Datenbank überschrieben.
+    ///
+    /// Der bisherige Spielvorschlag (game_suggestions) für diesen Termin wird komplett
+    /// entfernt und - falls wieder ein Spiel gewählt wurde - neu angelegt. Das ist
+    /// einfacher, als einen bestehenden Eintrag "anzupassen", und stellt sicher, dass
+    /// pro Termin nie mehr als ein Vorschlag übrig bleibt.
+    ///
+    /// Am Ende wird bewusst die komplette Terminliste neu geladen (LoadGameNightsAsync()),
+    /// statt nur die Anzeigenamen dieses einen Termins zu aktualisieren: GameNight
+    /// implementiert kein INotifyPropertyChanged, d. h. Änderungen an einem Objekt, das
+    /// schon in GameNights/UpcomingGameNights liegt, würden von der UI sonst nicht bemerkt.
+    /// Außerdem kann sich durch eine Datumsänderung auch ändern, ob der Termin in Zukunft
+    /// oder Vergangenheit gehört - ein kompletter Reload behandelt das automatisch mit.
+    /// </summary>
+    public async Task UpdateGameNightAsync(
+        GameNight night,
+        GameLocation? location,
+        BoardGame? game,
+        Player? host)
+    {
+        try
+        {
+            night.LocationId = location?.Id;
+            night.HostPlayerId = host?.Id;
+
+            await _gameNightRepository.UpdateAsync(night);
+
+            // Alten Spielvorschlag/-vorschläge für diesen Termin entfernen ...
+            var existingSuggestions = (await _databaseService.GetNotDeletedAsync<GameSuggestion>())
+                .Where(s => s.GameNightId == night.Id)
+                .ToList();
+
+            foreach (var suggestion in existingSuggestions)
+                await _databaseService.HardDeleteAsync(suggestion);
+
+            // ... und, falls (wieder) ein Spiel ausgewählt ist, wie beim Anlegen einen
+            // neuen Vorschlag anlegen (siehe AddGameNightAsync für dieselbe Logik).
+            if (game is not null)
+            {
+                var suggestedByPlayerId = host?.Id ?? Players.FirstOrDefault()?.Id;
+
+                if (!string.IsNullOrWhiteSpace(suggestedByPlayerId))
+                {
+                    var suggestion = new GameSuggestion
+                    {
+                        GameNightId = night.Id,
+                        GameId = game.Id,
+                        SuggestedByPlayerId = suggestedByPlayerId
+                    };
+
+                    await _databaseService.InsertAsync(suggestion);
+                }
+            }
+
+            await LoadGameNightsAsync();
+        }
+        catch (Exception ex)
+        {
+            await Shell.Current.DisplayAlertAsync(
+                "Fehler",
+                $"Der Termin konnte nicht aktualisiert werden.\n{ex.Message}",
+                "OK");
+        }
+    }
+
+    /// <summary>
+    /// Sucht heraus, welches Spiel aktuell für einen Termin vorgeschlagen ist (über die
+    /// Tabelle game_suggestions) und gibt dafür direkt das passende Objekt aus der schon
+    /// geladenen <see cref="Games"/>-Liste zurück (NICHT ein frisch aus der DB gelesenes,
+    /// neues Objekt!). Das ist wichtig, damit NewEventPopup dieses Ergebnis 1:1 als
+    /// GamePicker.SelectedItem verwenden kann: .NET MAUI erkennt eine Vorauswahl im
+    /// Picker nur, wenn es sich um genau dasselbe Objekt (Referenz) handelt, das auch
+    /// in der ItemsSource-Liste steckt.
+    /// </summary>
+    public async Task<BoardGame?> GetSuggestedGameAsync(GameNight night)
+    {
+        var suggestions = await _databaseService.GetNotDeletedAsync<GameSuggestion>();
+        var suggestion = suggestions.FirstOrDefault(s => s.GameNightId == night.Id);
+
+        if (suggestion is null)
+            return null;
+
+        return Games.FirstOrDefault(g => g.Id == suggestion.GameId);
+    }
+
+    /// <summary>
     /// Löscht (soft-delete) einen Termin. [RelayCommand] macht daraus die Property
     /// "DeleteEventCommand" - genau der Name, an den in EventPage.xaml das
     /// "Löschen"-SwipeItem gebunden ist (Command="{Binding ... DeleteEventCommand}").

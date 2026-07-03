@@ -29,7 +29,11 @@
                                           HorizontalOptions="Fill"
                                           WidthRequest="300">
 
-                            <Label Text="Neuen Termin anlegen"
+                            <!-- x:Name="TitleLabel": wird im Code-Behind auf "Termin bearbeiten"
+                                 umgestellt, wenn das Popup im Bearbeiten-Modus geöffnet wird
+                                 (siehe NewEventPopup.xaml.cs, Konstruktor-Overload mit editingNight). -->
+                            <Label x:Name="TitleLabel"
+                                   Text="Neuen Termin anlegen"
                                    FontSize="20"
                                    FontAttributes="Bold"
                                    TextColor="#3B2E25"/>

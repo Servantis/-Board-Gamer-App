@@ -53,6 +53,11 @@
                                                                </SwipeItems>
                                                         </SwipeView.RightItems>
 
+                                                        <!-- Die ganze Karte ist antippbar (Tapped="OnEditEventClicked") und
+                                                             öffnet den Termin zum Bearbeiten im NewEventPopup (siehe
+                                                             EventPage.xaml.cs). Das "Bearbeiten"-Badge rechts ist rein
+                                                             visuell (zeigt dem Nutzer, WAS beim Antippen passiert) - genau
+                                                             wie das "Bewerten"-Badge auf PreviousEventsPage.xaml. -->
                                                         <Frame CornerRadius="12"
                                                                Padding="15"
                                                                Margin="0,0,0,15"
@@ -60,45 +65,66 @@
                                                                HasShadow="False">
 
                                                                <Frame.GestureRecognizers>
-                                                                      <TapGestureRecognizer Tapped="OnGamesClicked"/>
+                                                                      <TapGestureRecognizer Tapped="OnEditEventClicked"/>
                                                                </Frame.GestureRecognizers>
 
-                                                               <VerticalStackLayout Spacing="6">
+                                                               <Grid ColumnDefinitions="*,Auto">
 
-                                                                      <!-- Datum -->
-                                                                      <Label Text="{Binding ScheduledAt, Converter={StaticResource IsoToDisplayDateConverter}}"
-                                                                             FontAttributes="Bold"
-                                                                             FontSize="16"
-                                                                             TextColor="#0F172A"/>
+                                                                      <VerticalStackLayout Grid.Column="0" Spacing="6">
 
-                                                                      <!-- Ort, Spiel, Notiz und Veranstalter sind alle optional (siehe GameNight.cs),
-                                                                           deshalb blendet der StringToBoolConverter jede Zeile automatisch aus,
-                                                                           wenn der jeweilige Wert null/leer ist - statt z. B. "Ort: " leer anzuzeigen. -->
-                                                                      <Label Text="{Binding LocationName, StringFormat='Ort: {0}'}"
-                                                                             FontSize="14"
-                                                                             TextColor="#334155"
-                                                                             IsVisible="{Binding LocationName, Converter={StaticResource StringToBoolConverter}}"/>
+                                                                             <!-- Datum -->
+                                                                             <Label Text="{Binding ScheduledAt, Converter={StaticResource IsoToDisplayDateConverter}}"
+                                                                                    FontAttributes="Bold"
+                                                                                    FontSize="16"
+                                                                                    TextColor="#0F172A"/>
 
-                                                                      <!-- Spiel -->
-                                                                      <Label Text="{Binding GameName, StringFormat='Spiel: {0}'}"
-                                                                             FontSize="14"
-                                                                             TextColor="#334155"
-                                                                             IsVisible="{Binding GameName, Converter={StaticResource StringToBoolConverter}}"/>
+                                                                             <!-- Ort, Spiel, Notiz und Veranstalter sind alle optional (siehe GameNight.cs),
+                                                                                  deshalb blendet der StringToBoolConverter jede Zeile automatisch aus,
+                                                                                  wenn der jeweilige Wert null/leer ist - statt z. B. "Ort: " leer anzuzeigen. -->
+                                                                             <Label Text="{Binding LocationName, StringFormat='Ort: {0}'}"
+                                                                                    FontSize="14"
+                                                                                    TextColor="#334155"
+                                                                                    IsVisible="{Binding LocationName, Converter={StaticResource StringToBoolConverter}}"/>
 
-                                                                      <!-- Notiz -->
-                                                                      <Label Text="{Binding Notes, StringFormat='Notiz: {0}'}"
-                                                                             FontSize="14"
-                                                                             TextColor="#334155"
-                                                                             IsVisible="{Binding Notes, Converter={StaticResource StringToBoolConverter}}"/>
+                                                                             <!-- Spiel -->
+                                                                             <Label Text="{Binding GameName, StringFormat='Spiel: {0}'}"
+                                                                                    FontSize="14"
+                                                                                    TextColor="#334155"
+                                                                                    IsVisible="{Binding GameName, Converter={StaticResource StringToBoolConverter}}"/>
 
-                                                                      <!-- Veranstalter -->
-                                                                      <Label Text="{Binding HostName, StringFormat='Veranstalter: {0}'}"
-                                                                             FontSize="14"
-                                                                             TextColor="#1E3A8A"
-                                                                             FontAttributes="Bold"
-                                                                             IsVisible="{Binding HostName, Converter={StaticResource StringToBoolConverter}}"/>
+                                                                             <!-- Notiz -->
+                                                                             <Label Text="{Binding Notes, StringFormat='Notiz: {0}'}"
+                                                                                    FontSize="14"
+                                                                                    TextColor="#334155"
+                                                                                    IsVisible="{Binding Notes, Converter={StaticResource StringToBoolConverter}}"/>
 
-                                                               </VerticalStackLayout>
+                                                                             <!-- Veranstalter -->
+                                                                             <Label Text="{Binding HostName, StringFormat='Veranstalter: {0}'}"
+                                                                                    FontSize="14"
+                                                                                    TextColor="#1E3A8A"
+                                                                                    FontAttributes="Bold"
+                                                                                    IsVisible="{Binding HostName, Converter={StaticResource StringToBoolConverter}}"/>
+
+                                                                      </VerticalStackLayout>
+
+                                                                      <!-- "Bearbeiten"-Badge, optisch identisch zum "Bewerten"-Badge
+                                                                           auf PreviousEventsPage.xaml. -->
+                                                                      <Frame Grid.Column="1"
+                                                                             Padding="10,4"
+                                                                             CornerRadius="12"
+                                                                             BackgroundColor="#EDE6DD"
+                                                                             VerticalOptions="Center"
+                                                                             HorizontalOptions="End"
+                                                                             HasShadow="False">
+                                                                             <Label Text="Bearbeiten"
+                                                                                    FontSize="12"
+                                                                                    FontAttributes="Bold"
+                                                                                    TextColor="#7C6A58"
+                                                                                    HorizontalOptions="Center"
+                                                                                    VerticalOptions="Center"/>
+                                                                      </Frame>
+
+                                                               </Grid>
 
                                                         </Frame>
                                                  </SwipeView>

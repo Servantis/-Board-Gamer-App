@@ -20,10 +20,12 @@ public partial class MainPage : ContentPage
 		await ViewModel.LoadGameNightsAsync();
 	}
 
-	// Navigiert zur Spieleseite wenn auf den nächsten Termin geklickt wird.
-	private async void OnGamesClicked(object? sender, EventArgs e)
+	// Wird angetippt, wenn auf der MainPage einer der "Kommenden Termine" (Top3UpcomingGameNights)
+	// angeklickt wird. Springt zur EventPage (Terminverwaltung) - der Termin selbst kann dann dort
+	// angetippt werden, um ihn zu bearbeiten (siehe EventPage.xaml.cs, OnEditEventClicked).
+	private async void OnEventPreviewClicked(object? sender, EventArgs e)
 	{
-		await Shell.Current.GoToAsync(nameof(GamesPage));
+		await Shell.Current.GoToAsync(nameof(EventPage));
 	}
 
 	// Navigiert zur Bewertungsseite wenn auf den vergangenen Termin geklickt wird.

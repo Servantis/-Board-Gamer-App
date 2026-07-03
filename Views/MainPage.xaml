@@ -34,8 +34,11 @@
                                                         BackgroundColor="White"
                                                         >
 
+                                                        <!-- Tippen auf einen Termin springt zur EventPage (Terminverwaltung) -
+                                                             dort kann der Termin dann bearbeitet werden (siehe
+                                                             EventPage.xaml.cs, OnEditEventClicked). -->
                                                         <Border.GestureRecognizers>
-                                                               <TapGestureRecognizer Tapped="OnGamesClicked"/>
+                                                               <TapGestureRecognizer Tapped="OnEventPreviewClicked"/>
                                                         </Border.GestureRecognizers>
 
                                                         <VerticalStackLayout Spacing="6">

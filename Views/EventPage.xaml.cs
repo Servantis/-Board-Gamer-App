@@ -63,8 +63,27 @@ public partial class EventPage : ContentPage
             });
     }
 
-    private async void OnGamesClicked(object? sender, EventArgs e)
+    /// <summary>
+    /// Wird beim Antippen eines Termins in der Liste (CollectionView.ItemTemplate)
+    /// ausgelöst - siehe TapGestureRecognizer in EventPage.xaml. Öffnet das
+    /// NewEventPopup im Bearbeiten-Modus für GENAU diesen Termin.
+    ///
+    /// Woher kommt der angetippte Termin? "sender" ist hier der TapGestureRecognizer
+    /// selbst (der erbt in .NET MAUI von Element). Ein TapGestureRecognizer, der
+    /// innerhalb eines DataTemplates deklariert wird, bekommt automatisch denselben
+    /// BindingContext wie sein umgebendes Element - in unserem Fall also genau den
+    /// GameNight, für den diese Karte gerade angezeigt wird.
+    /// </summary>
+    private async void OnEditEventClicked(object? sender, EventArgs e)
     {
-        await Shell.Current.GoToAsync(nameof(GamesPage));
+        if (sender is not Element element || element.BindingContext is not GameNight night)
+            return;
+
+        // Welches Spiel aktuell zu diesem Termin vorgeschlagen ist, steckt nicht direkt
+        // in "night" selbst (siehe game_suggestions-Tabelle) - deshalb erst hier laden,
+        // BEVOR das Popup erzeugt wird (ein Konstruktor kann nicht "await" benutzen).
+        var suggestedGame = await ViewModel.GetSuggestedGameAsync(night);
+
+        this.ShowPopup(new NewEventPopup(ViewModel, night, suggestedGame));
     }
 }
