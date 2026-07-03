@@ -1,4 +1,10 @@
 <?xml version="1.0" encoding="utf-8" ?>
+<!--
+    Liste der vergangenen Termine. BindingContext ist ein PreviousEventsViewModel
+    (gesetzt in PreviousEventsPage.xaml.cs, sobald die Termine per Navigation
+    ankommen) - die Bindings hier ({Binding PreviousEvents} usw.) beziehen sich
+    also auf diese Klasse, nicht direkt auf EventViewModel.
+-->
 <ContentPage
     x:Class="BoardGamerApp.Views.PreviousEventsPage"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
@@ -70,14 +76,16 @@
                                                TextColor="#3B2E25"/>
 
                                         <!-- Ort -->
-                                        <Label Text="{Binding LocationId, StringFormat='{0}'}"
+                                        <Label Text="{Binding LocationName, StringFormat='{0}'}"
                                                FontSize="14"
-                                               TextColor="#7C6A58"/>
+                                               TextColor="#7C6A58"
+                                               IsVisible="{Binding LocationName, Converter={StaticResource StringToBoolConverter}}"/>
 
                                         <!-- Optional: Spielname -->
-                                        <Label Text="{Binding Notes, StringFormat='{0}'}"
+                                        <Label Text="{Binding GameName, StringFormat='{0}'}"
                                                FontSize="14"
-                                               TextColor="#7C6A58"/>
+                                               TextColor="#7C6A58"
+                                               IsVisible="{Binding GameName, Converter={StaticResource StringToBoolConverter}}"/>
 
                                     </VerticalStackLayout>
 

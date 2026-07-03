@@ -1,12 +1,23 @@
 ﻿namespace BoardGamerApp.Views;
 
+using BoardGamerApp.ViewModels;
+
 public partial class MainPage : ContentPage
 {
-	public MainPage()
+	public EventViewModel ViewModel { get; }
+
+	public MainPage(EventViewModel viewModel)
 	{
 		InitializeComponent();
-		BindingContext = new RatingViewModel();
-		BindingContext = new EventViewModel();
+		ViewModel = viewModel;
+		BindingContext = ViewModel;
+	}
+
+	protected override async void OnAppearing()
+	{
+		base.OnAppearing();
+
+		await ViewModel.LoadGameNightsAsync();
 	}
 
 	// Navigiert zur Spieleseite wenn auf den nächsten Termin geklickt wird.

@@ -51,6 +51,21 @@ public static class MauiProgram
                 builder.Services.AddSingleton<IPlayerRepository, PlayerRepository>();
                 builder.Services.AddSingleton<IPlayerDeviceRepository, PlayerDeviceRepository>();
                 builder.Services.AddSingleton<IGroupMemberRepository, GroupMemberRepository>();
+                // Transient statt Singleton: es ist okay, wenn bei Bedarf mehrfach ein
+                // neues GameNightRepository-Objekt erzeugt wird, weil es selbst keinen
+                // eigenen Zustand hält (nur eine Referenz auf den gemeinsamen DatabaseService).
+                builder.Services.AddTransient<GameNightRepository>();
+
+                //--Event/Termin Services
+                // Alle drei werden hier registriert, damit .NET MAUI sie automatisch per
+                // Konstruktor-Injection erzeugen kann, sobald sie gebraucht werden - z. B.
+                // wenn per Shell.Current.GoToAsync(nameof(EventPage)) navigiert wird, baut
+                // MAUI zuerst das benötigte EventViewModel (inkl. GameNightRepository,
+                // BoardGameRepository, IPlayerRepository, DatabaseService) und übergibt es
+                // dann automatisch dem EventPage-Konstruktor.
+                builder.Services.AddTransient<EventViewModel>();
+                builder.Services.AddTransient<EventPage>();
+                builder.Services.AddTransient<PreviousEventsPage>();
 
                 builder.Services.AddTransient<MainPage>();
 

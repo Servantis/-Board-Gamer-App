@@ -12,13 +12,19 @@
                      <VerticalStackLayout Padding="30,30,30,0"
                                           Spacing="25">
 
+                            <!-- Kleine Terminvorschau auf der Startseite. MainPage bekommt (genau
+                                 wie EventPage) ein EventViewModel per Dependency Injection - da
+                                 es als "Transient" registriert ist (siehe MauiProgram.cs), ist das
+                                 aber ein EIGENES Objekt, nicht dieselbe Instanz wie auf EventPage.
+                                 Beide laden also unabhängig voneinander aus derselben Datenbank,
+                                 hier zeigen wir nur die nächsten 3 Termine (Top3UpcomingGameNights). -->
                             <Label Text="Kommende Termine"
                                    Style="{StaticResource Headline}"
                                    FontSize="18"
                                    SemanticProperties.HeadingLevel="Level1"/>
 
                             <!-- Sichtbar nur wenn es mindestens 1 zukünftigen Termin gibt -->
-                            <CollectionView ItemsSource="{Binding Top3UpcomingEvents}"
+                            <CollectionView ItemsSource="{Binding Top3UpcomingGameNights}"
                                             IsVisible="{Binding HasUpcomingEvents}">
                                    <CollectionView.ItemTemplate>
                                           <DataTemplate>
@@ -33,23 +39,26 @@
                                                         </Border.GestureRecognizers>
 
                                                         <VerticalStackLayout Spacing="6">
-                                                               <Label Text="{Binding DisplayDate}"
+                                                               <Label Text="{Binding ScheduledAt, Converter={StaticResource IsoToDisplayDateConverter}}"
                                                                       FontAttributes="Bold"
                                                                       FontSize="16"
                                                                       TextColor="#0F172A"/>
 
-                                                               <Label Text="{Binding Location, StringFormat='Ort: {0}'}"
+                                                               <Label Text="{Binding LocationName, StringFormat='Ort: {0}'}"
                                                                       FontSize="14"
-                                                                      TextColor="#334155"/>
+                                                                      TextColor="#334155"
+                                                                      IsVisible="{Binding LocationName, Converter={StaticResource StringToBoolConverter}}"/>
 
-                                                               <Label Text="{Binding Game, StringFormat='Spiel: {0}'}"
+                                                               <Label Text="{Binding GameName, StringFormat='Spiel: {0}'}"
                                                                       FontSize="14"
-                                                                      TextColor="#334155"/>
+                                                                      TextColor="#334155"
+                                                                      IsVisible="{Binding GameName, Converter={StaticResource StringToBoolConverter}}"/>
 
-                                                               <Label Text="{Binding Host, StringFormat='Ausrichter: {0}'}"
+                                                               <Label Text="{Binding HostName, StringFormat='Ausrichter: {0}'}"
                                                                       FontSize="14"
                                                                       TextColor="#1E3A8A"
-                                                                      FontAttributes="Bold"/>
+                                                                      FontAttributes="Bold"
+                                                                      IsVisible="{Binding HostName, Converter={StaticResource StringToBoolConverter}}"/>
                                                         </VerticalStackLayout>
 
                                                  </Border>

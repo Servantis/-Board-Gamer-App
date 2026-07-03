@@ -17,6 +17,13 @@ public static class BoardGamerConstants
         public const string Removed = "removed";
     }
 
+    /// <summary>
+    /// Erlaubte Werte für GameNight.Status (Terminverwaltung). Statt an mehreren Stellen
+    /// im Code den String "planned" per Hand zu tippen (Tippfehler-Gefahr!), verwendet
+    /// man überall BoardGamerConstants.GameNightStatus.Planned. Die Werte müssen exakt zu
+    /// dem CHECK-Constraint der Spalte "status" in der Tabelle game_nights passen -
+    /// jeder andere Wert würde beim Speichern von der Datenbank abgelehnt werden.
+    /// </summary>
     public static class GameNightStatus
     {
         public const string Planned = "planned";

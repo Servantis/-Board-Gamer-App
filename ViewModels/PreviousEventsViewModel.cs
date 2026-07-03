@@ -3,6 +3,13 @@ namespace BoardGamerApp.ViewModels;
 using System.Collections.ObjectModel;
 using BoardGamerApp.Models;
 
+/// <summary>
+/// Sehr einfaches, "read-only" ViewModel für PreviousEventsPage: es bekommt im
+/// Konstruktor die komplette Terminliste übergeben (siehe PreviousEventsPage.xaml.cs)
+/// und filtert daraus nur die Termine heraus, deren Datum in der Vergangenheit liegt.
+/// Es lädt selbst nichts aus der Datenbank - das ist bereits vorher in EventViewModel
+/// passiert, hier wird nur weitergefiltert.
+/// </summary>
 public class PreviousEventsViewModel
 {
     public ObservableCollection<GameNight> PreviousEvents { get; }
@@ -14,6 +21,8 @@ public class PreviousEventsViewModel
         );
     }
 
+    // Gleiche Hilfsmethode wie in EventViewModel: wandelt den gespeicherten
+    // ISO-8601-UTC-String zurück in ein lokales DateTime zum Vergleichen.
     private static DateTime ParseDate(string isoString)
     {
         return DateTime.Parse(
@@ -23,22 +32,3 @@ public class PreviousEventsViewModel
         ).ToLocalTime();
     }
 }
-
-
-/*
-namespace BoardGamerApp.ViewModels;
-
-using System.Collections.ObjectModel;
-
-public class PreviousEventsViewModel
-{
-    public ObservableCollection<BoardGameEvent> PreviousEvents { get; }
-
-    public PreviousEventsViewModel(IEnumerable<BoardGameEvent> allEvents)
-    {
-        PreviousEvents = new ObservableCollection<BoardGameEvent>(
-            allEvents.Where(e => e.Date < DateTime.Now)
-        );
-    }
-}
-*/

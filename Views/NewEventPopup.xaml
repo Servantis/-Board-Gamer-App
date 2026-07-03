@@ -1,4 +1,14 @@
 <?xml version="1.0" encoding="utf-8" ?>
+<!--
+    Dialog zum Anlegen eines neuen Termins.
+
+    Wichtig: Die drei Picker unten (LocationPicker/GamePicker/HostPicker) haben hier
+    KEIN ItemsSource-Binding in XAML - das wird stattdessen im Code-Behind
+    (NewEventPopup.xaml.cs, Konstruktor) direkt gesetzt, z. B.:
+        LocationPicker.ItemsSource = _viewModel.Locations;
+    Das ist hier bewusst so gelöst, weil dieses Popup ohne eigenen BindingContext
+    arbeitet (siehe Kommentar in NewEventPopup.xaml.cs).
+-->
 <toolkit:Popup
        x:Class="BoardGamerApp.Views.NewEventPopup"
        xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
@@ -48,19 +58,27 @@
                                                TimeSelected="OnInlineTimeChanged"/>
                             </VerticalStackLayout>
 
-                            <!-- Ort (LocationId) -->
-                            <Entry x:Name="LocationEntry"
-                                   Placeholder="Ort (LocationId)"
-                                   BackgroundColor="#EDE6DD"/>
+                            <!-- Ort (aus locations, LocationId) -->
+                            <Picker x:Name="LocationPicker"
+                                    Title="Ort wählen"
+                                    ItemDisplayBinding="{Binding Name}"
+                                    BackgroundColor="#EDE6DD"/>
 
-                            <!-- Spiel (Notes) -->
-                            <Entry x:Name="GameEntry"
-                                   Placeholder="Spiel (Notes)"
-                                   BackgroundColor="#EDE6DD"/>
+                            <!-- Spiel (aus games, legt beim Speichern einen game_suggestions-Eintrag an) -->
+                            <Picker x:Name="GamePicker"
+                                    Title="Spiel wählen"
+                                    ItemDisplayBinding="{Binding Title}"
+                                    BackgroundColor="#EDE6DD"/>
 
-                            <!-- Veranstalter (HostPlayerId) -->
-                            <Entry x:Name="HostEntry"
-                                   Placeholder="Veranstalter (HostPlayerId)"
+                            <!-- Veranstalter (aus players, HostPlayerId) -->
+                            <Picker x:Name="HostPicker"
+                                    Title="Veranstalter wählen"
+                                    ItemDisplayBinding="{Binding Name}"
+                                    BackgroundColor="#EDE6DD"/>
+
+                            <!-- Zusätzliche freie Notiz (Notes) -->
+                            <Entry x:Name="NotesEntry"
+                                   Placeholder="Notiz (optional)"
                                    BackgroundColor="#EDE6DD"/>
 
                             <Button Text="Speichern"
@@ -70,7 +88,10 @@
                                     Clicked="OnSaveClicked"/>
                      </VerticalStackLayout>
 
-                     <!-- Unsichtbare Picker -->
+                     <!-- Unsichtbare Picker: dienen nur dazu, über Unfocused-Events (siehe
+                          Code-Behind) die native Datum/Uhrzeit-Auswahl anzustoßen, ohne dass
+                          diese Picker selbst sichtbar in der Oberfläche auftauchen (Opacity/
+                          TranslationX schieben sie praktisch unsichtbar aus dem Bild). -->
                      <DatePicker x:Name="HiddenDatePicker"
                                  Opacity="0.01"
                                  TranslationX="-5000"

@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("BoardGamerApp")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0+f31764bc5d08284a19c615e82c46cc8ec8103ec8")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0+95aad4b65ebdfb72b6aae53f418604030071c6db")]
 [assembly: System.Reflection.AssemblyProductAttribute("BoardGamerApp")]
 [assembly: System.Reflection.AssemblyTitleAttribute("BoardGamerApp")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
