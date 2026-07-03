@@ -47,7 +47,10 @@
                                 <Grid ColumnDefinitions="Auto,*,Auto"
                                       VerticalOptions="Center">
 
-                                    <!-- Datumskreis -->
+                                    <!-- Datumskreis. InputTransparent="True" auf Frame + Image, damit ein
+                                         Tap genau hier nicht "verschluckt" wird, sondern beim Border weiter
+                                         oben (Tapped="OnRatingClicked") ankommt - siehe Kommentar beim
+                                         "Bewertet-Badge" weiter unten für die ausführliche Erklärung. -->
                                     <Frame Grid.Column="0"
                                            WidthRequest="50"
                                            HeightRequest="50"
@@ -55,13 +58,15 @@
                                            BackgroundColor="#EDE6DD"
                                            VerticalOptions="Center"
                                            HorizontalOptions="Center"
-                                           HasShadow="False">
+                                           HasShadow="False"
+                                           InputTransparent="True">
 
                                         <Image Source="exmark_icon.png"
                                                WidthRequest="28"
                                                HeightRequest="28"
                                                VerticalOptions="Center"
-                                               HorizontalOptions="Center"/>
+                                               HorizontalOptions="Center"
+                                               InputTransparent="True"/>
                                     </Frame>
 
                                     <!-- Termintext -->
@@ -89,20 +94,30 @@
 
                                     </VerticalStackLayout>
 
-                                    <!-- Bewertet-Badge -->
+                                    <!-- Bewertet-Badge.
+
+                                         InputTransparent="True" auf Frame UND Label ist hier wichtig: ein
+                                         Frame mit eigener BackgroundColor "fängt" Touch-Events sonst selbst
+                                         ab, statt sie an das TapGestureRecognizer des äußeren Border
+                                         (weiter oben, "OnRatingClicked") weiterzugeben. Mit
+                                         InputTransparent="True" wird dieser Bereich für Touches
+                                         "durchsichtig" - der Tap landet dann beim äußeren Border, egal WO
+                                         auf der Karte man tippt (auch direkt auf das Badge). -->
                                     <Frame Grid.Column="2"
                                            Padding="10,4"
                                            CornerRadius="12"
                                            BackgroundColor="#EDE6DD"
                                            VerticalOptions="Center"
                                            HorizontalOptions="End"
-                                           HasShadow="False">
+                                           HasShadow="False"
+                                           InputTransparent="True">
                                         <Label Text="Bewerten"
                                                FontSize="12"
                                                FontAttributes="Bold"
                                                TextColor="#7C6A58"
                                                HorizontalOptions="Center"
-                                               VerticalOptions="Center"/>
+                                               VerticalOptions="Center"
+                                               InputTransparent="True"/>
                                     </Frame>
 
                                 </Grid>
