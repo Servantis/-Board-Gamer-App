@@ -95,6 +95,26 @@ public class GroupOverviewRepository
         await database.UpdateAsync(group);
     }
 
+    // Gruppe verlassen, wenn Mitglied, aber kein Gruppenersteller
+    public async Task LeaveGroupAsync(string groupId, string playerId)
+    {
+        var database = await _databaseService.GetConnectionAsync();
+
+        const string sql = """
+        UPDATE group_members
+        SET deleted_at = ?,
+            version = version + 1
+        WHERE group_id = ?
+          AND player_id = ?
+          AND deleted_at IS NULL;
+        """;
+
+        await database.ExecuteAsync(
+            sql,
+            DateTime.UtcNow,
+            groupId,
+            playerId);
+    }
 
     // Prüft, ob bereits eine Gruppe mit gleichem Namen existiert.
     public async Task<bool> ExistsAsync(string groupName)

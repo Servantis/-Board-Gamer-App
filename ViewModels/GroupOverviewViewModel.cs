@@ -13,6 +13,8 @@ public partial class GroupOverviewViewModel : ObservableObject
 {
     private readonly GroupOverviewRepository _groupOverviewRepository;
     private readonly DatabaseService _databaseService;
+    private readonly CurrentPlayerService _currentPlayerService;
+
     public ObservableCollection<GamingGroup> AssignedGroups { get; } = new();
 
     [ObservableProperty]
@@ -23,15 +25,18 @@ public partial class GroupOverviewViewModel : ObservableObject
 
     public GroupOverviewViewModel(
         GroupOverviewRepository groupOverviewRepository,
-        DatabaseService databaseService)
+        DatabaseService databaseService,
+        CurrentPlayerService currentPlayerService)
 	{
         _groupOverviewRepository = groupOverviewRepository;
         _databaseService = databaseService;
+        _currentPlayerService = currentPlayerService;
     }
 
     [RelayCommand]
     public async Task LoadGroupsByPlayerIdAsync()
     {
+
         if (IsBusy)
             return;
 
@@ -40,12 +45,23 @@ public partial class GroupOverviewViewModel : ObservableObject
             IsBusy = true;
 
             AssignedGroups.Clear();
+            var playerId = _currentPlayerService.PlayerId;
 
-            var games = await _groupOverviewRepository.GetGroupsByPlayerIdAsync(playerId);
-
-            foreach (var game in games)
+            if (string.IsNullOrWhiteSpace(playerId))
             {
-                AssignedGroups.Add(game);
+                await Shell.Current.DisplayAlertAsync(
+                    "Fehler",
+                    "Es ist kein Spieler ausgewählt.",
+                    "OK");
+                return;
+            }
+
+            var assignedGroups = await _groupOverviewRepository.GetGroupsByPlayerIdAsync(playerId);
+
+            foreach (var group in assignedGroups)
+            {
+                group.CanDelete = IsGroupOwner(group);
+                AssignedGroups.Add(group);
             }
         }
         catch (Exception ex)
@@ -59,5 +75,65 @@ public partial class GroupOverviewViewModel : ObservableObject
         {
             IsBusy = false;
         }
+    }
+
+    [RelayCommand]
+    private async Task DeleteOrLeaveGroupAsync(GamingGroup group)
+    {
+        if (group == null)
+            return;
+
+        try
+        {
+            IsBusy = true;
+
+            if (IsGroupOwner(group))
+            {
+                var confirm = await Shell.Current.DisplayAlertAsync(
+                    "Gruppe löschen",
+                    $"Soll '{group.Name}' wirklich gelöscht werden?",
+                    "Ja",
+                    "Nein");
+
+                if (!confirm)
+                    return;
+
+                await _groupOverviewRepository.DeleteGroupAsync(group.Id);
+            }
+            else
+            {
+                var confirm = await Shell.Current.DisplayAlertAsync(
+                    "Gruppe verlassen",
+                    $"Möchtest du '{group.Name}' verlassen?",
+                    "Ja",
+                    "Nein");
+
+                if (!confirm)
+                    return;
+
+                await _groupOverviewRepository.LeaveGroupAsync(
+                    group.Id,
+                    _currentPlayerService.PlayerId!);
+            }
+
+            AssignedGroups.Remove(group);
+        }
+        catch (Exception ex)
+        {
+            await Shell.Current.DisplayAlertAsync(
+                "Fehler",
+                ex.Message,
+                "OK");
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+    private bool IsGroupOwner(GamingGroup group)
+    {
+        return group.CreatedByPlayerId ==
+               _currentPlayerService.PlayerId;
     }
 }

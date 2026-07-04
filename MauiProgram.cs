@@ -1,12 +1,13 @@
-﻿using BoardGamerApp.Services.Implementations;
+﻿using BoardGamerApp.Converters;
+using BoardGamerApp.Repositories;
+using BoardGamerApp.Services;
+using BoardGamerApp.Services.Implementations;
 using BoardGamerApp.Services.Interfaces;
+using BoardGamerApp.Services.Repositories;
 using BoardGamerApp.ViewModels;
 using BoardGamerApp.Views;
-using BoardGamerApp.Services;
 using CommunityToolkit.Maui;
 using Microsoft.Extensions.Logging;
-using BoardGamerApp.Repositories;
-using BoardGamerApp.Converters;
 
 
 
@@ -51,9 +52,9 @@ public static class MauiProgram
                 builder.Services.AddSingleton<IPlayerRepository, PlayerRepository>();
                 builder.Services.AddSingleton<IPlayerDeviceRepository, PlayerDeviceRepository>();
                 builder.Services.AddSingleton<IGroupMemberRepository, GroupMemberRepository>();
+                builder.Services.AddSingleton<GroupOverviewRepository>();
 
                 builder.Services.AddTransient<MainPage>();
-
 
 #if DEBUG
                 builder.Logging.AddDebug();
@@ -69,6 +70,9 @@ public static class MauiProgram
                 builder.Services.AddTransient<GroupMembersViewModel>();
                 builder.Services.AddTransient<GroupPage>();
                 builder.Services.AddTransient<GroupManagementPage>();
+
+                builder.Services.AddTransient<GroupOverviewViewModel>();
+                builder.Services.AddTransient<GroupOverviewPage>();
 
                 builder.Services.AddTransient<PlayerProfileViewModel>();
                 builder.Services.AddTransient<PlayerProfilePage>();
