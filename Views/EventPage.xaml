@@ -72,6 +72,14 @@
 
                                                                       <VerticalStackLayout Grid.Column="0" Spacing="6">
 
+                                                                             <!-- Gruppenname (z. B. "Mittwochsrunde"), aufgelöst über
+                                                                                  GroupId -> gaming_groups (siehe EventViewModel.ApplyDisplayNames). -->
+                                                                             <Label Text="{Binding GroupName, StringFormat='{0}'}"
+                                                                                    FontSize="12"
+                                                                                    FontAttributes="Bold"
+                                                                                    TextColor="#8B5E3C"
+                                                                                    IsVisible="{Binding GroupName, Converter={StaticResource StringToBoolConverter}}"/>
+
                                                                              <!-- Datum -->
                                                                              <Label Text="{Binding ScheduledAt, Converter={StaticResource IsoToDisplayDateConverter}}"
                                                                                     FontAttributes="Bold"

@@ -113,8 +113,10 @@ public partial class EventViewModel : ObservableObject
             var nights = await _gameNightRepository.GetAllAsync();
 
             // Für die Anzeigenamen brauchen wir die "Nachschlage-Tabellen" komplett geladen:
-            // locations/players/games für Ort/Veranstalter/Spiel-Titel und game_suggestions,
-            // um herauszufinden, welches Spiel zu welchem Termin vorgeschlagen wurde.
+            // gaming_groups/locations/players/games für Gruppen-/Ort-/Veranstalter-/Spiel-Titel
+            // und game_suggestions, um herauszufinden, welches Spiel zu welchem Termin
+            // vorgeschlagen wurde.
+            var groups = await _databaseService.GetNotDeletedAsync<GamingGroup>();
             var locations = await _databaseService.GetNotDeletedAsync<GameLocation>();
             var players = await _databaseService.GetNotDeletedAsync<Player>();
             var games = await _databaseService.GetNotDeletedAsync<BoardGame>();
@@ -122,6 +124,7 @@ public partial class EventViewModel : ObservableObject
 
             // In ein Dictionary (Id -> Objekt) umwandeln, damit das Nachschlagen pro Termin
             // gleich schnell ist (O(1) statt jedes Mal die ganze Liste zu durchsuchen).
+            var groupsById = groups.ToDictionary(g => g.Id);
             var locationsById = locations.ToDictionary(l => l.Id);
             var playersById = players.ToDictionary(p => p.Id);
             var gamesById = games.ToDictionary(g => g.Id);
@@ -137,7 +140,7 @@ public partial class EventViewModel : ObservableObject
                 // unten für die genaue Regel.
                 await ApplyCompletedStatusIfDueAsync(night);
 
-                ApplyDisplayNames(night, locationsById, playersById, gamesById, suggestions);
+                ApplyDisplayNames(night, groupsById, locationsById, playersById, gamesById, suggestions);
 
                 GameNights.Add(night);
 
@@ -239,9 +242,11 @@ public partial class EventViewModel : ObservableObject
         // Falls der Aufrufer (Popup) noch keine GroupId gesetzt hat, wird automatisch
         // die Standardgruppe verwendet. Gibt es gar keine Gruppe, brechen wir mit
         // einer verständlichen Meldung ab, statt einen DB-Fehler zu riskieren.
+        GamingGroup? group;
+
         if (string.IsNullOrWhiteSpace(night.GroupId))
         {
-            var group = await GetDefaultGroupAsync();
+            group = await GetDefaultGroupAsync();
 
             if (group is null)
             {
@@ -254,6 +259,12 @@ public partial class EventViewModel : ObservableObject
             }
 
             night.GroupId = group.Id;
+        }
+        else
+        {
+            // War schon eine GroupId gesetzt, laden wir die Gruppe trotzdem einmal nach -
+            // nur um gleich den Anzeigenamen (GroupName) für die UI zu haben.
+            group = await _databaseService.GetByIdAsync<GamingGroup>(night.GroupId);
         }
 
         try
@@ -289,6 +300,7 @@ public partial class EventViewModel : ObservableObject
 
             // Die Anzeigenamen setzen wir direkt hier, statt die ganze Liste neu aus der
             // DB zu laden - das spart einen kompletten Reload nur für einen neuen Termin.
+            night.GroupName = group?.Name;
             night.LocationName = location?.Name;
             night.HostName = host?.Name;
             night.GameName = game?.Title;
@@ -480,11 +492,20 @@ public partial class EventViewModel : ObservableObject
     /// </summary>
     private static void ApplyDisplayNames(
         GameNight night,
+        Dictionary<string, GamingGroup> groupsById,
         Dictionary<string, GameLocation> locationsById,
         Dictionary<string, Player> playersById,
         Dictionary<string, BoardGame> gamesById,
         List<GameSuggestion> suggestions)
     {
+        // GroupId ist (anders als LocationId/HostPlayerId) NIE null - jeder Termin
+        // gehört immer genau einer Gruppe (siehe GameNight.GroupId) - trotzdem hier
+        // TryGetValue statt direktem Zugriff, für den (unwahrscheinlichen) Fall, dass
+        // die Gruppe zwischenzeitlich gelöscht wurde.
+        night.GroupName = groupsById.TryGetValue(night.GroupId, out var group)
+            ? group.Name
+            : null;
+
         // TryGetValue statt "locationsById[night.LocationId]", weil es durchaus sein kann,
         // dass LocationId null ist (kein Ort gewählt) oder theoretisch auf einen
         // inzwischen gelöschten Ort zeigt - in beiden Fällen wollen wir keinen Absturz,

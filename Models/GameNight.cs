@@ -94,6 +94,10 @@ public class GameNight : BaseSyncEntity
     // immer automatisch mit dem aktuellen Namen verknüpft.
     // ---------------------------------------------------------------------
 
+    /// <summary>Anzeigename der Spielgruppe (aufgelöst aus GroupId, z. B. "Mittwochsrunde"). Nicht in der DB gespeichert.</summary>
+    [Ignore]
+    public string? GroupName { get; set; }
+
     /// <summary>Anzeigename des Orts (aufgelöst aus LocationId). Nicht in der DB gespeichert.</summary>
     [Ignore]
     public string? LocationName { get; set; }
