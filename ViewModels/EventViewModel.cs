@@ -131,6 +131,12 @@ public partial class EventViewModel : ObservableObject
 
             foreach (var night in nights.OrderBy(n => ParseDate(n.ScheduledAt)))
             {
+                // Bevor der Termin angezeigt wird: prüfen, ob sein Kalendertag inzwischen
+                // in der Vergangenheit liegt, und in diesem Fall den Status automatisch
+                // (und dauerhaft in der DB!) auf "completed" setzen - siehe Methode weiter
+                // unten für die genaue Regel.
+                await ApplyCompletedStatusIfDueAsync(night);
+
                 ApplyDisplayNames(night, locationsById, playersById, gamesById, suggestions);
 
                 GameNights.Add(night);
@@ -435,6 +441,34 @@ public partial class EventViewModel : ObservableObject
         Console.WriteLine(
             $"Event angeklickt: {night.GameName ?? night.Notes} bei {night.HostName} am {ParseDate(night.ScheduledAt)}"
         );
+    }
+
+    /// <summary>
+    /// Prüft, ob ein Termin automatisch als "completed" (erledigt) markiert werden muss,
+    /// und schreibt diesen Status-Wechsel bei Bedarf dauerhaft in die Datenbank.
+    ///
+    /// Regel: Sobald der KALENDERTAG des Termins (also ohne Uhrzeit - ein Termin um
+    /// 20:00 Uhr gilt schon ab 00:00 Uhr des nächsten Tages als "vorbei") vor dem
+    /// heutigen Tag liegt UND der Termin noch den Status "planned" hat, wird er auf
+    /// "completed" gesetzt. Bereits stornierte Termine (Status "cancelled") werden
+    /// dabei bewusst NICHT angefasst - eine Absage bleibt eine Absage, auch wenn das
+    /// Datum inzwischen in der Vergangenheit liegt.
+    ///
+    /// ".Date" schneidet bei einem DateTime die Uhrzeit weg (z. B. wird aus
+    /// "04.07.2026 20:00" einfach "04.07.2026 00:00") - genau das macht den Vergleich
+    /// hier zu einem reinen Kalendertag-Vergleich statt einem exakten Zeitvergleich.
+    /// </summary>
+    private async Task ApplyCompletedStatusIfDueAsync(GameNight night)
+    {
+        if (night.Status != BoardGamerConstants.GameNightStatus.Planned)
+            return;
+
+        if (ParseDate(night.ScheduledAt).Date >= DateTime.Now.Date)
+            return;
+
+        night.Status = BoardGamerConstants.GameNightStatus.Completed;
+
+        await _gameNightRepository.UpdateAsync(night);
     }
 
     /// <summary>

@@ -127,6 +127,13 @@ public class GameNightRepository
     /// "Löscht" einen Termin, ohne die Zeile wirklich aus der Tabelle zu entfernen -
     /// es wird nur DeletedAt gesetzt. Dadurch tauchen gelöschte Termine in
     /// GetAllAsync/GetByGroupAsync nicht mehr auf, bleiben aber technisch erhalten.
+    ///
+    /// Zusätzlich wird der Status auf "cancelled" gesetzt (siehe
+    /// BoardGamerConstants.GameNightStatus). Das ist rein fachlich sinnvoll: ein
+    /// gelöschter Termin wurde ja abgesagt, nicht "erledigt" oder weiterhin "geplant" -
+    /// und falls DeletedAt aus irgendeinem Grund mal ignoriert würde (z. B. in einem
+    /// späteren Server-Sync), zeigt der Status trotzdem korrekt an, dass der Termin
+    /// storniert ist.
     /// </summary>
     public async Task SoftDeleteAsync(GameNight night)
     {
@@ -136,6 +143,7 @@ public class GameNightRepository
 
         night.DeletedAt = now;
         night.UpdatedAt = now;
+        night.Status = BoardGamerConstants.GameNightStatus.Cancelled;
         night.Version += 1;
 
         await db.UpdateAsync(night);
