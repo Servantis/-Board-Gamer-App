@@ -74,6 +74,9 @@ public static class MauiProgram
                 builder.Services.AddTransient<GroupOverviewViewModel>();
                 builder.Services.AddTransient<GroupOverviewPage>();
 
+                builder.Services.AddTransient<AddGroupPage>();
+                builder.Services.AddTransient<AddGroupViewModel>();
+
                 builder.Services.AddTransient<PlayerProfileViewModel>();
                 builder.Services.AddTransient<PlayerProfilePage>();
 

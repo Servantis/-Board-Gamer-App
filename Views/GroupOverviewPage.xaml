@@ -136,7 +136,7 @@
            InputTransparent="False">
 
             <Border.GestureRecognizers>
- <!--               <TapGestureRecognizer Command="{Binding AddGameCommand}" /> -->
+                <TapGestureRecognizer Command="{Binding OpenAddGroupPageCommand}" />
             </Border.GestureRecognizers>
 
             <Image Source="plus_icon.png"

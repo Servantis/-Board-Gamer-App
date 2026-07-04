@@ -44,11 +44,14 @@ public partial class AppShell : Shell
         Routing.RegisterRoute(nameof(GamesPage), typeof(GamesPage));
         Routing.RegisterRoute(nameof(RatingPage), typeof(RatingPage));
         Routing.RegisterRoute(nameof(EventPage), typeof(EventPage));
-        Routing.RegisterRoute(nameof(GroupPage), typeof(GroupPage));
-        Routing.RegisterRoute(nameof(GroupManagementPage), typeof(GroupManagementPage));
         Routing.RegisterRoute(nameof(MessagePage), typeof(MessagePage));
         Routing.RegisterRoute(nameof(PreviousEventsPage), typeof(PreviousEventsPage));
         Routing.RegisterRoute(nameof(GroupOverviewPage), typeof(GroupOverviewPage));
+
+        // Gruppen Seiten 
+        Routing.RegisterRoute(nameof(AddGroupPage), typeof(AddGroupPage));
+        Routing.RegisterRoute(nameof(GroupPage), typeof(GroupPage));
+        Routing.RegisterRoute(nameof(GroupManagementPage), typeof(GroupManagementPage));
 
         // Spielerprofil wird als Modal über DI geöffnet.
         // Eine Shell-Route ist dafür nicht zwingend nötig.

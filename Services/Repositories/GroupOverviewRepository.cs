@@ -59,8 +59,8 @@ public class GroupOverviewRepository
     {
         var database = await _databaseService.GetConnectionAsync();
 
-        //group.CreatedAt = DateTime.UtcNow;
-        //group.UpdatedAt = DateTime.UtcNow;
+        group.CreatedAt = DateTimeHelper.UtcNowIsoString(); ;
+        group.UpdatedAt = DateTimeHelper.UtcNowIsoString();
         group.Version = 1;
 
         await database.InsertAsync(group);
@@ -72,7 +72,7 @@ public class GroupOverviewRepository
     {
         var database = await _databaseService.GetConnectionAsync();
 
-       // group.UpdatedAt = DateTime.UtcNow;
+        group.UpdatedAt = DateTimeHelper.UtcNowIsoString();
         group.Version++;
 
         await database.UpdateAsync(group);
@@ -88,8 +88,8 @@ public class GroupOverviewRepository
         if (group == null)
             return;
 
-       // group.DeletedAt = DateTime.UtcNow;
-       // group.UpdatedAt = DateTime.UtcNow;
+        group.DeletedAt = DateTimeHelper.UtcNowIsoString();
+        group.UpdatedAt = DateTimeHelper.UtcNowIsoString();
         group.Version++;
 
         await database.UpdateAsync(group);
