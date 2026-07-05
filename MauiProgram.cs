@@ -67,6 +67,14 @@ public static class MauiProgram
                 builder.Services.AddTransient<EventPage>();
                 builder.Services.AddTransient<PreviousEventsPage>();
 
+                //--Bewertungs-Feature (RatingPage): genau wie EventPage/EventViewModel
+                // braucht auch RatingPage per Konstruktor-Injection ein eigenes
+                // RatingViewModel - dafür müssen beide hier als Transient registriert sein,
+                // sonst kann .NET MAUI beim Navigieren zu RatingPage nicht automatisch die
+                // benötigten Abhängigkeiten (DatabaseService, CurrentPlayerService) auflösen.
+                builder.Services.AddTransient<RatingViewModel>();
+                builder.Services.AddTransient<RatingPage>();
+
                 builder.Services.AddTransient<MainPage>();
 
 

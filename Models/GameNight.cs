@@ -113,4 +113,46 @@ public class GameNight : BaseSyncEntity
     /// </summary>
     [Ignore]
     public string? GameName { get; set; }
+
+    // ---------------------------------------------------------------------
+    // Die folgenden vier Properties gehören zum Bewertungs-Feature
+    // (Views/RatingPage.xaml, ViewModels/PreviousEventsViewModel.cs). Auch sie
+    // sind [Ignore] - also nicht in der DB gespeichert, sondern werden von
+    // PreviousEventsViewModel.InitializeAsync() befüllt, indem die Tabelle
+    // game_night_reviews mit dem aktuell angemeldeten Spieler (siehe
+    // CurrentPlayerService) abgeglichen wird. Sie sagen der UI, WAS beim
+    // Antippen dieses Termins auf PreviousEventsPage passieren soll.
+    // ---------------------------------------------------------------------
+
+    /// <summary>
+    /// True, wenn der AKTUELLE Spieler (CurrentPlayerService.PlayerId) der Gastgeber
+    /// (HostPlayerId) dieses Termins war. Ein Gastgeber soll seinen eigenen Abend
+    /// nicht bewerten können - er darf aber sehen, wie er bewertet wurde.
+    /// </summary>
+    [Ignore]
+    public bool IsHostedByCurrentPlayer { get; set; }
+
+    /// <summary>
+    /// True, wenn der aktuelle Spieler für diesen Termin bereits einen Eintrag in
+    /// game_night_reviews angelegt hat. Eine zweite Bewertung ist nicht vorgesehen
+    /// (siehe UNIQUE-Constraint auf game_night_id+reviewer_player_id in der DB).
+    /// </summary>
+    [Ignore]
+    public bool IsRatedByCurrentPlayer { get; set; }
+
+    /// <summary>
+    /// True, wenn der aktuelle Spieler diesen Termin JETZT bewerten darf: der Termin
+    /// muss abgeschlossen sein (Status "completed"), der Spieler darf nicht der
+    /// Gastgeber sein und darf noch keine Bewertung abgegeben haben.
+    /// </summary>
+    [Ignore]
+    public bool CanBeRatedByCurrentPlayer { get; set; }
+
+    /// <summary>
+    /// Text für das Badge auf PreviousEventsPage ("Bewerten", "Bewertet" oder
+    /// "Deine Bewertung"). Null/leer blendet das Badge komplett aus (z. B. wenn der
+    /// Termin aus irgendeinem Grund noch nicht "completed" ist).
+    /// </summary>
+    [Ignore]
+    public string? RatingBadgeText { get; set; }
 }

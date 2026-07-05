@@ -34,12 +34,12 @@ public partial class NewEventPopup : Popup
 
     // Ist dieses Feld gesetzt, befindet sich das Popup im "Bearbeiten"-Modus:
     // OnSaveClicked aktualisiert dann diesen vorhandenen Termin (UpdateGameNightAsync),
-    // statt einen neuen anzulegen (AddGameNightAsync). Bleibt es null, verhält sich
-    // das Popup genau wie bisher (neuer Termin).
+    // statt einen neuen anzulegen (AddGameNightAsync). Bleibt es null, legt das Popup
+    // einen neuen Termin an.
     private readonly GameNight? _editingNight;
 
     /// <summary>
-    /// Konstruktor zum Anlegen eines NEUEN Termins (bisheriges Verhalten, unverändert).
+    /// Konstruktor zum Anlegen eines NEUEN Termins (leeres Formular).
     /// </summary>
     public NewEventPopup(EventViewModel vm) : this(vm, null, null)
     {
@@ -51,12 +51,11 @@ public partial class NewEventPopup : Popup
     /// Termin angetippt wird.
     ///
     /// <paramref name="editingNight"/> ist der zu bearbeitende Termin selbst (gleiche
-    /// Id bleibt beim Speichern erhalten). <paramref name="suggestedGame"/> muss
-    /// VORHER (also außerhalb dieses Konstruktors) per
-    /// <see cref="EventViewModel.GetSuggestedGameAsync"/> ermittelt werden, weil das
-    /// Ermitteln asynchron ist (Datenbankzugriff) - ein Konstruktor kann aber nicht
-    /// "await" verwenden. Deshalb übernimmt EventPage.xaml.cs diesen Schritt, bevor
-    /// das Popup überhaupt erzeugt wird.
+    /// Id bleibt beim Speichern erhalten). <paramref name="suggestedGame"/> wird schon
+    /// AUSSERHALB dieses Konstruktors (in EventPage.xaml.cs, bevor das Popup erzeugt
+    /// wird) per <see cref="EventViewModel.GetSuggestedGameAsync"/> ermittelt, weil das
+    /// Ermitteln asynchron ist (Datenbankzugriff) - ein Konstruktor kann aber kein
+    /// "await" benutzen.
     /// </summary>
     public NewEventPopup(EventViewModel vm, GameNight? editingNight, BoardGame? suggestedGame)
     {
@@ -107,7 +106,7 @@ public partial class NewEventPopup : Popup
         }
         else
         {
-            // --- Neu-Anlegen-Modus: wie bisher mit "jetzt" vorbelegen ---
+            // --- Neu-Anlegen-Modus: Datum/Uhrzeit mit dem aktuellen Zeitpunkt vorbelegen ---
             _selectedDateTime = DateTime.Now;
 
             HiddenDatePicker.Date = DateTime.Now;
@@ -167,7 +166,7 @@ public partial class NewEventPopup : Popup
     /// Zwei Fälle, je nachdem ob das Popup im Bearbeiten-Modus geöffnet wurde
     /// (_editingNight != null) oder nicht:
     /// - Neu anlegen: baut aus den Eingaben ein neues <see cref="GameNight"/>-Objekt
-    ///   und übergibt es an EventViewModel.AddGameNightAsync (wie bisher).
+    ///   und übergibt es an EventViewModel.AddGameNightAsync.
     /// - Bearbeiten: übernimmt die neuen Eingaben in den vorhandenen _editingNight
     ///   (gleiche Id!) und übergibt ihn an EventViewModel.UpdateGameNightAsync.
     ///
@@ -200,8 +199,8 @@ public partial class NewEventPopup : Popup
         }
         else
         {
-            // Neu-Anlegen-Modus (bisheriges Verhalten): GroupId wird von
-            // AddGameNightAsync automatisch auf die Standardgruppe gesetzt.
+            // Neu-Anlegen-Modus: GroupId wird von AddGameNightAsync automatisch auf die
+            // Standardgruppe gesetzt.
             var newNight = new GameNight
             {
                 ScheduledAt = _selectedDateTime.ToUniversalTime().ToString("o"),

@@ -225,9 +225,8 @@ public partial class EventViewModel : ObservableObject
     /// Wichtig: location/game/host sind hier bereits existierende Objekte aus der
     /// Datenbank (ausgewählt über die Picker im Popup) - keine Freitexte! Dadurch
     /// können LocationId/HostPlayerId (Foreign Keys auf locations/players) niemals
-    /// einen ungültigen Wert bekommen. Früher wurde hier Freitext direkt in diese
-    /// Spalten geschrieben, was zu "FOREIGN KEY constraint failed"-Abstürzen führte,
-    /// sobald der Text nicht zufällig mit einer existierenden Id übereinstimmte.
+    /// einen ungültigen Wert bekommen, der zu einem "FOREIGN KEY constraint failed"-
+    /// Absturz führen würde.
     ///
     /// Da die Tabelle game_nights selbst keine game_id-Spalte besitzt (ein Termin kann
     /// laut Datenmodell mehrere vorgeschlagene Spiele haben), wird ein ausgewähltes Spiel

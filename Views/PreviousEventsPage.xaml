@@ -102,7 +102,15 @@
 
                                     </VerticalStackLayout>
 
-                                    <!-- Bewertet-Badge.
+                                    <!-- Bewertungs-Badge.
+
+                                         Text kommt aus GameNight.RatingBadgeText (gesetzt von
+                                         PreviousEventsViewModel.InitializeAsync): "Bewerten", "Bewertet" oder
+                                         "Deine Bewertung" (falls man selbst Gastgeber war) - IsVisible blendet
+                                         das Badge komplett aus, falls RatingBadgeText null ist (siehe
+                                         StringToBoolConverter). Was beim Antippen genau passiert, entscheidet
+                                         PreviousEventsPage.xaml.cs (OnRatingClicked) anhand der drei Flags
+                                         CanBeRatedByCurrentPlayer/IsHostedByCurrentPlayer/IsRatedByCurrentPlayer.
 
                                          InputTransparent="True" auf Frame UND Label ist hier wichtig: ein
                                          Frame mit eigener BackgroundColor "fängt" Touch-Events sonst selbst
@@ -118,8 +126,9 @@
                                            VerticalOptions="Center"
                                            HorizontalOptions="End"
                                            HasShadow="False"
-                                           InputTransparent="True">
-                                        <Label Text="Bewerten"
+                                           InputTransparent="True"
+                                           IsVisible="{Binding RatingBadgeText, Converter={StaticResource StringToBoolConverter}}">
+                                        <Label Text="{Binding RatingBadgeText}"
                                                FontSize="12"
                                                FontAttributes="Bold"
                                                TextColor="#7C6A58"
