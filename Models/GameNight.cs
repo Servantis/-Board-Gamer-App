@@ -155,4 +155,14 @@ public class GameNight : BaseSyncEntity
     /// </summary>
     [Ignore]
     public string? RatingBadgeText { get; set; }
+
+    /// <summary>
+    /// True für genau den einen Termin, der von allen zukünftigen Terminen als
+    /// nächstes ansteht (chronologisch der früheste in EventViewModel.UpcomingGameNights).
+    /// Wird von EventViewModel.RecomputeNextUpcoming() gesetzt und auf MainPage benutzt,
+    /// um diesen einen Termin optisch hervorzuheben (siehe MainPage.xaml). Nicht in der
+    /// DB gespeichert.
+    /// </summary>
+    [Ignore]
+    public bool IsNextUpcoming { get; set; }
 }

@@ -148,6 +148,10 @@ public partial class EventViewModel : ObservableObject
                     UpcomingGameNights.Add(night);
             }
 
+            // Bestimmt, welcher der geladenen Termine der chronologisch nächste ist, und
+            // markiert genau diesen einen (IsNextUpcoming) - siehe RecomputeNextUpcoming().
+            RecomputeNextUpcoming();
+
             // GameNights/UpcomingGameNights sind ObservableCollections und melden Änderungen
             // (Add/Remove/Clear) von selbst an die UI. Die Properties weiter oben
             // (PastGameNights, Top3UpcomingGameNights, HasUpcomingEvents) sind aber nur
@@ -309,6 +313,7 @@ public partial class EventViewModel : ObservableObject
             if (ParseDate(night.ScheduledAt) >= DateTime.Now)
                 UpcomingGameNights.Add(night);
 
+            RecomputeNextUpcoming();
             NotifyDerivedProperties();
         }
         catch (Exception ex)
@@ -427,6 +432,9 @@ public partial class EventViewModel : ObservableObject
             GameNights.Remove(night);
             UpcomingGameNights.Remove(night);
 
+            // War der gelöschte Termin der bisher hervorgehobene "nächste Termin", muss
+            // jetzt ein anderer (oder gar keiner mehr) diese Markierung bekommen.
+            RecomputeNextUpcoming();
             NotifyDerivedProperties();
         }
         catch (Exception ex)
@@ -543,6 +551,25 @@ public partial class EventViewModel : ObservableObject
         OnPropertyChanged(nameof(PastGameNights));
         OnPropertyChanged(nameof(Top3UpcomingGameNights));
         OnPropertyChanged(nameof(HasUpcomingEvents));
+    }
+
+    /// <summary>
+    /// Ermittelt aus UpcomingGameNights den chronologisch frühesten Termin und setzt bei
+    /// diesem EINEN GameNight.IsNextUpcoming auf true, bei allen anderen auf false. Damit
+    /// kann MainPage.xaml genau den nächsten anstehenden Termin optisch hervorheben
+    /// (siehe dort: DataTrigger auf IsNextUpcoming).
+    ///
+    /// Wird nach jeder Änderung an UpcomingGameNights aufgerufen (Laden, Anlegen,
+    /// Löschen), damit die Markierung immer den tatsächlich nächsten Termin trifft.
+    /// </summary>
+    private void RecomputeNextUpcoming()
+    {
+        var next = UpcomingGameNights
+            .OrderBy(n => ParseDate(n.ScheduledAt))
+            .FirstOrDefault();
+
+        foreach (var night in UpcomingGameNights)
+            night.IsNextUpcoming = ReferenceEquals(night, next);
     }
 
     /// <summary>

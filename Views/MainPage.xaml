@@ -28,11 +28,32 @@
                                             IsVisible="{Binding HasUpcomingEvents}">
                                    <CollectionView.ItemTemplate>
                                           <DataTemplate>
+                                            <!-- StrokeThickness/Stroke sind hier bewusst schon vorbelegt (auch wenn
+                                                 "Transparent" unsichtbar ist): der DataTrigger unten ändert nur die
+                                                 FARBE, nicht die Dicke - die muss also von Anfang an gesetzt sein,
+                                                 sonst hätte der Rahmen keine Fläche zum Einfärben. -->
                                             <Border StrokeShape="RoundRectangle 12"
                                                         Padding="15"
                                                         Margin="0,0,0,15"
                                                         BackgroundColor="White"
+                                                        Stroke="Transparent"
+                                                        StrokeThickness="2"
                                                         >
+
+                                                        <!-- Hebt GENAU den chronologisch nächsten Termin optisch hervor:
+                                                             IsNextUpcoming wird von EventViewModel.RecomputeNextUpcoming()
+                                                             für immer nur einen Termin auf true gesetzt. Ein DataTrigger
+                                                             ändert dafür rein deklarativ (ohne Converter/Code-Behind)
+                                                             Hintergrund- und Rahmenfarbe der Karte, sobald die gebundene
+                                                             Bedingung zutrifft. -->
+                                                        <Border.Triggers>
+                                                               <DataTrigger TargetType="Border"
+                                                                            Binding="{Binding IsNextUpcoming}"
+                                                                            Value="True">
+                                                                      <Setter Property="BackgroundColor" Value="#FFF3D6"/>
+                                                                      <Setter Property="Stroke" Value="#8B5E3C"/>
+                                                               </DataTrigger>
+                                                        </Border.Triggers>
 
                                                         <!-- Tippen auf einen Termin springt zur EventPage (Terminverwaltung) -
                                                              dort kann der Termin dann bearbeitet werden (siehe
@@ -42,6 +63,16 @@
                                                         </Border.GestureRecognizers>
 
                                                         <VerticalStackLayout Spacing="6">
+
+                                                               <!-- "Nächster Termin"-Badge: nur bei genau der einen
+                                                                    hervorgehobenen Karte sichtbar (IsNextUpcoming ist ein
+                                                                    bool, dafür reicht direktes Binding an IsVisible ohne
+                                                                    Converter). -->
+                                                               <Label Text="★ Nächster Termin"
+                                                                      FontSize="12"
+                                                                      FontAttributes="Bold"
+                                                                      TextColor="#8B5E3C"
+                                                                      IsVisible="{Binding IsNextUpcoming}"/>
 
                                                                <!-- Gruppenname (z. B. "Mittwochsrunde"), aufgelöst über
                                                                     GroupId -> gaming_groups (siehe EventViewModel.ApplyDisplayNames). -->
