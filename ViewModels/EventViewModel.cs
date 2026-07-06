@@ -226,20 +226,22 @@ public partial class EventViewModel : ObservableObject
     /// <summary>
     /// Speichert einen neuen Termin in der Datenbank.
     ///
-    /// Wichtig: location/game/host sind hier bereits existierende Objekte aus der
-    /// Datenbank (ausgewählt über die Picker im Popup) - keine Freitexte! Dadurch
-    /// können LocationId/HostPlayerId (Foreign Keys auf locations/players) niemals
-    /// einen ungültigen Wert bekommen, der zu einem "FOREIGN KEY constraint failed"-
-    /// Absturz führen würde.
+    /// Wichtig: location/games/host sind hier bereits existierende Objekte aus der
+    /// Datenbank (ausgewählt über die Auswahl-Elemente im Popup) - keine Freitexte!
+    /// Dadurch können LocationId/HostPlayerId (Foreign Keys auf locations/players)
+    /// niemals einen ungültigen Wert bekommen, der zu einem "FOREIGN KEY constraint
+    /// failed"-Absturz führen würde.
     ///
     /// Da die Tabelle game_nights selbst keine game_id-Spalte besitzt (ein Termin kann
-    /// laut Datenmodell mehrere vorgeschlagene Spiele haben), wird ein ausgewähltes Spiel
-    /// stattdessen über einen zusätzlichen Eintrag in der Tabelle game_suggestions verknüpft.
+    /// laut Datenmodell mehrere vorgeschlagene Spiele haben), werden die ausgewählten
+    /// Spiele stattdessen über je einen eigenen Eintrag in der Tabelle game_suggestions
+    /// verknüpft - "games" darf deshalb auch mehrere Einträge enthalten (Mehrfachauswahl
+    /// im Popup, siehe NewEventPopup.xaml, GamesCollectionView).
     /// </summary>
     public async Task AddGameNightAsync(
         GameNight night,
         GameLocation? location,
-        BoardGame? game,
+        IReadOnlyList<BoardGame> games,
         Player? host)
     {
         // Falls der Aufrufer (Popup) noch keine GroupId gesetzt hat, wird automatisch
@@ -280,24 +282,29 @@ public partial class EventViewModel : ObservableObject
 
             await _gameNightRepository.AddAsync(night);
 
-            // Wurde ein Spiel ausgewählt, legen wir zusätzlich einen game_suggestions-
-            // Eintrag an. Diese Tabelle verlangt "wer hat das Spiel vorgeschlagen"
-            // (SuggestedByPlayerId, NOT NULL) - wir nehmen dafür den Veranstalter,
-            // und falls keiner gewählt wurde, ersatzweise den ersten verfügbaren Spieler.
-            if (game is not null)
+            // Für jedes ausgewählte Spiel legen wir einen eigenen game_suggestions-
+            // Eintrag an - dadurch kann ein Termin (wie im Datenmodell vorgesehen)
+            // mehrere vorgeschlagene Spiele haben. Diese Tabelle verlangt "wer hat das
+            // Spiel vorgeschlagen" (SuggestedByPlayerId, NOT NULL) - wir nehmen dafür
+            // den Veranstalter, und falls keiner gewählt wurde, ersatzweise den ersten
+            // verfügbaren Spieler.
+            if (games.Count > 0)
             {
                 var suggestedByPlayerId = host?.Id ?? Players.FirstOrDefault()?.Id;
 
                 if (!string.IsNullOrWhiteSpace(suggestedByPlayerId))
                 {
-                    var suggestion = new GameSuggestion
+                    foreach (var game in games)
                     {
-                        GameNightId = night.Id,
-                        GameId = game.Id,
-                        SuggestedByPlayerId = suggestedByPlayerId
-                    };
+                        var suggestion = new GameSuggestion
+                        {
+                            GameNightId = night.Id,
+                            GameId = game.Id,
+                            SuggestedByPlayerId = suggestedByPlayerId
+                        };
 
-                    await _databaseService.InsertAsync(suggestion);
+                        await _databaseService.InsertAsync(suggestion);
+                    }
                 }
             }
 
@@ -306,7 +313,7 @@ public partial class EventViewModel : ObservableObject
             night.GroupName = group?.Name;
             night.LocationName = location?.Name;
             night.HostName = host?.Name;
-            night.GameName = game?.Title;
+            night.GameName = games.Count > 0 ? string.Join(", ", games.Select(g => g.Title)) : null;
 
             GameNights.Add(night);
 
@@ -331,10 +338,11 @@ public partial class EventViewModel : ObservableObject
     /// <see cref="AddGameNightAsync"/> wird hier KEIN neuer Datensatz angelegt, sondern
     /// der übergebene "night" (gleiche Id!) in der Datenbank überschrieben.
     ///
-    /// Der bisherige Spielvorschlag (game_suggestions) für diesen Termin wird komplett
-    /// entfernt und - falls wieder ein Spiel gewählt wurde - neu angelegt. Das ist
-    /// einfacher, als einen bestehenden Eintrag "anzupassen", und stellt sicher, dass
-    /// pro Termin nie mehr als ein Vorschlag übrig bleibt.
+    /// Die bisherigen Spielvorschläge (game_suggestions) für diesen Termin werden
+    /// komplett entfernt und - für jedes (wieder) ausgewählte Spiel - neu angelegt. Das
+    /// ist einfacher, als bestehende Einträge einzeln "anzupassen", und stellt sicher,
+    /// dass am Ende genau die Spiele als Vorschlag hinterlegt sind, die man beim
+    /// Bearbeiten ausgewählt hat (auch bei Mehrfachauswahl im Popup).
     ///
     /// Am Ende wird bewusst die komplette Terminliste neu geladen (LoadGameNightsAsync()),
     /// statt nur die Anzeigenamen dieses einen Termins zu aktualisieren: GameNight
@@ -346,7 +354,7 @@ public partial class EventViewModel : ObservableObject
     public async Task UpdateGameNightAsync(
         GameNight night,
         GameLocation? location,
-        BoardGame? game,
+        IReadOnlyList<BoardGame> games,
         Player? host)
     {
         try
@@ -356,7 +364,7 @@ public partial class EventViewModel : ObservableObject
 
             await _gameNightRepository.UpdateAsync(night);
 
-            // Alten Spielvorschlag/-vorschläge für diesen Termin entfernen ...
+            // Alle bisherigen Spielvorschläge für diesen Termin entfernen ...
             var existingSuggestions = (await _databaseService.GetNotDeletedAsync<GameSuggestion>())
                 .Where(s => s.GameNightId == night.Id)
                 .ToList();
@@ -364,22 +372,25 @@ public partial class EventViewModel : ObservableObject
             foreach (var suggestion in existingSuggestions)
                 await _databaseService.HardDeleteAsync(suggestion);
 
-            // ... und, falls (wieder) ein Spiel ausgewählt ist, wie beim Anlegen einen
-            // neuen Vorschlag anlegen (siehe AddGameNightAsync für dieselbe Logik).
-            if (game is not null)
+            // ... und für jedes (neu) ausgewählte Spiel einen frischen Vorschlag anlegen
+            // (siehe AddGameNightAsync für dieselbe Logik).
+            if (games.Count > 0)
             {
                 var suggestedByPlayerId = host?.Id ?? Players.FirstOrDefault()?.Id;
 
                 if (!string.IsNullOrWhiteSpace(suggestedByPlayerId))
                 {
-                    var suggestion = new GameSuggestion
+                    foreach (var game in games)
                     {
-                        GameNightId = night.Id,
-                        GameId = game.Id,
-                        SuggestedByPlayerId = suggestedByPlayerId
-                    };
+                        var suggestion = new GameSuggestion
+                        {
+                            GameNightId = night.Id,
+                            GameId = game.Id,
+                            SuggestedByPlayerId = suggestedByPlayerId
+                        };
 
-                    await _databaseService.InsertAsync(suggestion);
+                        await _databaseService.InsertAsync(suggestion);
+                    }
                 }
             }
 
@@ -395,23 +406,24 @@ public partial class EventViewModel : ObservableObject
     }
 
     /// <summary>
-    /// Sucht heraus, welches Spiel aktuell für einen Termin vorgeschlagen ist (über die
-    /// Tabelle game_suggestions) und gibt dafür direkt das passende Objekt aus der schon
-    /// geladenen <see cref="Games"/>-Liste zurück (NICHT ein frisch aus der DB gelesenes,
-    /// neues Objekt!). Das ist wichtig, damit NewEventPopup dieses Ergebnis 1:1 als
-    /// GamePicker.SelectedItem verwenden kann: .NET MAUI erkennt eine Vorauswahl im
-    /// Picker nur, wenn es sich um genau dasselbe Objekt (Referenz) handelt, das auch
-    /// in der ItemsSource-Liste steckt.
+    /// Sucht heraus, welche Spiele aktuell für einen Termin vorgeschlagen sind (über die
+    /// Tabelle game_suggestions) und gibt dafür direkt die passenden Objekte aus der
+    /// schon geladenen <see cref="Games"/>-Liste zurück (NICHT frisch aus der DB
+    /// gelesene, neue Objekte!). Das ist wichtig, damit NewEventPopup das Ergebnis 1:1
+    /// als Vorauswahl in GamesCollectionView.SelectedItems verwenden kann: .NET MAUI
+    /// erkennt eine Vorauswahl nur, wenn es sich um genau dieselben Objekte (Referenz)
+    /// handelt, die auch in der ItemsSource-Liste stecken.
     /// </summary>
-    public async Task<BoardGame?> GetSuggestedGameAsync(GameNight night)
+    public async Task<List<BoardGame>> GetSuggestedGamesAsync(GameNight night)
     {
         var suggestions = await _databaseService.GetNotDeletedAsync<GameSuggestion>();
-        var suggestion = suggestions.FirstOrDefault(s => s.GameNightId == night.Id);
 
-        if (suggestion is null)
-            return null;
+        var suggestedGameIds = suggestions
+            .Where(s => s.GameNightId == night.Id)
+            .Select(s => s.GameId)
+            .ToHashSet();
 
-        return Games.FirstOrDefault(g => g.Id == suggestion.GameId);
+        return Games.Where(g => suggestedGameIds.Contains(g.Id)).ToList();
     }
 
     /// <summary>

@@ -79,11 +79,11 @@ public partial class EventPage : ContentPage
         if (sender is not Element element || element.BindingContext is not GameNight night)
             return;
 
-        // Welches Spiel aktuell zu diesem Termin vorgeschlagen ist, steckt nicht direkt
+        // Welche Spiele aktuell zu diesem Termin vorgeschlagen sind, steckt nicht direkt
         // in "night" selbst (siehe game_suggestions-Tabelle) - deshalb erst hier laden,
         // BEVOR das Popup erzeugt wird (ein Konstruktor kann nicht "await" benutzen).
-        var suggestedGame = await ViewModel.GetSuggestedGameAsync(night);
+        var suggestedGames = await ViewModel.GetSuggestedGamesAsync(night);
 
-        this.ShowPopup(new NewEventPopup(ViewModel, night, suggestedGame));
+        this.ShowPopup(new NewEventPopup(ViewModel, night, suggestedGames));
     }
 }

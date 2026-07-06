@@ -15,11 +15,11 @@ namespace BoardGamerApp.Views;
 ///
 /// Zwei Konstruktoren, zwei Modi (siehe auch <see cref="_editingNight"/>):
 /// - <c>new NewEventPopup(vm)</c> -&gt; neuen Termin anlegen (leeres Formular).
-/// - <c>new NewEventPopup(vm, night, suggestedGame)</c> -&gt; vorhandenen Termin bearbeiten
+/// - <c>new NewEventPopup(vm, night, suggestedGames)</c> -&gt; vorhandenen Termin bearbeiten
 ///   (Formular wird mit den Werten von "night" vorbefüllt).
 ///
 /// Diese Klasse arbeitet bewusst ohne Data Binding (kein eigener BindingContext), sondern
-/// greift direkt per x:Name auf die XAML-Elemente zu (LocationPicker, GamePicker, ...).
+/// greift direkt per x:Name auf die XAML-Elemente zu (LocationPicker, GamesCollectionView, ...).
 /// Das ist kein "falsches" MVVM, aber ein einfacherer, code-lastigerer Stil - für ein
 /// kleines Popup wie dieses völlig okay.
 /// </summary>
@@ -51,13 +51,13 @@ public partial class NewEventPopup : Popup
     /// Termin angetippt wird.
     ///
     /// <paramref name="editingNight"/> ist der zu bearbeitende Termin selbst (gleiche
-    /// Id bleibt beim Speichern erhalten). <paramref name="suggestedGame"/> wird schon
+    /// Id bleibt beim Speichern erhalten). <paramref name="suggestedGames"/> wird schon
     /// AUSSERHALB dieses Konstruktors (in EventPage.xaml.cs, bevor das Popup erzeugt
-    /// wird) per <see cref="EventViewModel.GetSuggestedGameAsync"/> ermittelt, weil das
+    /// wird) per <see cref="EventViewModel.GetSuggestedGamesAsync"/> ermittelt, weil das
     /// Ermitteln asynchron ist (Datenbankzugriff) - ein Konstruktor kann aber kein
     /// "await" benutzen.
     /// </summary>
-    public NewEventPopup(EventViewModel vm, GameNight? editingNight, BoardGame? suggestedGame)
+    public NewEventPopup(EventViewModel vm, GameNight? editingNight, IReadOnlyList<BoardGame>? suggestedGames)
     {
         InitializeComponent();
         _viewModel = vm;
@@ -67,7 +67,7 @@ public partial class NewEventPopup : Popup
         // BEVOR dieses Popup überhaupt erzeugt wird), damit hier nur echte, vorhandene
         // Orte/Spiele/Spieler ausgewählt werden können - kein Freitext mehr.
         LocationPicker.ItemsSource = _viewModel.Locations;
-        GamePicker.ItemsSource = _viewModel.Games;
+        GamesCollectionView.ItemsSource = _viewModel.Games;
         HostPicker.ItemsSource = _viewModel.Players;
 
         if (editingNight is not null)
@@ -98,9 +98,12 @@ public partial class NewEventPopup : Popup
             HostPicker.SelectedItem = _viewModel.Players
                 .FirstOrDefault(p => p.Id == editingNight.HostPlayerId);
 
-            // Das aktuell vorgeschlagene Spiel wurde bereits vom Aufrufer (EventPage.xaml.cs)
-            // über EventViewModel.GetSuggestedGameAsync ermittelt und hier hereingereicht.
-            GamePicker.SelectedItem = suggestedGame;
+            // Die aktuell vorgeschlagenen Spiele wurden bereits vom Aufrufer (EventPage.xaml.cs)
+            // über EventViewModel.GetSuggestedGamesAsync ermittelt und hier hereingereicht.
+            if (suggestedGames is not null && suggestedGames.Count > 0)
+            {
+                GamesCollectionView.SelectedItems = suggestedGames.Cast<object>().ToList();
+            }
 
             NotesEntry.Text = editingNight.Notes;
         }
@@ -113,8 +116,50 @@ public partial class NewEventPopup : Popup
             HiddenTimePicker.Time = new TimeSpan(12, 0, 0);
         }
 
+        // GamesFieldLabel zeigt direkt beim Öffnen des Popups die schon vorbelegten
+        // Spiele an (oder den Platzhaltertext, falls noch keine ausgewählt sind).
+        UpdateGamesFieldLabel();
+
         HiddenDatePicker.Unfocused += OnDatePickerClosed_iOS;
         HiddenTimePicker.Unfocused += (s, e) => ApplyDateTime();
+    }
+
+    // Tippt der Nutzer auf das Spiele-Feld, klappt die Checkbox-Liste darunter auf
+    // bzw. wieder zu - optisch angelehnt an das Öffnen eines nativen Pickers wie bei
+    // Ort/Veranstalter, nur eben mit einer Mehrfachauswahl-Liste statt einer nativen
+    // Einzelauswahl.
+    private void OnGamesFieldTapped(object sender, TappedEventArgs e)
+    {
+        GamesCollectionView.IsVisible = !GamesCollectionView.IsVisible;
+    }
+
+    // Wird bei jeder Änderung der Auswahl in GamesCollectionView ausgelöst (Antippen
+    // einer Zeile) und aktualisiert die Zusammenfassung im Spiele-Feld.
+    private void OnGamesSelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        UpdateGamesFieldLabel();
+    }
+
+    // Zeigt im Spiele-Feld die Titel aller aktuell ausgewählten Spiele an (durch Komma
+    // getrennt), oder den Platzhaltertext "Spiele wählen", solange noch nichts
+    // ausgewählt wurde.
+    private void UpdateGamesFieldLabel()
+    {
+        var titles = GamesCollectionView.SelectedItems
+            .OfType<BoardGame>()
+            .Select(g => g.Title)
+            .ToList();
+
+        if (titles.Count > 0)
+        {
+            GamesFieldLabel.Text = string.Join(", ", titles);
+            GamesFieldLabel.TextColor = Colors.Black;
+        }
+        else
+        {
+            GamesFieldLabel.Text = "Spiele wählen";
+            GamesFieldLabel.TextColor = Colors.Gray;
+        }
     }
 
     // Der Nutzer tippt auf das Datum/Uhrzeit-Feld -> der (normalerweise unsichtbare)
@@ -181,7 +226,9 @@ public partial class NewEventPopup : Popup
         // ist SelectedItem null und "as ..." liefert dann einfach null zurück
         // (statt eine Exception zu werfen wie ein normaler Cast mit "(GameLocation)").
         var selectedLocation = LocationPicker.SelectedItem as GameLocation;
-        var selectedGame = GamePicker.SelectedItem as BoardGame;
+        var selectedGames = GamesCollectionView.SelectedItems
+            .OfType<BoardGame>()
+            .ToList();
         var selectedHost = HostPicker.SelectedItem as Player;
 
         if (_editingNight is not null)
@@ -194,7 +241,7 @@ public partial class NewEventPopup : Popup
             await _viewModel.UpdateGameNightAsync(
                 _editingNight,
                 selectedLocation,
-                selectedGame,
+                selectedGames,
                 selectedHost);
         }
         else
@@ -211,7 +258,7 @@ public partial class NewEventPopup : Popup
             await _viewModel.AddGameNightAsync(
                 newNight,
                 selectedLocation,
-                selectedGame,
+                selectedGames,
                 selectedHost);
         }
 

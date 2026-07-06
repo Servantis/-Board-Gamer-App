@@ -2,8 +2,8 @@
 <!--
     Dialog zum Anlegen eines neuen Termins.
 
-    Wichtig: Die drei Picker unten (LocationPicker/GamePicker/HostPicker) haben hier
-    KEIN ItemsSource-Binding in XAML - das wird stattdessen im Code-Behind
+    Wichtig: LocationPicker/HostPicker und GamesCollectionView haben hier KEIN
+    ItemsSource-Binding in XAML - das wird stattdessen im Code-Behind
     (NewEventPopup.xaml.cs, Konstruktor) direkt gesetzt, z. B.:
         LocationPicker.ItemsSource = _viewModel.Locations;
     Das ist hier bewusst so gelöst, weil dieses Popup ohne eigenen BindingContext
@@ -68,11 +68,81 @@
                                     ItemDisplayBinding="{Binding Name}"
                                     BackgroundColor="#EDE6DD"/>
 
-                            <!-- Spiel (aus games, legt beim Speichern einen game_suggestions-Eintrag an) -->
-                            <Picker x:Name="GamePicker"
-                                    Title="Spiel wählen"
-                                    ItemDisplayBinding="{Binding Title}"
-                                    BackgroundColor="#EDE6DD"/>
+                            <!-- Spiele (aus games) - Mehrfachauswahl über Checkboxen: ein Tipp auf
+                                 GamesFieldBorder öffnet/schließt die Auswahlliste darunter, genau
+                                 wie sich bei Ort/Veranstalter der native Picker öffnet. Ausgewählt
+                                 wird über CollectionView.SelectionMode="Multiple"; jede Zeile zeigt
+                                 zusätzlich ein Kästchen-Symbol (☐/☑), das per VisualStateManager
+                                 zwischen den eingebauten Zuständen "Normal"/"Selected" umschaltet -
+                                 ganz ohne eigene CheckBox-Controls oder zusätzliches Data Binding.
+                                 Für jedes hier ausgewählte Spiel legt EventViewModel beim Speichern
+                                 einen eigenen game_suggestions-Eintrag an (siehe AddGameNightAsync/
+                                 UpdateGameNightAsync). -->
+                            <VerticalStackLayout Spacing="0">
+                                   <Border x:Name="GamesFieldBorder"
+                                           BackgroundColor="#EDE6DD"
+                                           Padding="10">
+                                          <Border.GestureRecognizers>
+                                                 <TapGestureRecognizer Tapped="OnGamesFieldTapped"/>
+                                          </Border.GestureRecognizers>
+
+                                          <Label x:Name="GamesFieldLabel"
+                                                 Text="Spiele wählen"
+                                                 TextColor="Gray"/>
+                                   </Border>
+
+                                   <CollectionView x:Name="GamesCollectionView"
+                                                   SelectionMode="Multiple"
+                                                   IsVisible="False"
+                                                   HeightRequest="140"
+                                                   BackgroundColor="#EDE6DD"
+                                                   SelectionChanged="OnGamesSelectionChanged">
+                                          <CollectionView.ItemTemplate>
+                                                 <DataTemplate>
+                                                        <Border Margin="4,3"
+                                                                Padding="10,8"
+                                                                StrokeShape="RoundRectangle 8"
+                                                                Stroke="Transparent"
+                                                                BackgroundColor="White">
+
+                                                               <VisualStateManager.VisualStateGroups>
+                                                                      <VisualStateGroup Name="CommonStates">
+                                                                             <VisualState Name="Normal">
+                                                                                    <VisualState.Setters>
+                                                                                           <Setter TargetName="CheckboxGlyph"
+                                                                                                   Property="Label.Text"
+                                                                                                   Value="☐"/>
+                                                                                    </VisualState.Setters>
+                                                                             </VisualState>
+                                                                             <VisualState Name="Selected">
+                                                                                    <VisualState.Setters>
+                                                                                           <Setter TargetName="CheckboxGlyph"
+                                                                                                   Property="Label.Text"
+                                                                                                   Value="☑"/>
+                                                                                    </VisualState.Setters>
+                                                                             </VisualState>
+                                                                      </VisualStateGroup>
+                                                               </VisualStateManager.VisualStateGroups>
+
+                                                               <Grid ColumnDefinitions="Auto,*">
+                                                                      <Label x:Name="CheckboxGlyph"
+                                                                             Grid.Column="0"
+                                                                             Text="☐"
+                                                                             FontSize="18"
+                                                                             TextColor="#8B5E3C"
+                                                                             WidthRequest="28"
+                                                                             VerticalOptions="Center"/>
+
+                                                                      <Label Grid.Column="1"
+                                                                             Text="{Binding Title}"
+                                                                             TextColor="#3B2E25"
+                                                                             VerticalOptions="Center"/>
+                                                               </Grid>
+                                                        </Border>
+                                                 </DataTemplate>
+                                          </CollectionView.ItemTemplate>
+                                   </CollectionView>
+                            </VerticalStackLayout>
 
                             <!-- Veranstalter (aus players, HostPlayerId) -->
                             <Picker x:Name="HostPicker"
