@@ -6,6 +6,8 @@ public interface IGroupMemberRepository
 {
     Task<GamingGroup?> GetDefaultGroupAsync();
 
+    Task<GamingGroup?> GetGroupByIdAsync(string groupId);
+
     Task<List<GroupMemberListItem>> GetMembersAsync();
 
     Task<List<GroupMemberListItem>> GetMembersByGroupIdAsync(string groupId);

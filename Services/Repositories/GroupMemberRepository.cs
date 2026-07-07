@@ -29,6 +29,23 @@ public class GroupMemberRepository : IGroupMemberRepository
         return result.FirstOrDefault();
     }
 
+    public async Task<GamingGroup?> GetGroupByIdAsync(string groupId)
+    {
+        var database = await _databaseService.GetConnectionAsync();
+
+        const string sql = """
+        SELECT *
+        FROM gaming_groups
+        WHERE id = ?
+          AND deleted_at IS NULL
+        LIMIT 1;
+        """;
+
+        var result = await database.QueryAsync<GamingGroup>(sql, groupId);
+
+        return result.FirstOrDefault();
+    }
+
     public async Task<List<GroupMemberListItem>> GetMembersAsync()
     {
         var group = await GetDefaultGroupAsync();

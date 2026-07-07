@@ -58,6 +58,13 @@
                             Padding="15"
                             Margin="0,0,0,12">
 
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer
+                                    Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}},
+                                                      Path=BindingContext.OpenGroupCommand}"
+                                    CommandParameter="{Binding .}" />
+                            </Border.GestureRecognizers>
+                            
                             <Grid ColumnDefinitions="*,Auto"
                               RowDefinitions="Auto,Auto,Auto,Auto"
                               ColumnSpacing="10"

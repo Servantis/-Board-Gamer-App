@@ -5,15 +5,36 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using System.Collections.ObjectModel;
 using System.Windows.Input;
+using Microsoft.Maui.Controls;
 
 namespace BoardGamerApp.ViewModels;
 
-public class GroupMembersViewModel : ObservableObject
+[QueryProperty(nameof(GroupId), "groupId")]
+public partial class GroupMembersViewModel : ObservableObject
 {
     private readonly IGroupMemberRepository _groupMemberRepository;
 
     private bool _isBusy;
     private string _statusText = "Gruppenmitglieder werden geladen...";
+    private string _groupId = string.Empty;
+
+    [ObservableProperty]
+    private string groupName = string.Empty;
+
+    // Wenn eine GroupPage anhand einer groupId geöffnet wird, wird hier die entsprechende GroupId gesetzt
+    // und Mitglieder der Gruppe geladen
+    public string GroupId
+    {
+        get => _groupId;
+        set
+        {
+            if (SetProperty(ref _groupId, value))
+            {
+                _ = LoadGroupAsync();
+                _ = LoadMembersAsync();
+            }
+        }
+    }
 
     public ObservableCollection<GroupMemberListItem> Members { get; } = new();
 
@@ -48,8 +69,6 @@ public class GroupMembersViewModel : ObservableObject
         SelectNextHostCommand = new AsyncRelayCommand(SelectNextHostAsync);
         SimulateTriggerCommand = new AsyncRelayCommand(SimulateTriggerAsync);
         ManageMembersCommand = new AsyncRelayCommand(OpenMemberManagementAsync);
-
-        _ = LoadMembersAsync();
     }
 
     private async Task LoadMembersAsync()
@@ -59,7 +78,19 @@ public class GroupMembersViewModel : ObservableObject
             IsBusy = true;
             StatusText = "Gruppenmitglieder werden geladen...";
 
-            var members = await _groupMemberRepository.GetMembersAsync();
+            // Prüfe (wenn nicht null oder "", " ") , ob eine GroupId vorhanden ist
+            List<GroupMemberListItem> members;
+
+            if (!string.IsNullOrWhiteSpace(GroupId))
+            {
+                // GroupId wird ans Repository gegeben 
+                members = await _groupMemberRepository.GetMembersByGroupIdAsync(GroupId);
+            }
+            else
+            {
+                // Fallback 
+                members = await _groupMemberRepository.GetMembersAsync();
+            }
 
             System.Diagnostics.Debug.WriteLine($"LoadMembers: {members.Count}");
 
@@ -90,6 +121,19 @@ public class GroupMembersViewModel : ObservableObject
         finally
         {
             IsBusy = false;
+        }
+    }
+
+    private async Task LoadGroupAsync()
+    {
+        if (string.IsNullOrWhiteSpace(GroupId))
+            return;
+
+        var group = await _groupMemberRepository.GetGroupByIdAsync(GroupId);
+
+        if (group != null)
+        {
+            GroupName = group.Name;
         }
     }
 

@@ -137,6 +137,16 @@ public partial class GroupOverviewViewModel : ObservableObject
         await Shell.Current.GoToAsync(nameof(AddGroupPage));
     }
 
+    [RelayCommand]
+    private async Task OpenGroupAsync(GamingGroup group)
+    {
+        if (group == null)
+            return;
+
+        await Shell.Current.GoToAsync(
+            $"{nameof(GroupPage)}?groupId={group.Id}");
+    }
+
     private bool IsGroupOwner(GamingGroup group)
     {
         return group.CreatedByPlayerId ==

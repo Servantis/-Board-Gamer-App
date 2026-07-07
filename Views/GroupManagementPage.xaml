@@ -114,8 +114,7 @@
                                        WidthRequest="20"
                                        HeightRequest="20"
                                        Padding="8"
-                                       Command="{Binding DeleteGroupMemberCommand}"
-                                       />
+                                       Command="{Binding DeleteGroupMemberCommand}"/>
                                     </Grid>
                                 </DataTemplate>
                             </CollectionView.ItemTemplate>
