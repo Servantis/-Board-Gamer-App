@@ -26,5 +26,5 @@ public interface IGroupMemberRepository
 
     Task UpdateRotationOrderAsync(string memberId, int? rotationOrder);
 
-    Task SoftDeleteMemberAsync(string memberId);
+    Task SoftDeleteGroupMemberAsync(string groupId, string playerId);
 }

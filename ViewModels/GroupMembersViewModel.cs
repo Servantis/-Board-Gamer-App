@@ -1,11 +1,12 @@
 ﻿using BoardGamerApp.Models;
 using BoardGamerApp.Repositories;
+using BoardGamerApp.Services;
 using BoardGamerApp.Views;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Microsoft.Maui.Controls;
 using System.Collections.ObjectModel;
 using System.Windows.Input;
-using Microsoft.Maui.Controls;
 
 namespace BoardGamerApp.ViewModels;
 
@@ -13,6 +14,7 @@ namespace BoardGamerApp.ViewModels;
 public partial class GroupMembersViewModel : ObservableObject
 {
     private readonly IGroupMemberRepository _groupMemberRepository;
+    private readonly CurrentPlayerService _currentPlayerService;
 
     private bool _isBusy;
     private string _statusText = "Gruppenmitglieder werden geladen...";
@@ -42,6 +44,8 @@ public partial class GroupMembersViewModel : ObservableObject
     public ICommand SelectNextHostCommand { get; }
     public ICommand SimulateTriggerCommand { get; }
     public ICommand ManageMembersCommand { get; }
+    public ICommand OpenAddPlayerPageCommand { get; }
+    public ICommand RemoveMemberCommand { get; }
 
     public bool IsBusy
     {
@@ -61,7 +65,7 @@ public partial class GroupMembersViewModel : ObservableObject
             .OrderBy(member => member.RotationOrder ?? int.MaxValue)
             .ThenBy(member => member.PlayerName);
 
-    public GroupMembersViewModel(IGroupMemberRepository groupMemberRepository)
+    public GroupMembersViewModel(IGroupMemberRepository groupMemberRepository, CurrentPlayerService currentPlayerService)
     {
         _groupMemberRepository = groupMemberRepository;
 
@@ -69,6 +73,12 @@ public partial class GroupMembersViewModel : ObservableObject
         SelectNextHostCommand = new AsyncRelayCommand(SelectNextHostAsync);
         SimulateTriggerCommand = new AsyncRelayCommand(SimulateTriggerAsync);
         ManageMembersCommand = new AsyncRelayCommand(OpenMemberManagementAsync);
+        OpenAddPlayerPageCommand = new AsyncRelayCommand(OpenAddPlayerPageAsync);
+        _currentPlayerService = currentPlayerService;
+
+        RemoveMemberCommand =
+        new AsyncRelayCommand<GroupMemberListItem>(
+            RemoveMemberAsync);
     }
 
     private async Task LoadMembersAsync()
@@ -100,6 +110,8 @@ public partial class GroupMembersViewModel : ObservableObject
 
             foreach (var member in members)
             {
+                member.CanRemove = await CanCurrentPlayerRemoveMembersAsync();
+
                 Members.Add(member);
             }
 
@@ -199,6 +211,55 @@ public partial class GroupMembersViewModel : ObservableObject
 
     private async Task OpenMemberManagementAsync()
     {
-        await Shell.Current.GoToAsync(nameof(GroupManagementPage));
+        // mit Übergabe der enthaltenen GroupId
+        await Shell.Current.GoToAsync($"{nameof(GroupManagementPage)}?groupId={GroupId}");
+    }
+    private async Task OpenAddPlayerPageAsync()
+    {
+        // mit Übergabe der enthaltenen GroupId
+        await Shell.Current.GoToAsync(
+            $"{nameof(AddPlayerPage)}?groupId={GroupId}");
+    }
+
+    // Ist der ausgewählte player admin oder owner ?
+    private async Task<bool> CanCurrentPlayerRemoveMembersAsync()
+    {
+        var currentPlayerId = _currentPlayerService.PlayerId;
+
+        var currentMember =
+            Members.FirstOrDefault(x =>
+                x.PlayerId == currentPlayerId);
+
+        if (currentMember == null)
+            return false;
+
+        return currentMember.Role == "owner"
+            || currentMember.Role == "admin";
+    }
+
+    // Mitglied einer Gruppe entfernen
+    private async Task RemoveMemberAsync(
+    GroupMemberListItem member)
+    {
+        if (member == null)
+            return;
+
+        var confirm =
+            await Shell.Current.DisplayAlertAsync(
+                "Mitglied entfernen",
+                $"Soll {member.PlayerName} aus der Gruppe entfernt werden?",
+                "Ja",
+                "Nein");
+
+        if (!confirm)
+            return;
+
+
+        await _groupMemberRepository.SoftDeleteGroupMemberAsync(
+            GroupId,
+            member.PlayerId);
+
+
+        Members.Remove(member);
     }
 }

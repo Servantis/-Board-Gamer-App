@@ -4,12 +4,11 @@ using Microsoft.Maui.Controls;
 namespace BoardGamerApp.Views;
 
 [QueryProperty(nameof(GroupId), "groupId")]
-public partial class GroupManagementPage : ContentPage
+public partial class AddPlayerPage : ContentPage
 {
-    public GroupManagementPage(GroupMembersViewModel viewModel)
+    public AddPlayerPage(AddPlayerViewModel viewModel)
     {
         InitializeComponent();
-
         BindingContext = viewModel;
     }
 
@@ -17,7 +16,7 @@ public partial class GroupManagementPage : ContentPage
     {
         set
         {
-            if (BindingContext is GroupMembersViewModel vm)
+            if (BindingContext is AddPlayerViewModel vm)
             {
                 vm.GroupId = value;
             }

@@ -88,7 +88,8 @@ public partial class AddGroupViewModel : ObservableObject
             await _groupOverviewRepository.AddGroupAsync(group);
             await _groupMemberRepository.AddMemberAsync(
                 group.Id,
-                _currentPlayerService.PlayerId!
+                _currentPlayerService.PlayerId!,
+                "owner"
             );
 
             await Shell.Current.GoToAsync("..");

@@ -10,9 +10,12 @@ public interface IPlayerRepository
 
     Task<Player?> GetByIdAsync(string playerId);
 
-
     Task UpdatePlayerProfileAsync(
         string playerId,
         string name,
         string? email);
+
+    Task<List<Player>> SearchAvailablePlayersAsync(
+    string groupId,
+    string searchText);
 }

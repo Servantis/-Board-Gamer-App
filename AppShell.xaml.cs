@@ -50,6 +50,7 @@ public partial class AppShell : Shell
 
         // Gruppen Seiten 
         Routing.RegisterRoute(nameof(AddGroupPage), typeof(AddGroupPage));
+        Routing.RegisterRoute(nameof(AddPlayerPage), typeof(AddPlayerPage));
         Routing.RegisterRoute(nameof(GroupPage), typeof(GroupPage));
         Routing.RegisterRoute(nameof(GroupManagementPage), typeof(GroupManagementPage));
 

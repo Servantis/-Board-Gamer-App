@@ -90,4 +90,40 @@ public class PlayerRepository : IPlayerRepository
             playerId);
     }
 
+    // Suche nach Spielern, die nicht in der angegebenen Gruppe sind und deren Name oder E-Mail mit dem Suchtext übereinstimmt
+    public async Task<List<Player>> SearchAvailablePlayersAsync(
+    string groupId,
+    string searchText)
+    {
+        var database = await _databaseService.GetConnectionAsync();
+
+        var search = $"%{searchText.Trim()}%";
+
+        const string sql = """
+        SELECT p.*
+        FROM players p
+        WHERE p.is_active = 1
+          AND p.deleted_at IS NULL
+          AND (
+                p.name LIKE ?
+                OR p.email LIKE ?
+          )
+          AND NOT EXISTS
+          (
+                SELECT 1
+                FROM group_members gm
+                WHERE gm.player_id = p.id
+                  AND gm.group_id = ?
+                  AND gm.deleted_at IS NULL
+          )
+        ORDER BY p.name;
+        """;
+
+        return await database.QueryAsync<Player>(
+            sql,
+            search,
+            search,
+            groupId);
+    }
+
 }
