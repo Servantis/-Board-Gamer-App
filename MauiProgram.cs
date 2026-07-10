@@ -43,6 +43,10 @@ public static class MauiProgram
                 //--Event Services
                 builder.Services.AddSingleton<IsoToDisplayDateConverter>();
 
+                //Event Suggestions Services
+                builder.Services.AddTransient<GameNightSuggestionsViewModel>();
+                builder.Services.AddTransient<GameNightSuggestionsPage>();
+
                 //--Database Service
                 builder.Services.AddSingleton<DatabaseService>();
 
@@ -51,6 +55,30 @@ public static class MauiProgram
                 builder.Services.AddSingleton<IPlayerRepository, PlayerRepository>();
                 builder.Services.AddSingleton<IPlayerDeviceRepository, PlayerDeviceRepository>();
                 builder.Services.AddSingleton<IGroupMemberRepository, GroupMemberRepository>();
+                builder.Services.AddSingleton<IGameSuggestionRepository, GameSuggestionRepository>();
+                // Transient statt Singleton: es ist okay, wenn bei Bedarf mehrfach ein
+                // neues GameNightRepository-Objekt erzeugt wird, weil es selbst keinen
+                // eigenen Zustand hält (nur eine Referenz auf den gemeinsamen DatabaseService).
+                builder.Services.AddTransient<GameNightRepository>();
+
+                //--Event/Termin Services
+                // Alle drei werden hier registriert, damit .NET MAUI sie automatisch per
+                // Konstruktor-Injection erzeugen kann, sobald sie gebraucht werden - z. B.
+                // wenn per Shell.Current.GoToAsync(nameof(EventPage)) navigiert wird, baut
+                // MAUI zuerst das benötigte EventViewModel (inkl. GameNightRepository,
+                // BoardGameRepository, IPlayerRepository, DatabaseService) und übergibt es
+                // dann automatisch dem EventPage-Konstruktor.
+                builder.Services.AddTransient<EventViewModel>();
+                builder.Services.AddTransient<EventPage>();
+                builder.Services.AddTransient<PreviousEventsPage>();
+
+                //--Bewertungs-Feature (RatingPage): genau wie EventPage/EventViewModel
+                // braucht auch RatingPage per Konstruktor-Injection ein eigenes
+                // RatingViewModel - dafür müssen beide hier als Transient registriert sein,
+                // sonst kann .NET MAUI beim Navigieren zu RatingPage nicht automatisch die
+                // benötigten Abhängigkeiten (DatabaseService, CurrentPlayerService) auflösen.
+                builder.Services.AddTransient<RatingViewModel>();
+                builder.Services.AddTransient<RatingPage>();
 
                 builder.Services.AddTransient<MainPage>();
 

@@ -1,4 +1,10 @@
 <?xml version="1.0" encoding="utf-8" ?>
+<!--
+    Liste der vergangenen Termine. BindingContext ist ein PreviousEventsViewModel
+    (gesetzt in PreviousEventsPage.xaml.cs, sobald die Termine per Navigation
+    ankommen) - die Bindings hier ({Binding PreviousEvents} usw.) beziehen sich
+    also auf diese Klasse, nicht direkt auf EventViewModel.
+-->
 <ContentPage
     x:Class="BoardGamerApp.Views.PreviousEventsPage"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
@@ -41,7 +47,10 @@
                                 <Grid ColumnDefinitions="Auto,*,Auto"
                                       VerticalOptions="Center">
 
-                                    <!-- Datumskreis -->
+                                    <!-- Datumskreis. InputTransparent="True" auf Frame + Image, damit ein
+                                         Tap genau hier nicht "verschluckt" wird, sondern beim Border weiter
+                                         oben (Tapped="OnRatingClicked") ankommt - siehe Kommentar beim
+                                         "Bewertet-Badge" weiter unten für die ausführliche Erklärung. -->
                                     <Frame Grid.Column="0"
                                            WidthRequest="50"
                                            HeightRequest="50"
@@ -49,19 +58,29 @@
                                            BackgroundColor="#EDE6DD"
                                            VerticalOptions="Center"
                                            HorizontalOptions="Center"
-                                           HasShadow="False">
+                                           HasShadow="False"
+                                           InputTransparent="True">
 
                                         <Image Source="exmark_icon.png"
                                                WidthRequest="28"
                                                HeightRequest="28"
                                                VerticalOptions="Center"
-                                               HorizontalOptions="Center"/>
+                                               HorizontalOptions="Center"
+                                               InputTransparent="True"/>
                                     </Frame>
 
                                     <!-- Termintext -->
                                     <VerticalStackLayout Grid.Column="1"
                                                          Padding="10,0"
                                                          VerticalOptions="Center">
+
+                                        <!-- Gruppenname (z. B. "Mittwochsrunde"), aufgelöst über
+                                             GroupId -> gaming_groups (siehe EventViewModel.ApplyDisplayNames). -->
+                                        <Label Text="{Binding GroupName, StringFormat='{0}'}"
+                                               FontSize="12"
+                                               FontAttributes="Bold"
+                                               TextColor="#8B5E3C"
+                                               IsVisible="{Binding GroupName, Converter={StaticResource StringToBoolConverter}}"/>
 
                                         <!-- Datum -->
                                         <Label Text="{Binding ScheduledAt, Converter={StaticResource IsoToDisplayDateConverter}}"
@@ -70,31 +89,65 @@
                                                TextColor="#3B2E25"/>
 
                                         <!-- Ort -->
-                                        <Label Text="{Binding LocationId, StringFormat='{0}'}"
+                                        <Label Text="{Binding LocationName, StringFormat='{0}'}"
                                                FontSize="14"
-                                               TextColor="#7C6A58"/>
+                                               TextColor="#7C6A58"
+                                               IsVisible="{Binding LocationName, Converter={StaticResource StringToBoolConverter}}"/>
 
                                         <!-- Optional: Spielname -->
-                                        <Label Text="{Binding Notes, StringFormat='{0}'}"
+                                        <Label Text="{Binding GameName, StringFormat='{0}'}"
                                                FontSize="14"
-                                               TextColor="#7C6A58"/>
+                                               TextColor="#7C6A58"
+                                               IsVisible="{Binding GameName, Converter={StaticResource StringToBoolConverter}}"/>
+                                        <Border BackgroundColor="#FFF3D8"
+                                                Stroke="#B87945"
+                                                StrokeThickness="1"
+                                                Padding="8,5"
+                                                Margin="0,4,0,0"
+                                                StrokeShape="RoundRectangle 10"
+                                                IsVisible="{Binding HasTopVotedGame}">
 
+                                            <Label Text="{Binding TopVotedGameDisplayText}"
+                                            FontSize="13"
+                                            FontAttributes="Bold"
+                                            TextColor="#8B5E3C" />
+
+                                        </Border>
                                     </VerticalStackLayout>
 
-                                    <!-- Bewertet-Badge -->
+                                    <!-- Bewertungs-Badge.
+
+                                         Text kommt aus GameNight.RatingBadgeText (gesetzt von
+                                         PreviousEventsViewModel.InitializeAsync): "Bewerten", "Bewertet" oder
+                                         "Deine Bewertung" (falls man selbst Gastgeber war) - IsVisible blendet
+                                         das Badge komplett aus, falls RatingBadgeText null ist (siehe
+                                         StringToBoolConverter). Was beim Antippen genau passiert, entscheidet
+                                         PreviousEventsPage.xaml.cs (OnRatingClicked) anhand der drei Flags
+                                         CanBeRatedByCurrentPlayer/IsHostedByCurrentPlayer/IsRatedByCurrentPlayer.
+
+                                         InputTransparent="True" auf Frame UND Label ist hier wichtig: ein
+                                         Frame mit eigener BackgroundColor "fängt" Touch-Events sonst selbst
+                                         ab, statt sie an das TapGestureRecognizer des äußeren Border
+                                         (weiter oben, "OnRatingClicked") weiterzugeben. Mit
+                                         InputTransparent="True" wird dieser Bereich für Touches
+                                         "durchsichtig" - der Tap landet dann beim äußeren Border, egal WO
+                                         auf der Karte man tippt (auch direkt auf das Badge). -->
                                     <Frame Grid.Column="2"
                                            Padding="10,4"
                                            CornerRadius="12"
                                            BackgroundColor="#EDE6DD"
                                            VerticalOptions="Center"
                                            HorizontalOptions="End"
-                                           HasShadow="False">
-                                        <Label Text="Bewerten"
+                                           HasShadow="False"
+                                           InputTransparent="True"
+                                           IsVisible="{Binding RatingBadgeText, Converter={StaticResource StringToBoolConverter}}">
+                                        <Label Text="{Binding RatingBadgeText}"
                                                FontSize="12"
                                                FontAttributes="Bold"
                                                TextColor="#7C6A58"
                                                HorizontalOptions="Center"
-                                               VerticalOptions="Center"/>
+                                               VerticalOptions="Center"
+                                               InputTransparent="True"/>
                                     </Frame>
 
                                 </Grid>

@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="utf-8" ?>
 
+<!--
+    Hauptseite der Terminverwaltung.
+    BindingContext ist ein EventViewModel (siehe EventPage.xaml.cs) - alle {Binding ...}
+    in dieser Datei beziehen sich also auf Properties/Commands von EventViewModel.
+-->
 <ContentPage
        x:Class="BoardGamerApp.Views.EventPage"
        xmlns:local="clr-namespace:BoardGamerApp.Views"
@@ -21,14 +26,75 @@
                             VerticalOptions="Center"/>
               </Grid>
 
-              <!-- Terminliste -->
+              <!-- Terminliste: zeigt die ZUKÜNFTIGEN Termine, gefiltert über StatusFilter
+                   (siehe EventViewModel.FilteredUpcomingGameNights) - "Alle" zeigt auch
+                   abgesagte Termine mit an, statt sie komplett zu verstecken. Vergangene
+                   Termine sieht man über den Button "Vergangene Termine" unten. -->
               <ScrollView Grid.Row="1">
                      <VerticalStackLayout Padding="20">
 
-                            <CollectionView ItemsSource="{Binding UpcomingGameNights}">
+                            <!-- Filter-Buttons: der jeweils aktive Filter wird per DataTrigger
+                                 auf StatusFilter braun hervorgehoben, alle anderen bleiben beige. -->
+                            <HorizontalStackLayout Spacing="10" Margin="0,0,0,15">
+                                   <Button Text="Alle"
+                                           Command="{Binding SetStatusFilterCommand}"
+                                           CommandParameter="all"
+                                           BackgroundColor="#EDE6DD"
+                                           TextColor="#3B2E25"
+                                           CornerRadius="10"
+                                           Padding="14,6"
+                                           FontSize="13">
+                                          <Button.Triggers>
+                                                 <DataTrigger TargetType="Button" Binding="{Binding StatusFilter}" Value="all">
+                                                        <Setter Property="BackgroundColor" Value="#8B5E3C"/>
+                                                        <Setter Property="TextColor" Value="White"/>
+                                                 </DataTrigger>
+                                          </Button.Triggers>
+                                   </Button>
+
+                                   <Button Text="Geplant"
+                                           Command="{Binding SetStatusFilterCommand}"
+                                           CommandParameter="planned"
+                                           BackgroundColor="#EDE6DD"
+                                           TextColor="#3B2E25"
+                                           CornerRadius="10"
+                                           Padding="14,6"
+                                           FontSize="13">
+                                          <Button.Triggers>
+                                                 <DataTrigger TargetType="Button" Binding="{Binding StatusFilter}" Value="planned">
+                                                        <Setter Property="BackgroundColor" Value="#8B5E3C"/>
+                                                        <Setter Property="TextColor" Value="White"/>
+                                                 </DataTrigger>
+                                          </Button.Triggers>
+                                   </Button>
+
+                                   <Button Text="Abgesagt"
+                                           Command="{Binding SetStatusFilterCommand}"
+                                           CommandParameter="cancelled"
+                                           BackgroundColor="#EDE6DD"
+                                           TextColor="#3B2E25"
+                                           CornerRadius="10"
+                                           Padding="14,6"
+                                           FontSize="13">
+                                          <Button.Triggers>
+                                                 <DataTrigger TargetType="Button" Binding="{Binding StatusFilter}" Value="cancelled">
+                                                        <Setter Property="BackgroundColor" Value="#8B5E3C"/>
+                                                        <Setter Property="TextColor" Value="White"/>
+                                                 </DataTrigger>
+                                          </Button.Triggers>
+                                   </Button>
+                            </HorizontalStackLayout>
+
+                            <CollectionView ItemsSource="{Binding FilteredUpcomingGameNights}">
                                    <CollectionView.ItemTemplate>
                                           <DataTemplate>
 
+                                                 <!-- SwipeView: nach links wischen zeigt den roten "Löschen"-Button.
+                                                      Jede Zeile bekommt automatisch ihren eigenen GameNight als
+                                                      BindingContext (DataTemplate-Prinzip) - deshalb muss man für
+                                                      das Command extra über RelativeSource zum BindingContext der
+                                                      GANZEN Seite (also dem EventViewModel) hochgreifen, während
+                                                      CommandParameter="{Binding}" einfach "diesen einen Termin" meint. -->
                                                  <SwipeView>
                                                         <SwipeView.RightItems>
                                                                <SwipeItems Mode="Reveal">
@@ -41,41 +107,196 @@
                                                                </SwipeItems>
                                                         </SwipeView.RightItems>
 
+                                                        <!-- Die ganze Karte ist antippbar (Tapped="OnEditEventClicked") und
+                                                             öffnet den Termin zum Bearbeiten im NewEventPopup (siehe
+                                                             EventPage.xaml.cs). Das "Bearbeiten"-Badge rechts ist rein
+                                                             visuell (zeigt dem Nutzer, WAS beim Antippen passiert) - genau
+                                                             wie das "Bewerten"-Badge auf PreviousEventsPage.xaml. -->
                                                         <Frame CornerRadius="12"
                                                                Padding="15"
                                                                Margin="0,0,0,15"
                                                                BackgroundColor="White"
                                                                HasShadow="False">
 
+                                                               <!-- Abgesagte Termine (siehe GameNight.IsCancelled) bekommen einen
+                                                                    leicht rötlichen Hintergrund, damit sie in der "Alle"-Ansicht
+                                                                    optisch von geplanten Terminen zu unterscheiden sind. -->
+                                                               <Frame.Triggers>
+                                                                      <DataTrigger TargetType="Frame" Binding="{Binding IsCancelled}" Value="True">
+                                                                             <Setter Property="BackgroundColor" Value="#F5E6E6"/>
+                                                                      </DataTrigger>
+                                                               </Frame.Triggers>
+
                                                                <Frame.GestureRecognizers>
-                                                                      <TapGestureRecognizer Tapped="OnGamesClicked"/>
+                                                                      <TapGestureRecognizer Tapped="OnEditEventClicked"/>
                                                                </Frame.GestureRecognizers>
 
-                                                               <VerticalStackLayout Spacing="6">
+                                                               <Grid ColumnDefinitions="*,Auto">
 
-                                                                      <!-- Datum -->
-                                                                      <Label Text="{Binding ScheduledAt, Converter={StaticResource IsoToDisplayDateConverter}}"
-                                                                             FontAttributes="Bold"
-                                                                             FontSize="16"
-                                                                             TextColor="#0F172A"/>
+                                                                      <VerticalStackLayout Grid.Column="0" Spacing="6">
 
-                                                                      <!-- Ort -->
-                                                                      <Label Text="{Binding LocationId, StringFormat='Ort: {0}'}"
+                                                                             <!-- "Abgesagt"-Badge, nur bei Status "cancelled" sichtbar. -->
+                                                                             <Label Text="Abgesagt"
+                                                                                    FontSize="12"
+                                                                                    FontAttributes="Bold"
+                                                                                    TextColor="#C62828"
+                                                                                    IsVisible="{Binding IsCancelled}"/>
+
+                                                                             <!-- Gruppenname (z. B. "Mittwochsrunde"), aufgelöst über
+                                                                                  GroupId -> gaming_groups (siehe EventViewModel.ApplyDisplayNames). -->
+                                                                             <Label Text="{Binding GroupName, StringFormat='{0}'}"
+                                                                                    FontSize="12"
+                                                                                    FontAttributes="Bold"
+                                                                                    TextColor="#8B5E3C"
+                                                                                    IsVisible="{Binding GroupName, Converter={StaticResource StringToBoolConverter}}"/>
+
+                                                                             <!-- Datum -->
+                                                                             <Label Text="{Binding ScheduledAt, Converter={StaticResource IsoToDisplayDateConverter}}"
+                                                                                    FontAttributes="Bold"
+                                                                                    FontSize="16"
+                                                                                    TextColor="#0F172A"/>
+
+                                                                             <!-- Spiel, Notiz und Veranstalter/Ort sind alle optional (siehe GameNight.cs),
+                                                                                  deshalb blendet der StringToBoolConverter jede Zeile automatisch aus,
+                                                                                  wenn der jeweilige Wert null/leer ist - statt z. B. "Spiel: " leer anzuzeigen. -->
+
+                                                                             <!-- Veranstalter und Ort in einer Zeile: seit Gastgeber und Ort beim
+                                                                                  Anlegen gekoppelt sind (Ort = eigener Ort des Gastgebers, siehe
+                                                                                  EventViewModel.AddGameNightAsync), wäre eine separate
+                                                                                  "Veranstalter: ..."-Zeile redundant zur "Ort: ..."-Zeile. -->
+                                                                             <Label Text="{Binding LocationName, StringFormat='Veranstalter/Ort: {0}'}"
+                                                                                    FontSize="14"
+                                                                                    TextColor="#1E3A8A"
+                                                                                    FontAttributes="Bold"
+                                                                                    IsVisible="{Binding LocationName, Converter={StaticResource StringToBoolConverter}}"/>
+
+                                                                             <!-- Spiel -->
+                                                                             <Label Text="{Binding GameName, StringFormat='Spiel: {0}'}"
+                                                                                    FontSize="14"
+                                                                                    TextColor="#334155"
+                                                                                    IsVisible="{Binding GameName, Converter={StaticResource StringToBoolConverter}}"/>
+                                                                            <Border BackgroundColor="#FFF3D8"
+                                                                            Stroke="#B87945"
+                                                                            StrokeThickness="1"
+                                                                            Padding="8,5"
+                                                                            Margin="0,4,0,0"
+                                                                            StrokeShape="RoundRectangle 10"
+                                                                            IsVisible="{Binding HasTopVotedGame}">
+
+                                                                            <Label Text="{Binding TopVotedGameDisplayText}"
+                                                                            FontSize="13"
+                                                                            FontAttributes="Bold"
+                                                                            TextColor="#8B5E3C" />
+                                                                            </Border>
+                                                                            <Label Text="{Binding HostName, StringFormat='Ausrichter: {0}'}"
                                                                              FontSize="14"
-                                                                             TextColor="#334155"/>
+                                                                            TextColor="#1E3A8A"
+                                                                            FontAttributes="Bold"
+                                                                            IsVisible="{Binding HostName, Converter={StaticResource StringToBoolConverter}}"/>
+                                            <!-- Notiz -->
+                                                                             <Label Text="{Binding Notes, StringFormat='Notiz: {0}'}"
+                                                                                    FontSize="14"
+                                                                                    TextColor="#334155"
+                                                                                    IsVisible="{Binding Notes, Converter={StaticResource StringToBoolConverter}}"/>
 
-                                                                      <!-- Spiel -->
-                                                                      <Label Text="{Binding Notes, StringFormat='Spiel: {0}'}"
-                                                                             FontSize="14"
-                                                                             TextColor="#334155"/>
+                                                                             <!-- Prozentanzeige der Zusagen (ohne Gastgeber), siehe
+                                                                                  EventViewModel.ApplyAttendanceInfoAsync. Nur bei noch
+                                                                                  "planned"-Terminen mit mindestens einem weiteren
+                                                                                  Gruppenmitglied gesetzt (sonst null, siehe GameNight.cs). -->
+                                                                             <Label Text="{Binding AttendanceSummaryText}"
+                                                                                    FontSize="13"
+                                                                                    TextColor="#0F172A"
+                                                                                    IsVisible="{Binding AttendanceSummaryText, Converter={StaticResource StringToBoolConverter}}"/>
 
-                                                                      <!-- Veranstalter -->
-                                                                      <Label Text="{Binding HostPlayerId, StringFormat='Veranstalter: {0}'}"
-                                                                             FontSize="14"
-                                                                             TextColor="#1E3A8A"
-                                                                             FontAttributes="Bold"/>
+                                                                             <!-- Eigene Zu-/Absage, falls schon beantwortet. -->
+                                                                             <Label Text="{Binding MyAttendanceStatusText}"
+                                                                                    FontSize="13"
+                                                                                    FontAttributes="Italic"
+                                                                                    TextColor="#334155"
+                                                                                    IsVisible="{Binding MyAttendanceStatusText, Converter={StaticResource StringToBoolConverter}}"/>
 
-                                                               </VerticalStackLayout>
+                                                                             <!-- Zusagen/Absagen: nur für Nicht-Gastgeber bei noch
+                                                                                  geplanten Terminen sichtbar (siehe
+                                                                                  GameNight.CanRespondToAttendance). Der Gastgeber selbst
+                                                                                  bearbeitet den Termin stattdessen über das
+                                                                                  "Bearbeiten"-Badge/den Karten-Tap. -->
+                                                                             <HorizontalStackLayout Spacing="10"
+                                                                                                     IsVisible="{Binding CanRespondToAttendance}">
+                                                                                    <Button Text="Zusagen"
+                                                                                            Clicked="OnAcceptClicked"
+                                                                                            BackgroundColor="#2E7D32"
+                                                                                            TextColor="White"
+                                                                                            CornerRadius="8"
+                                                                                            Padding="14,6"
+                                                                                            FontSize="13"/>
+
+                                                                                    <Button Text="Absagen"
+                                                                                            Clicked="OnDeclineClicked"
+                                                                                            BackgroundColor="#C62828"
+                                                                                            TextColor="White"
+                                                                                            CornerRadius="8"
+                                                                                            Padding="14,6"
+                                                                                            FontSize="13"/>
+                                                                             </HorizontalStackLayout>
+
+                                                                      </VerticalStackLayout>
+
+                                                                        <!-- "Vorschläge"-Button (Kollegen-Feature Spielvorschläge/Abstimmen)
+                                                                             und "Bearbeiten"-Badge übereinander in einer Spalte.
+                                                                             "Bearbeiten" ist nur sichtbar, wenn der aktuelle Spieler diesen
+                                                                             Termin auch bearbeiten darf (siehe
+                                                                             GameNight.CanBeEditedByCurrentPlayer - nur der Gastgeber, nicht
+                                                                             bei abgesagten Terminen). Optisch identisch zum
+                                                                             "Bewerten"-Badge auf PreviousEventsPage.xaml.
+
+                                                                             InputTransparent="True" auf Frame UND Label ist hier wichtig:
+                                                                             ein Frame mit eigener BackgroundColor "fängt" Touch-Events sonst
+                                                                             selbst ab, statt sie an das TapGestureRecognizer des äußeren
+                                                                             Frames (weiter oben, "OnEditEventClicked") weiterzugeben. Mit
+                                                                             InputTransparent="True" wird dieser Bereich für Touches
+                                                                             "durchsichtig" - der Tap landet dann beim äußeren Frame, egal
+                                                                             WO auf der Karte man tippt (auch direkt auf das Badge). -->
+                                                                        <VerticalStackLayout
+                                                                            Grid.Column="1"
+                                                                            Spacing="8"
+                                                                            VerticalOptions="Center"
+                                                                            HorizontalOptions="End">
+
+                                                                        <Button
+                                                                            Text="Vorschläge"
+                                                                            FontSize="12"
+                                                                            FontAttributes="Bold"
+                                                                            Padding="10,4"
+                                                                            HeightRequest="34"
+                                                                            BackgroundColor="#8B5E3C"
+                                                                            TextColor="White"
+                                                                            CornerRadius="12"
+                                                                            Command="{Binding Source={RelativeSource AncestorType={x:Type local:EventPage}}, Path=BindingContext.OpenSuggestionsCommand}"
+                                                                            CommandParameter="{Binding}" />
+
+                                                                        <Frame
+                                                                            Padding="10,4"
+                                                                            CornerRadius="12"
+                                                                            BackgroundColor="#EDE6DD"
+                                                                            VerticalOptions="Center"
+                                                                            HorizontalOptions="End"
+                                                                            HasShadow="False"
+                                                                            InputTransparent="True"
+                                                                            IsVisible="{Binding CanBeEditedByCurrentPlayer}">
+
+                                                                            <Label
+                                                                                Text="Bearbeiten"
+                                                                                FontSize="12"
+                                                                                FontAttributes="Bold"
+                                                                                TextColor="#7C6A58"
+                                                                                HorizontalOptions="Center"
+                                                                                VerticalOptions="Center"
+                                                                                InputTransparent="True" />
+                                                                        </Frame>
+
+                                                                       </VerticalStackLayout>
+
+                                                                </Grid>
 
                                                         </Frame>
                                                  </SwipeView>

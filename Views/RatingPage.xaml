@@ -10,16 +10,23 @@
           Padding="0">
 
         <!-- Header / Titel -->
-        <Grid BackgroundColor="#EDE6DD"
-              Padding="16,40,16,16"
-              Grid.Row="0">
+        <VerticalStackLayout BackgroundColor="#EDE6DD"
+                              Padding="16,40,16,16"
+                              Grid.Row="0"
+                              Spacing="4">
             <Label Text="BEWERTUNG"
                    HorizontalOptions="Center"
-                   VerticalOptions="Center"
-                   TextColor="White"
+                   TextColor="#3B2E25"
                    FontAttributes="Bold"
                    FontSize="20"/>
-        </Grid>
+
+            <!-- Kurzer Kontext, welcher Termin gerade bewertet wird (z. B. "12.07.2026
+                 bei Anna") - kommt aus RatingViewModel.InitializeAsync(). -->
+            <Label Text="{Binding HeaderText}"
+                   HorizontalOptions="Center"
+                   TextColor="#7C6A58"
+                   FontSize="14"/>
+        </VerticalStackLayout>
 
         <!-- Inhalt -->
         <Border Grid.Row="1"
@@ -125,15 +132,19 @@
                     <Label Text="Kommentar"
                            TextColor="#333"
                            FontSize="16"/>
-                    <Editor Placeholder="Dein Feedback..."
+                    <Editor Text="{Binding Comment}"
+                            Placeholder="Dein Feedback..."
                             AutoSize="TextChanges"
                             HeightRequest="100"
                             BackgroundColor="#F5F5F5"
                             TextColor="#333"/>
                 </VerticalStackLayout>
 
-                <!-- Button -->
+                <!-- Command statt Clicked: RatingViewModel stellt über [RelayCommand]
+                     automatisch eine Property "SubmitCommand" bereit (siehe
+                     RatingViewModel.cs, SubmitAsync()), an die der Button hier bindet. -->
                 <Button Text="BEWERTUNG ABSENDEN"
+                        Command="{Binding SubmitCommand}"
                         BackgroundColor="#0F4C81"
                         TextColor="White"
                         CornerRadius="12"

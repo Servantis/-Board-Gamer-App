@@ -48,6 +48,7 @@ public partial class AppShell : Shell
         Routing.RegisterRoute(nameof(GroupManagementPage), typeof(GroupManagementPage));
         Routing.RegisterRoute(nameof(MessagePage), typeof(MessagePage));
         Routing.RegisterRoute(nameof(PreviousEventsPage), typeof(PreviousEventsPage));
+        Routing.RegisterRoute(nameof(GameNightSuggestionsPage),typeof(GameNightSuggestionsPage));
 
         // Spielerprofil wird als Modal über DI geöffnet.
         // Eine Shell-Route ist dafür nicht zwingend nötig.
