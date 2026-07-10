@@ -115,7 +115,7 @@ public class GameNight : BaseSyncEntity
     public string? GameName { get; set; }
 
     // ---------------------------------------------------------------------
-    // Die folgenden vier Properties gehören zum Bewertungs-Feature
+    // Die folgenden drei Properties gehören zum Bewertungs-Feature
     // (Views/RatingPage.xaml, ViewModels/PreviousEventsViewModel.cs). Auch sie
     // sind [Ignore] - also nicht in der DB gespeichert, sondern werden von
     // PreviousEventsViewModel.InitializeAsync() befüllt, indem die Tabelle
@@ -126,8 +126,10 @@ public class GameNight : BaseSyncEntity
 
     /// <summary>
     /// True, wenn der AKTUELLE Spieler (CurrentPlayerService.PlayerId) der Gastgeber
-    /// (HostPlayerId) dieses Termins war. Ein Gastgeber soll seinen eigenen Abend
-    /// nicht bewerten können - er darf aber sehen, wie er bewertet wurde.
+    /// (HostPlayerId) dieses Termins ist. Wird sowohl von EventViewModel (für die
+    /// Zusagen/Absagen-Logik: ein Gastgeber muss seinem eigenen Termin nicht zusagen)
+    /// als auch von PreviousEventsViewModel (Bewertungs-Feature: ein Gastgeber kann
+    /// seinen eigenen Abend nicht bewerten, aber sehen, wie er bewertet wurde) gesetzt.
     /// </summary>
     [Ignore]
     public bool IsHostedByCurrentPlayer { get; set; }
@@ -165,4 +167,62 @@ public class GameNight : BaseSyncEntity
     /// </summary>
     [Ignore]
     public bool IsNextUpcoming { get; set; }
+
+    // ---------------------------------------------------------------------
+    // Die folgenden vier Properties gehören zur Zusagen/Absagen-Logik
+    // (EventViewModel.ApplyAttendanceInfoAsync, Views/MainPage.xaml, Views/EventPage.xaml).
+    // Sie werten die Tabelle "attendance" für diesen Termin aus und sind, wie die
+    // anderen Anzeige-Properties hier, [Ignore] - also nicht in der DB gespeichert.
+    // ---------------------------------------------------------------------
+
+    /// <summary>
+    /// Der Antwort-Status ("accepted"/"declined", siehe BoardGamerConstants.AttendanceStatus)
+    /// des AKTUELLEN Spielers für diesen Termin, oder null, falls noch keine Antwort
+    /// in der Tabelle attendance existiert.
+    /// </summary>
+    [Ignore]
+    public string? MyAttendanceStatus { get; set; }
+
+    /// <summary>
+    /// Lesbarer Anzeigetext zu <see cref="MyAttendanceStatus"/> (z. B. "Du hast zugesagt"),
+    /// oder null, solange der aktuelle Spieler noch nicht geantwortet hat.
+    /// </summary>
+    [Ignore]
+    public string? MyAttendanceStatusText { get; set; }
+
+    /// <summary>
+    /// True, wenn der aktuelle Spieler für diesen Termin über "Zusagen"/"Absagen"
+    /// antworten darf: der Termin muss noch "planned" sein, und der Spieler darf nicht
+    /// selbst der Gastgeber sein (der Gastgeber nimmt automatisch teil).
+    /// </summary>
+    [Ignore]
+    public bool CanRespondToAttendance { get; set; }
+
+    /// <summary>
+    /// Anzeigetext für den Anteil der Gruppenmitglieder (ohne Gastgeber), die bereits
+    /// zugesagt haben, z. B. "67% zugesagt (2/3)". Null, wenn es außer dem Gastgeber
+    /// keine weiteren aktiven Gruppenmitglieder gibt (dann lässt sich kein Anteil bilden).
+    /// </summary>
+    [Ignore]
+    public string? AttendanceSummaryText { get; set; }
+
+    /// <summary>
+    /// True, wenn dieser Termin abgesagt ist (Status "cancelled") - egal ob durch die
+    /// automatische Mehrheits-Absage-Regel (siehe EventViewModel.ApplyAttendanceInfoAsync)
+    /// oder durch manuelles Löschen (siehe GameNightRepository.SoftDeleteAsync). Rein aus
+    /// Status abgeleitet, deshalb ohne eigenen Setter und ohne Zutun eines ViewModels
+    /// immer aktuell.
+    /// </summary>
+    [Ignore]
+    public bool IsCancelled => Status == BoardGamerConstants.GameNightStatus.Cancelled;
+
+    /// <summary>
+    /// True, wenn der aktuelle Spieler diesen Termin bearbeiten darf: nur der Gastgeber
+    /// (Ersteller) selbst, und nur solange der Termin nicht abgesagt ist - ein abgesagter
+    /// Termin bleibt unveränderlich, auch für den Gastgeber. Andere Gruppenmitglieder
+    /// können höchstens über CanRespondToAttendance ihre Zu-/Absage ändern, aber nicht
+    /// den Termin selbst bearbeiten.
+    /// </summary>
+    [Ignore]
+    public bool CanBeEditedByCurrentPlayer => IsHostedByCurrentPlayer && !IsCancelled;
 }

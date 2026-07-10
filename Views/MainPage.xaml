@@ -12,102 +12,115 @@
                      <VerticalStackLayout Padding="30,30,30,0"
                                           Spacing="25">
 
-                            <!-- Kleine Terminvorschau auf der Startseite. MainPage bekommt (genau
-                                 wie EventPage) ein EventViewModel per Dependency Injection - da
-                                 es als "Transient" registriert ist (siehe MauiProgram.cs), ist das
-                                 aber ein EIGENES Objekt, nicht dieselbe Instanz wie auf EventPage.
-                                 Beide laden also unabhängig voneinander aus derselben Datenbank,
-                                 hier zeigen wir nur die nächsten 3 Termine (Top3UpcomingGameNights). -->
-                            <Label Text="Kommende Termine"
+                            <!-- Vorschau des nächsten Termins auf der Startseite. MainPage bekommt
+                                 (genau wie EventPage) ein EventViewModel per Dependency Injection -
+                                 da es als "Transient" registriert ist (siehe MauiProgram.cs), ist
+                                 das aber ein EIGENES Objekt, nicht dieselbe Instanz wie auf
+                                 EventPage. Beide laden also unabhängig voneinander aus derselben
+                                 Datenbank. Gezeigt wird hier bewusst NUR der eine chronologisch
+                                 nächste Termin (NextUpcomingGameNight), keine Liste mehr. -->
+                            <Label Text="Nächster Termin"
                                    Style="{StaticResource Headline}"
                                    FontSize="18"
                                    SemanticProperties.HeadingLevel="Level1"/>
 
-                            <!-- Sichtbar nur wenn es mindestens 1 zukünftigen Termin gibt -->
-                            <CollectionView ItemsSource="{Binding Top3UpcomingGameNights}"
-                                            IsVisible="{Binding HasUpcomingEvents}">
-                                   <CollectionView.ItemTemplate>
-                                          <DataTemplate>
-                                            <!-- StrokeThickness/Stroke sind hier bewusst schon vorbelegt (auch wenn
-                                                 "Transparent" unsichtbar ist): der DataTrigger unten ändert nur die
-                                                 FARBE, nicht die Dicke - die muss also von Anfang an gesetzt sein,
-                                                 sonst hätte der Rahmen keine Fläche zum Einfärben. -->
-                                            <Border StrokeShape="RoundRectangle 12"
-                                                        Padding="15"
-                                                        Margin="0,0,0,15"
-                                                        BackgroundColor="White"
-                                                        Stroke="Transparent"
-                                                        StrokeThickness="2"
-                                                        >
+                            <!-- Die Karte bindet ihren eigenen BindingContext auf
+                                 NextUpcomingGameNight (ein einzelnes GameNight-Objekt statt einer
+                                 Liste) - dadurch beziehen sich alle Bindings darunter (GroupName,
+                                 ScheduledAt, ...) direkt auf diesen einen Termin. Sichtbar nur,
+                                 wenn es überhaupt einen zukünftigen Termin gibt. -->
+                            <Border StrokeShape="RoundRectangle 12"
+                                    Padding="15"
+                                    Margin="0,0,0,15"
+                                    BackgroundColor="#FFF3D6"
+                                    Stroke="#8B5E3C"
+                                    StrokeThickness="2"
+                                    IsVisible="{Binding HasUpcomingEvents}"
+                                    BindingContext="{Binding NextUpcomingGameNight}">
 
-                                                        <!-- Hebt GENAU den chronologisch nächsten Termin optisch hervor:
-                                                             IsNextUpcoming wird von EventViewModel.RecomputeNextUpcoming()
-                                                             für immer nur einen Termin auf true gesetzt. Ein DataTrigger
-                                                             ändert dafür rein deklarativ (ohne Converter/Code-Behind)
-                                                             Hintergrund- und Rahmenfarbe der Karte, sobald die gebundene
-                                                             Bedingung zutrifft. -->
-                                                        <Border.Triggers>
-                                                               <DataTrigger TargetType="Border"
-                                                                            Binding="{Binding IsNextUpcoming}"
-                                                                            Value="True">
-                                                                      <Setter Property="BackgroundColor" Value="#FFF3D6"/>
-                                                                      <Setter Property="Stroke" Value="#8B5E3C"/>
-                                                               </DataTrigger>
-                                                        </Border.Triggers>
+                                   <!-- Tippen auf den Termin springt zur EventPage (Terminverwaltung) -
+                                        dort kann der Termin dann bearbeitet werden (siehe
+                                        EventPage.xaml.cs, OnEditEventClicked). -->
+                                   <Border.GestureRecognizers>
+                                          <TapGestureRecognizer Tapped="OnEventPreviewClicked"/>
+                                   </Border.GestureRecognizers>
 
-                                                        <!-- Tippen auf einen Termin springt zur EventPage (Terminverwaltung) -
-                                                             dort kann der Termin dann bearbeitet werden (siehe
-                                                             EventPage.xaml.cs, OnEditEventClicked). -->
-                                                        <Border.GestureRecognizers>
-                                                               <TapGestureRecognizer Tapped="OnEventPreviewClicked"/>
-                                                        </Border.GestureRecognizers>
+                                   <VerticalStackLayout Spacing="6">
 
-                                                        <VerticalStackLayout Spacing="6">
+                                          <Label Text="★ Nächster Termin"
+                                                 FontSize="12"
+                                                 FontAttributes="Bold"
+                                                 TextColor="#8B5E3C"/>
 
-                                                               <!-- "Nächster Termin"-Badge: nur bei genau der einen
-                                                                    hervorgehobenen Karte sichtbar (IsNextUpcoming ist ein
-                                                                    bool, dafür reicht direktes Binding an IsVisible ohne
-                                                                    Converter). -->
-                                                               <Label Text="★ Nächster Termin"
-                                                                      FontSize="12"
-                                                                      FontAttributes="Bold"
-                                                                      TextColor="#8B5E3C"
-                                                                      IsVisible="{Binding IsNextUpcoming}"/>
+                                          <!-- Gruppenname (z. B. "Mittwochsrunde"), aufgelöst über
+                                               GroupId -> gaming_groups (siehe EventViewModel.ApplyDisplayNames). -->
+                                          <Label Text="{Binding GroupName, StringFormat='{0}'}"
+                                                 FontSize="12"
+                                                 FontAttributes="Bold"
+                                                 TextColor="#8B5E3C"
+                                                 IsVisible="{Binding GroupName, Converter={StaticResource StringToBoolConverter}}"/>
 
-                                                               <!-- Gruppenname (z. B. "Mittwochsrunde"), aufgelöst über
-                                                                    GroupId -> gaming_groups (siehe EventViewModel.ApplyDisplayNames). -->
-                                                               <Label Text="{Binding GroupName, StringFormat='{0}'}"
-                                                                      FontSize="12"
-                                                                      FontAttributes="Bold"
-                                                                      TextColor="#8B5E3C"
-                                                                      IsVisible="{Binding GroupName, Converter={StaticResource StringToBoolConverter}}"/>
+                                          <Label Text="{Binding ScheduledAt, Converter={StaticResource IsoToDisplayDateConverter}}"
+                                                 FontAttributes="Bold"
+                                                 FontSize="16"
+                                                 TextColor="#0F172A"/>
 
-                                                               <Label Text="{Binding ScheduledAt, Converter={StaticResource IsoToDisplayDateConverter}}"
-                                                                      FontAttributes="Bold"
-                                                                      FontSize="16"
-                                                                      TextColor="#0F172A"/>
+                                          <!-- Veranstalter und Ort in einer Zeile: seit Gastgeber und Ort beim
+                                               Anlegen gekoppelt sind (Ort = eigener Ort des Gastgebers, siehe
+                                               EventViewModel.AddGameNightAsync), wäre eine separate
+                                               "Ausrichter: ..."-Zeile redundant zur "Ort: ..."-Zeile. -->
+                                          <Label Text="{Binding LocationName, StringFormat='Veranstalter/Ort: {0}'}"
+                                                 FontSize="14"
+                                                 TextColor="#1E3A8A"
+                                                 FontAttributes="Bold"
+                                                 IsVisible="{Binding LocationName, Converter={StaticResource StringToBoolConverter}}"/>
 
-                                                               <Label Text="{Binding LocationName, StringFormat='Ort: {0}'}"
-                                                                      FontSize="14"
-                                                                      TextColor="#334155"
-                                                                      IsVisible="{Binding LocationName, Converter={StaticResource StringToBoolConverter}}"/>
+                                          <Label Text="{Binding GameName, StringFormat='Spiel: {0}'}"
+                                                 FontSize="14"
+                                                 TextColor="#334155"
+                                                 IsVisible="{Binding GameName, Converter={StaticResource StringToBoolConverter}}"/>
 
-                                                               <Label Text="{Binding GameName, StringFormat='Spiel: {0}'}"
-                                                                      FontSize="14"
-                                                                      TextColor="#334155"
-                                                                      IsVisible="{Binding GameName, Converter={StaticResource StringToBoolConverter}}"/>
+                                          <!-- Prozentanzeige der Zusagen (ohne Gastgeber), siehe
+                                               EventViewModel.ApplyAttendanceInfoAsync. -->
+                                          <Label Text="{Binding AttendanceSummaryText}"
+                                                 FontSize="13"
+                                                 TextColor="#0F172A"
+                                                 IsVisible="{Binding AttendanceSummaryText, Converter={StaticResource StringToBoolConverter}}"/>
 
-                                                               <Label Text="{Binding HostName, StringFormat='Ausrichter: {0}'}"
-                                                                      FontSize="14"
-                                                                      TextColor="#1E3A8A"
-                                                                      FontAttributes="Bold"
-                                                                      IsVisible="{Binding HostName, Converter={StaticResource StringToBoolConverter}}"/>
-                                                        </VerticalStackLayout>
+                                          <!-- Zusagen/Absagen: nur sichtbar, wenn der aktuelle Spieler
+                                               überhaupt antworten darf (nicht Gastgeber, Termin noch
+                                               "planned") - siehe GameNight.CanRespondToAttendance. -->
+                                          <HorizontalStackLayout Spacing="10"
+                                                                  IsVisible="{Binding CanRespondToAttendance}">
+                                                 <Button Text="Zusagen"
+                                                         Clicked="OnAcceptClicked"
+                                                         BackgroundColor="#2E7D32"
+                                                         TextColor="White"
+                                                         CornerRadius="8"
+                                                         Padding="14,6"
+                                                         FontSize="13"/>
 
-                                                 </Border>
-                                          </DataTemplate>
-                                   </CollectionView.ItemTemplate>
-                            </CollectionView>
+                                                 <Button Text="Absagen"
+                                                         Clicked="OnDeclineClicked"
+                                                         BackgroundColor="#C62828"
+                                                         TextColor="White"
+                                                         CornerRadius="8"
+                                                         Padding="14,6"
+                                                         FontSize="13"/>
+                                          </HorizontalStackLayout>
+
+                                          <!-- Zeigt die eigene, bereits abgegebene Antwort an (falls
+                                               vorhanden) - unabhängig davon, ob die Buttons oben noch
+                                               sichtbar sind (der Gastgeber sieht hier nichts, weil
+                                               MyAttendanceStatusText für ihn immer null bleibt). -->
+                                          <Label Text="{Binding MyAttendanceStatusText}"
+                                                 FontSize="13"
+                                                 FontAttributes="Italic"
+                                                 TextColor="#334155"
+                                                 IsVisible="{Binding MyAttendanceStatusText, Converter={StaticResource StringToBoolConverter}}"/>
+                                   </VerticalStackLayout>
+
+                            </Border>
 
 
                      </VerticalStackLayout>

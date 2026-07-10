@@ -6,6 +6,9 @@ public interface IGroupMemberRepository
 {
     Task<GamingGroup?> GetDefaultGroupAsync();
 
+    /// <summary>Liefert alle Gruppen, in denen ein Spieler aktives Mitglied ist.</summary>
+    Task<List<GamingGroup>> GetGroupsForPlayerAsync(string playerId);
+
     Task<List<GroupMemberListItem>> GetMembersAsync();
 
     Task<List<GroupMemberListItem>> GetMembersByGroupIdAsync(string groupId);

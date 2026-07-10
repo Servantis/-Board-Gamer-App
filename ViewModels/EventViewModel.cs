@@ -8,7 +8,8 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
 /// <summary>
-/// ViewModel für die Terminverwaltung (Views/EventPage.xaml, Views/NewEventPopup.xaml).
+/// ViewModel für die Terminverwaltung (Views/EventPage.xaml, Views/NewEventPopup.xaml,
+/// Views/MainPage.xaml).
 ///
 /// Kurzer MVVM-Reminder:
 /// - Die View (XAML) zeigt nur an und meldet Nutzer-Interaktionen (Klicks etc.).
@@ -29,14 +30,15 @@ using CommunityToolkit.Mvvm.Input;
 /// </summary>
 public partial class EventViewModel : ObservableObject
 {
-    // Diese vier Abhängigkeiten bekommt das ViewModel nicht selbst erzeugt, sondern
+    // Diese Abhängigkeiten bekommt das ViewModel nicht selbst erzeugt, sondern
     // per Dependency Injection über den Konstruktor "hineingereicht" (siehe MauiProgram.cs,
     // wo EventViewModel registriert wird). Vorteil: Das ViewModel muss nicht wissen,
     // WIE die Datenbank-Verbindung aufgebaut wird, sondern nutzt einfach die fertigen Repositories.
     private readonly GameNightRepository _gameNightRepository;
     private readonly BoardGameRepository _boardGameRepository;
-    private readonly IPlayerRepository _playerRepository;
+    private readonly IGroupMemberRepository _groupMemberRepository;
     private readonly DatabaseService _databaseService;
+    private readonly CurrentPlayerService _currentPlayerService;
 
     /// <summary>Alle geladenen Termine (vergangene und zukünftige), sortiert nach Datum.</summary>
     public ObservableCollection<GameNight> GameNights { get; } = new();
@@ -46,16 +48,12 @@ public partial class EventViewModel : ObservableObject
 
     // Datenquellen für die Auswahl-UI im "Neuer Termin"-Popup (kommen alle aus der DB,
     // damit dort keine inkonsistenten/freien Texte mehr eingegeben werden können).
-    // Die Picker in NewEventPopup.xaml binden ihre ItemsSource direkt an diese drei Listen.
 
-    /// <summary>Orte der aktuellen Gruppe, zur Auswahl im "Neuer Termin"-Popup.</summary>
-    public ObservableCollection<GameLocation> Locations { get; } = new();
+    /// <summary>Gruppen, denen der aktuelle Spieler als aktives Mitglied angehört - zur Auswahl im "Neuer Termin"-Popup.</summary>
+    public ObservableCollection<GamingGroup> Groups { get; } = new();
 
-    /// <summary>Spiele der aktuellen Gruppe, zur Auswahl im "Neuer Termin"-Popup.</summary>
+    /// <summary>Spiele der aktuell im Popup gewählten Gruppe, zur Auswahl im "Neuer Termin"-Popup.</summary>
     public ObservableCollection<BoardGame> Games { get; } = new();
-
-    /// <summary>Aktive Spieler, zur Auswahl als Veranstalter im "Neuer Termin"-Popup.</summary>
-    public ObservableCollection<Player> Players { get; } = new();
 
     // [ObservableProperty] erzeugt daraus automatisch eine Property "IsBusy" (großgeschrieben)
     // inklusive Change-Notification. Wird benutzt, um doppeltes Laden zu verhindern und
@@ -67,31 +65,74 @@ public partial class EventViewModel : ObservableObject
     public IEnumerable<GameNight> PastGameNights
         => GameNights.Where(n => ParseDate(n.ScheduledAt) < DateTime.Now);
 
-    /// <summary>Die nächsten drei anstehenden Termine - z. B. für eine kompakte Vorschau auf der MainPage.</summary>
-    public IEnumerable<GameNight> Top3UpcomingGameNights =>
+    /// <summary>
+    /// Der chronologisch nächste anstehende Termin, oder null, falls keiner existiert - für
+    /// die Vorschau-Karte auf der MainPage. Abgesagte Termine (Status "cancelled", siehe
+    /// GameNight.IsCancelled) werden dabei bewusst übersprungen: ein abgesagter Termin soll
+    /// auf der MainPage nicht mehr auftauchen, auch wenn sein Datum noch in der Zukunft liegt.
+    /// </summary>
+    public GameNight? NextUpcomingGameNight =>
         UpcomingGameNights
+            .Where(n => !n.IsCancelled)
             .OrderBy(n => ParseDate(n.ScheduledAt))
-            .Take(3);
+            .FirstOrDefault();
 
-    /// <summary>True, wenn mindestens ein zukünftiger Termin existiert (für IsVisible-Bindings).</summary>
-    public bool HasUpcomingEvents => UpcomingGameNights.Count > 0;
+    /// <summary>
+    /// True, wenn es einen anzeigbaren nächsten Termin gibt (für IsVisible-Bindings auf
+    /// der MainPage) - bewusst über NextUpcomingGameNight statt über die reine Anzahl von
+    /// UpcomingGameNights bestimmt, damit die Karte automatisch verschwindet, wenn alle
+    /// künftigen Termine abgesagt sind.
+    /// </summary>
+    public bool HasUpcomingEvents => NextUpcomingGameNight is not null;
+
+    /// <summary>Anzeigename des aktuell angemeldeten Spielers - für "Gastgeber: Du"-Anzeigen im Popup.</summary>
+    public string? CurrentPlayerName => _currentPlayerService.PlayerName;
+
+    /// <summary>
+    /// Aktueller Filter für die Terminliste auf EventPage: "all" (alle künftigen Termine),
+    /// BoardGamerConstants.GameNightStatus.Planned (nur noch geplante) oder .Cancelled
+    /// (nur abgesagte - z. B. durch die automatische Mehrheits-Absage-Regel, siehe
+    /// ApplyAttendanceInfoAsync). Wird über SetStatusFilterCommand gesetzt (siehe
+    /// EventPage.xaml, Filter-Buttons). [NotifyPropertyChangedFor] sorgt dafür, dass sich
+    /// FilteredUpcomingGameNights automatisch neu berechnet, sobald sich der Filter ändert.
+    /// </summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(FilteredUpcomingGameNights))]
+    private string statusFilter = "all";
+
+    /// <summary>
+    /// UpcomingGameNights, gefiltert nach StatusFilter. EventPage.xaml bindet die
+    /// Terminliste an DIESE Property statt direkt an UpcomingGameNights, damit auch
+    /// abgesagte künftige Termine je nach Filter sichtbar bleiben, statt komplett aus
+    /// der Liste zu verschwinden.
+    /// </summary>
+    public IEnumerable<GameNight> FilteredUpcomingGameNights => StatusFilter switch
+    {
+        BoardGamerConstants.GameNightStatus.Planned =>
+            UpcomingGameNights.Where(n => n.Status == BoardGamerConstants.GameNightStatus.Planned),
+        BoardGamerConstants.GameNightStatus.Cancelled =>
+            UpcomingGameNights.Where(n => n.Status == BoardGamerConstants.GameNightStatus.Cancelled),
+        _ => UpcomingGameNights
+    };
 
     public EventViewModel(
         GameNightRepository gameNightRepository,
         BoardGameRepository boardGameRepository,
-        IPlayerRepository playerRepository,
-        DatabaseService databaseService)
+        IGroupMemberRepository groupMemberRepository,
+        DatabaseService databaseService,
+        CurrentPlayerService currentPlayerService)
     {
         _gameNightRepository = gameNightRepository;
         _boardGameRepository = boardGameRepository;
-        _playerRepository = playerRepository;
+        _groupMemberRepository = groupMemberRepository;
         _databaseService = databaseService;
+        _currentPlayerService = currentPlayerService;
     }
 
     /// <summary>
-    /// Lädt alle Termine aus der Datenbank (über das Repository) und baut zusätzlich
-    /// die Anzeigenamen (LocationName/HostName/GameName) zusammen - siehe
-    /// <see cref="ApplyDisplayNames"/> für die Details dazu.
+    /// Lädt alle Termine aus den Gruppen, denen der aktuelle Spieler angehört, und baut
+    /// zusätzlich die Anzeigenamen (LocationName/HostName/GameName) sowie die
+    /// Zusagen/Absagen-Informationen (siehe <see cref="ApplyAttendanceInfoAsync"/>) zusammen.
     ///
     /// [RelayCommand] macht daraus automatisch eine Property "LoadGameNightsCommand",
     /// die man z. B. an einen Button binden könnte. Wir rufen die Methode hier aber auch
@@ -110,17 +151,34 @@ public partial class EventViewModel : ObservableObject
         {
             IsBusy = true;
 
-            var nights = await _gameNightRepository.GetAllAsync();
+            var currentPlayerId = _currentPlayerService.PlayerId;
+
+            // Nur Termine aus Gruppen laden, denen der aktuelle Spieler tatsächlich als
+            // aktives Mitglied angehört - ist niemand angemeldet, bleibt die Liste leer.
+            var myGroupIds = string.IsNullOrWhiteSpace(currentPlayerId)
+                ? new HashSet<string>()
+                : (await _groupMemberRepository.GetGroupsForPlayerAsync(currentPlayerId))
+                    .Select(g => g.Id)
+                    .ToHashSet();
+
+            var nights = (await _gameNightRepository.GetAllAsync())
+                .Where(n => myGroupIds.Contains(n.GroupId))
+                .ToList();
 
             // Für die Anzeigenamen brauchen wir die "Nachschlage-Tabellen" komplett geladen:
             // gaming_groups/locations/players/games für Gruppen-/Ort-/Veranstalter-/Spiel-Titel
             // und game_suggestions, um herauszufinden, welches Spiel zu welchem Termin
-            // vorgeschlagen wurde.
+            // vorgeschlagen wurde. attendance/group_members werden für die
+            // Zusagen/Absagen-Auswertung gebraucht (siehe ApplyAttendanceInfoAsync).
             var groups = await _databaseService.GetNotDeletedAsync<GamingGroup>();
             var locations = await _databaseService.GetNotDeletedAsync<GameLocation>();
             var players = await _databaseService.GetNotDeletedAsync<Player>();
             var games = await _databaseService.GetNotDeletedAsync<BoardGame>();
             var suggestions = await _databaseService.GetNotDeletedAsync<GameSuggestion>();
+            var attendances = await _databaseService.GetNotDeletedAsync<Attendance>();
+            var activeGroupMembers = (await _databaseService.GetNotDeletedAsync<GroupMember>())
+                .Where(m => m.Status == BoardGamerConstants.GroupMemberStatus.Active)
+                .ToList();
 
             // In ein Dictionary (Id -> Objekt) umwandeln, damit das Nachschlagen pro Termin
             // gleich schnell ist (O(1) statt jedes Mal die ganze Liste zu durchsuchen).
@@ -128,6 +186,16 @@ public partial class EventViewModel : ObservableObject
             var locationsById = locations.ToDictionary(l => l.Id);
             var playersById = players.ToDictionary(p => p.Id);
             var gamesById = games.ToDictionary(g => g.Id);
+
+            // Anzahl aktiver Mitglieder pro Gruppe (für den Zusagen-Prozentsatz zählt davon
+            // der Gastgeber selbst nicht mit, siehe ApplyAttendanceInfoAsync).
+            var activeMemberCountByGroup = activeGroupMembers
+                .GroupBy(m => m.GroupId)
+                .ToDictionary(g => g.Key, g => g.Count());
+
+            var attendancesByNight = attendances
+                .GroupBy(a => a.GameNightId)
+                .ToDictionary(g => g.Key, g => g.ToList());
 
             GameNights.Clear();
             UpcomingGameNights.Clear();
@@ -142,6 +210,15 @@ public partial class EventViewModel : ObservableObject
 
                 ApplyDisplayNames(night, groupsById, locationsById, playersById, gamesById, suggestions);
 
+                night.IsHostedByCurrentPlayer =
+                    !string.IsNullOrWhiteSpace(currentPlayerId) && night.HostPlayerId == currentPlayerId;
+
+                // Zusagen/Absagen auswerten und - falls mehr als die Hälfte der übrigen
+                // Gruppenmitglieder abgesagt hat - den Termin automatisch canceln.
+                var memberCount = activeMemberCountByGroup.GetValueOrDefault(night.GroupId, 0);
+                var nightAttendances = attendancesByNight.GetValueOrDefault(night.Id, new List<Attendance>());
+                await ApplyAttendanceInfoAsync(night, memberCount, nightAttendances, currentPlayerId);
+
                 GameNights.Add(night);
 
                 if (ParseDate(night.ScheduledAt) >= DateTime.Now)
@@ -154,7 +231,7 @@ public partial class EventViewModel : ObservableObject
 
             // GameNights/UpcomingGameNights sind ObservableCollections und melden Änderungen
             // (Add/Remove/Clear) von selbst an die UI. Die Properties weiter oben
-            // (PastGameNights, Top3UpcomingGameNights, HasUpcomingEvents) sind aber nur
+            // (PastGameNights, NextUpcomingGameNight, HasUpcomingEvents) sind aber nur
             // "berechnete" Properties (get-only, kein eigenes Feld) - für die muss man
             // die UI manuell benachrichtigen, siehe NotifyDerivedProperties().
             NotifyDerivedProperties();
@@ -178,142 +255,136 @@ public partial class EventViewModel : ObservableObject
     }
 
     /// <summary>
-    /// Lädt die drei Auswahllisten (Orte/Spiele/Spieler), die das "Neuer Termin"-Popup
-    /// für seine Picker braucht. Wird von EventPage.OnAppearing() aufgerufen, BEVOR
-    /// der Nutzer überhaupt auf "+" tippt - so sind die Listen schon bereit, sobald
-    /// sich das Popup öffnet.
+    /// Lädt die Gruppen, denen der aktuelle Spieler angehört, für den Gruppen-Picker im
+    /// "Neuer Termin"-Popup. Wird von EventPage.OnAppearing() aufgerufen, BEVOR
+    /// der Nutzer überhaupt auf "+" tippt - so ist die Liste schon bereit, sobald
+    /// sich das Popup öffnet. Die Spiele-Auswahl wird NICHT hier geladen, sondern erst
+    /// dynamisch pro gewählter Gruppe über <see cref="GetGamesForGroupAsync"/>, sobald
+    /// im Popup eine Gruppe ausgewählt wird.
     /// </summary>
     public async Task LoadReferenceDataAsync()
     {
-        // "Gruppe" meint hier die Spielgruppe (gaming_groups) - aktuell nimmt die App
-        // einfach die erste vorhandene Gruppe, weil es noch keine Gruppenauswahl/
-        // Mitgliedschaftsprüfung gibt. Das wäre ein guter Punkt für eine spätere Erweiterung.
-        var group = await GetDefaultGroupAsync();
-
-        Locations.Clear();
+        Groups.Clear();
         Games.Clear();
-        Players.Clear();
 
-        if (group is not null)
-        {
-            // Orte werden direkt über DatabaseService geladen und dann in-memory nach
-            // GroupId gefiltert, weil es (noch) kein eigenes LocationRepository gibt.
-            var locations = await _databaseService.GetNotDeletedAsync<GameLocation>();
+        var currentPlayerId = _currentPlayerService.PlayerId;
 
-            foreach (var location in locations
-                .Where(l => l.GroupId == group.Id)
-                .OrderBy(l => l.Name))
-            {
-                Locations.Add(location);
-            }
+        if (string.IsNullOrWhiteSpace(currentPlayerId))
+            return;
 
-            // Für Spiele gibt es bereits ein passendes Repository mit fertiger
-            // Gruppen-Filterung - das nutzen wir hier direkt.
-            var games = await _boardGameRepository.GetByGroupAsync(group.Id);
+        var myGroups = await _groupMemberRepository.GetGroupsForPlayerAsync(currentPlayerId);
 
-            foreach (var game in games)
-                Games.Add(game);
-        }
-
-        // Spieler sind (anders als Orte/Spiele) nicht direkt an eine Gruppe gebunden,
-        // deshalb reicht hier "alle aktiven Spieler" ohne Gruppenfilter.
-        var activePlayers = await _playerRepository.GetActivePlayersAsync();
-
-        foreach (var player in activePlayers)
-            Players.Add(player);
+        foreach (var group in myGroups)
+            Groups.Add(group);
     }
 
     /// <summary>
-    /// Speichert einen neuen Termin in der Datenbank.
-    ///
-    /// Wichtig: location/games/host sind hier bereits existierende Objekte aus der
-    /// Datenbank (ausgewählt über die Auswahl-Elemente im Popup) - keine Freitexte!
-    /// Dadurch können LocationId/HostPlayerId (Foreign Keys auf locations/players)
-    /// niemals einen ungültigen Wert bekommen, der zu einem "FOREIGN KEY constraint
-    /// failed"-Absturz führen würde.
+    /// Lädt die Spiele einer bestimmten Gruppe - wird vom "Neuer Termin"-Popup aufgerufen,
+    /// sobald der Nutzer im Gruppen-Picker eine Gruppe auswählt, damit GamesCollectionView
+    /// immer nur die Spiele DIESER Gruppe zur Auswahl anbietet.
+    /// </summary>
+    public async Task<List<BoardGame>> GetGamesForGroupAsync(string groupId)
+    {
+        return await _boardGameRepository.GetByGroupAsync(groupId);
+    }
+
+    /// <summary>
+    /// Sucht den Ort, den der AKTUELLE Spieler in der angegebenen Gruppe als eigenen Ort
+    /// hinterlegt hat (locations.owner_player_id). Der Gastgeber eines Termins ist immer
+    /// der Ersteller - der Ort ergibt sich deshalb automatisch aus dessen eigenem Ort,
+    /// statt frei ausgewählt zu werden. Liefert null, wenn der aktuelle Spieler in dieser
+    /// Gruppe (noch) keinen eigenen Ort hat.
+    /// </summary>
+    public async Task<GameLocation?> GetOwnedLocationAsync(string groupId)
+    {
+        var currentPlayerId = _currentPlayerService.PlayerId;
+
+        if (string.IsNullOrWhiteSpace(currentPlayerId) || string.IsNullOrWhiteSpace(groupId))
+            return null;
+
+        var locations = await _databaseService.GetNotDeletedAsync<GameLocation>();
+
+        return locations.FirstOrDefault(l => l.GroupId == groupId && l.OwnerPlayerId == currentPlayerId);
+    }
+
+    /// <summary>
+    /// Speichert einen neuen Termin in der Datenbank. Gastgeber ist immer der aktuell
+    /// angemeldete Spieler (siehe CurrentPlayerService) - eine freie Auswahl gibt es
+    /// bewusst nicht mehr. Der Ort ergibt sich daraus automatisch (siehe
+    /// <see cref="GetOwnedLocationAsync"/>): hat der aktuelle Spieler in der gewählten
+    /// Gruppe keinen eigenen Ort hinterlegt, wird das Anlegen mit einer Fehlermeldung
+    /// abgebrochen, statt den Termin ohne Ort zu speichern.
     ///
     /// Da die Tabelle game_nights selbst keine game_id-Spalte besitzt (ein Termin kann
     /// laut Datenmodell mehrere vorgeschlagene Spiele haben), werden die ausgewählten
     /// Spiele stattdessen über je einen eigenen Eintrag in der Tabelle game_suggestions
     /// verknüpft - "games" darf deshalb auch mehrere Einträge enthalten (Mehrfachauswahl
     /// im Popup, siehe NewEventPopup.xaml, GamesCollectionView).
+    ///
+    /// Gibt true zurück, wenn der Termin gespeichert wurde, und false, wenn das Anlegen
+    /// abgebrochen wurde (nicht angemeldet, oder kein eigener Ort in der Gruppe) - der
+    /// Aufrufer (NewEventPopup) nutzt das, um das Popup nur bei Erfolg zu schließen.
     /// </summary>
-    public async Task AddGameNightAsync(
+    public async Task<bool> AddGameNightAsync(
         GameNight night,
-        GameLocation? location,
-        IReadOnlyList<BoardGame> games,
-        Player? host)
+        GamingGroup group,
+        IReadOnlyList<BoardGame> games)
     {
-        // Falls der Aufrufer (Popup) noch keine GroupId gesetzt hat, wird automatisch
-        // die Standardgruppe verwendet. Gibt es gar keine Gruppe, brechen wir mit
-        // einer verständlichen Meldung ab, statt einen DB-Fehler zu riskieren.
-        GamingGroup? group;
+        var currentPlayerId = _currentPlayerService.PlayerId;
 
-        if (string.IsNullOrWhiteSpace(night.GroupId))
+        if (string.IsNullOrWhiteSpace(currentPlayerId))
         {
-            group = await GetDefaultGroupAsync();
+            await Shell.Current.DisplayAlertAsync(
+                "Nicht angemeldet",
+                "Es ist aktuell kein Spieler angemeldet. Der Termin kann nicht gespeichert werden.",
+                "OK");
 
-            if (group is null)
-            {
-                await Shell.Current.DisplayAlertAsync(
-                    "Keine Gruppe vorhanden",
-                    "Es wurde keine Spielgruppe gefunden. Bitte lege zuerst eine Gruppe an.",
-                    "OK");
-
-                return;
-            }
-
-            night.GroupId = group.Id;
+            return false;
         }
-        else
+
+        var ownedLocation = await GetOwnedLocationAsync(group.Id);
+
+        if (ownedLocation is null)
         {
-            // War schon eine GroupId gesetzt, laden wir die Gruppe trotzdem einmal nach -
-            // nur um gleich den Anzeigenamen (GroupName) für die UI zu haben.
-            group = await _databaseService.GetByIdAsync<GamingGroup>(night.GroupId);
+            await Shell.Current.DisplayAlertAsync(
+                "Kein eigener Ort hinterlegt",
+                $"Du hast in der Gruppe \"{group.Name}\" noch keinen eigenen Ort hinterlegt. " +
+                "Bitte lege zuerst einen Ort an, bevor du dort einen Termin erstellst.",
+                "OK");
+
+            return false;
         }
 
         try
         {
-            // location/host dürfen null sein (Ort/Veranstalter sind optional) -
-            // der ?. -Operator sorgt dafür, dass wir dann einfach null zuweisen,
-            // statt eine NullReferenceException zu riskieren.
-            night.LocationId = location?.Id;
-            night.HostPlayerId = host?.Id;
+            night.GroupId = group.Id;
+            night.LocationId = ownedLocation.Id;
+            night.HostPlayerId = currentPlayerId;
 
             await _gameNightRepository.AddAsync(night);
 
             // Für jedes ausgewählte Spiel legen wir einen eigenen game_suggestions-
             // Eintrag an - dadurch kann ein Termin (wie im Datenmodell vorgesehen)
-            // mehrere vorgeschlagene Spiele haben. Diese Tabelle verlangt "wer hat das
-            // Spiel vorgeschlagen" (SuggestedByPlayerId, NOT NULL) - wir nehmen dafür
-            // den Veranstalter, und falls keiner gewählt wurde, ersatzweise den ersten
-            // verfügbaren Spieler.
-            if (games.Count > 0)
+            // mehrere vorgeschlagene Spiele haben.
+            foreach (var game in games)
             {
-                var suggestedByPlayerId = host?.Id ?? Players.FirstOrDefault()?.Id;
-
-                if (!string.IsNullOrWhiteSpace(suggestedByPlayerId))
+                var suggestion = new GameSuggestion
                 {
-                    foreach (var game in games)
-                    {
-                        var suggestion = new GameSuggestion
-                        {
-                            GameNightId = night.Id,
-                            GameId = game.Id,
-                            SuggestedByPlayerId = suggestedByPlayerId
-                        };
+                    GameNightId = night.Id,
+                    GameId = game.Id,
+                    SuggestedByPlayerId = currentPlayerId
+                };
 
-                        await _databaseService.InsertAsync(suggestion);
-                    }
-                }
+                await _databaseService.InsertAsync(suggestion);
             }
 
             // Die Anzeigenamen setzen wir direkt hier, statt die ganze Liste neu aus der
             // DB zu laden - das spart einen kompletten Reload nur für einen neuen Termin.
-            night.GroupName = group?.Name;
-            night.LocationName = location?.Name;
-            night.HostName = host?.Name;
+            night.GroupName = group.Name;
+            night.LocationName = ownedLocation.Name;
+            night.HostName = _currentPlayerService.PlayerName;
             night.GameName = games.Count > 0 ? string.Join(", ", games.Select(g => g.Title)) : null;
+            night.IsHostedByCurrentPlayer = true;
 
             GameNights.Add(night);
 
@@ -322,6 +393,8 @@ public partial class EventViewModel : ObservableObject
 
             RecomputeNextUpcoming();
             NotifyDerivedProperties();
+
+            return true;
         }
         catch (Exception ex)
         {
@@ -329,14 +402,17 @@ public partial class EventViewModel : ObservableObject
                 "Fehler",
                 $"Der Termin konnte nicht gespeichert werden.\n{ex.Message}",
                 "OK");
+
+            return false;
         }
     }
 
     /// <summary>
     /// Aktualisiert einen bereits vorhandenen Termin (z. B. nach dem Antippen eines
-    /// Termins auf EventPage und dem Bearbeiten im NewEventPopup). Im Unterschied zu
-    /// <see cref="AddGameNightAsync"/> wird hier KEIN neuer Datensatz angelegt, sondern
-    /// der übergebene "night" (gleiche Id!) in der Datenbank überschrieben.
+    /// Termins auf EventPage und dem Bearbeiten im NewEventPopup). Gruppe, Gastgeber und
+    /// Ort bleiben dabei unverändert - sie wurden beim Anlegen fest zugeordnet (siehe
+    /// AddGameNightAsync) und lassen sich nachträglich nicht mehr ändern. Bearbeitbar
+    /// sind nur Datum/Uhrzeit, Notizen und die vorgeschlagenen Spiele.
     ///
     /// Die bisherigen Spielvorschläge (game_suggestions) für diesen Termin werden
     /// komplett entfernt und - für jedes (wieder) ausgewählte Spiel - neu angelegt. Das
@@ -350,18 +426,14 @@ public partial class EventViewModel : ObservableObject
     /// schon in GameNights/UpcomingGameNights liegt, würden von der UI sonst nicht bemerkt.
     /// Außerdem kann sich durch eine Datumsänderung auch ändern, ob der Termin in Zukunft
     /// oder Vergangenheit gehört - ein kompletter Reload behandelt das automatisch mit.
+    ///
+    /// Gibt true zurück, wenn die Aktualisierung geklappt hat, und false bei einem Fehler -
+    /// der Aufrufer (NewEventPopup) nutzt das, um das Popup nur bei Erfolg zu schließen.
     /// </summary>
-    public async Task UpdateGameNightAsync(
-        GameNight night,
-        GameLocation? location,
-        IReadOnlyList<BoardGame> games,
-        Player? host)
+    public async Task<bool> UpdateGameNightAsync(GameNight night, IReadOnlyList<BoardGame> games)
     {
         try
         {
-            night.LocationId = location?.Id;
-            night.HostPlayerId = host?.Id;
-
             await _gameNightRepository.UpdateAsync(night);
 
             // Alle bisherigen Spielvorschläge für diesen Termin entfernen ...
@@ -373,28 +445,26 @@ public partial class EventViewModel : ObservableObject
                 await _databaseService.HardDeleteAsync(suggestion);
 
             // ... und für jedes (neu) ausgewählte Spiel einen frischen Vorschlag anlegen
-            // (siehe AddGameNightAsync für dieselbe Logik).
-            if (games.Count > 0)
+            // (siehe AddGameNightAsync für dieselbe Logik). SuggestedByPlayerId ist hier
+            // immer der (unveränderliche) Gastgeber des Termins.
+            if (games.Count > 0 && !string.IsNullOrWhiteSpace(night.HostPlayerId))
             {
-                var suggestedByPlayerId = host?.Id ?? Players.FirstOrDefault()?.Id;
-
-                if (!string.IsNullOrWhiteSpace(suggestedByPlayerId))
+                foreach (var game in games)
                 {
-                    foreach (var game in games)
+                    var suggestion = new GameSuggestion
                     {
-                        var suggestion = new GameSuggestion
-                        {
-                            GameNightId = night.Id,
-                            GameId = game.Id,
-                            SuggestedByPlayerId = suggestedByPlayerId
-                        };
+                        GameNightId = night.Id,
+                        GameId = game.Id,
+                        SuggestedByPlayerId = night.HostPlayerId
+                    };
 
-                        await _databaseService.InsertAsync(suggestion);
-                    }
+                    await _databaseService.InsertAsync(suggestion);
                 }
             }
 
             await LoadGameNightsAsync();
+
+            return true;
         }
         catch (Exception ex)
         {
@@ -402,17 +472,15 @@ public partial class EventViewModel : ObservableObject
                 "Fehler",
                 $"Der Termin konnte nicht aktualisiert werden.\n{ex.Message}",
                 "OK");
+
+            return false;
         }
     }
 
     /// <summary>
     /// Sucht heraus, welche Spiele aktuell für einen Termin vorgeschlagen sind (über die
-    /// Tabelle game_suggestions) und gibt dafür direkt die passenden Objekte aus der
-    /// schon geladenen <see cref="Games"/>-Liste zurück (NICHT frisch aus der DB
-    /// gelesene, neue Objekte!). Das ist wichtig, damit NewEventPopup das Ergebnis 1:1
-    /// als Vorauswahl in GamesCollectionView.SelectedItems verwenden kann: .NET MAUI
-    /// erkennt eine Vorauswahl nur, wenn es sich um genau dieselben Objekte (Referenz)
-    /// handelt, die auch in der ItemsSource-Liste stecken.
+    /// Tabelle game_suggestions), und lädt dafür die passenden BoardGame-Objekte direkt
+    /// aus der Datenbank.
     /// </summary>
     public async Task<List<BoardGame>> GetSuggestedGamesAsync(GameNight night)
     {
@@ -423,7 +491,60 @@ public partial class EventViewModel : ObservableObject
             .Select(s => s.GameId)
             .ToHashSet();
 
-        return Games.Where(g => suggestedGameIds.Contains(g.Id)).ToList();
+        if (suggestedGameIds.Count == 0)
+            return new List<BoardGame>();
+
+        var allGames = await _databaseService.GetNotDeletedAsync<BoardGame>();
+
+        return allGames.Where(g => suggestedGameIds.Contains(g.Id)).ToList();
+    }
+
+    /// <summary>
+    /// Speichert die Zusage/Absage des aktuell angemeldeten Spielers zu einem Termin
+    /// (Tabelle attendance, UNIQUE-Constraint auf game_night_id+player_id - deshalb hier
+    /// "insert oder update" statt immer neu einzufügen). Nach dem Speichern wird die
+    /// komplette Terminliste neu geladen (siehe LoadGameNightsAsync), damit sowohl die
+    /// eigene Anzeige (MyAttendanceStatus) als auch die Prozentanzeige und die
+    /// automatische Absage-Regel sofort aktuell sind.
+    /// </summary>
+    public async Task RespondToAttendanceAsync(GameNight night, string status)
+    {
+        var currentPlayerId = _currentPlayerService.PlayerId;
+
+        if (string.IsNullOrWhiteSpace(currentPlayerId))
+            return;
+
+        try
+        {
+            var existing = (await _databaseService.GetNotDeletedAsync<Attendance>())
+                .FirstOrDefault(a => a.GameNightId == night.Id && a.PlayerId == currentPlayerId);
+
+            if (existing is not null)
+            {
+                existing.Status = status;
+                await _databaseService.UpdateAsync(existing);
+            }
+            else
+            {
+                var attendance = new Attendance
+                {
+                    GameNightId = night.Id,
+                    PlayerId = currentPlayerId,
+                    Status = status
+                };
+
+                await _databaseService.InsertAsync(attendance);
+            }
+
+            await LoadGameNightsAsync();
+        }
+        catch (Exception ex)
+        {
+            await Shell.Current.DisplayAlertAsync(
+                "Fehler",
+                $"Deine Antwort konnte nicht gespeichert werden.\n{ex.Message}",
+                "OK");
+        }
     }
 
     /// <summary>
@@ -503,6 +624,61 @@ public partial class EventViewModel : ObservableObject
     }
 
     /// <summary>
+    /// Wertet für einen Termin die Zusagen/Absagen (Tabelle attendance) aus und befüllt
+    /// die Ignore-Properties MyAttendanceStatus/MyAttendanceStatusText/
+    /// CanRespondToAttendance/AttendanceSummaryText (siehe GameNight.cs).
+    ///
+    /// Regel für die automatische Absage: "mehr als 50%" heißt hier - von den aktiven
+    /// Gruppenmitgliedern OHNE den Gastgeber (der Gastgeber nimmt automatisch teil und
+    /// wird deshalb weder gezählt noch gefragt) haben mehr als die Hälfte abgesagt. Ist
+    /// das der Fall und der Termin noch "planned", wird er auf "cancelled" gesetzt und
+    /// dauerhaft gespeichert - nach demselben Prinzip wie ApplyCompletedStatusIfDueAsync,
+    /// nur mit einer anderen Bedingung.
+    /// </summary>
+    private async Task ApplyAttendanceInfoAsync(
+        GameNight night,
+        int activeGroupMemberCount,
+        List<Attendance> nightAttendances,
+        string? currentPlayerId)
+    {
+        // Der Gastgeber zählt nicht als "zu befragendes" Mitglied - er nimmt ohnehin teil.
+        var respondentCount = Math.Max(activeGroupMemberCount - 1, 0);
+
+        var acceptedCount = nightAttendances.Count(a => a.Status == BoardGamerConstants.AttendanceStatus.Accepted);
+        var declinedCount = nightAttendances.Count(a => a.Status == BoardGamerConstants.AttendanceStatus.Declined);
+
+        night.MyAttendanceStatus = string.IsNullOrWhiteSpace(currentPlayerId)
+            ? null
+            : nightAttendances.FirstOrDefault(a => a.PlayerId == currentPlayerId)?.Status;
+
+        night.MyAttendanceStatusText = night.MyAttendanceStatus switch
+        {
+            BoardGamerConstants.AttendanceStatus.Accepted => "Du hast zugesagt",
+            BoardGamerConstants.AttendanceStatus.Declined => "Du hast abgesagt",
+            _ => null
+        };
+
+        night.CanRespondToAttendance =
+            !string.IsNullOrWhiteSpace(currentPlayerId)
+            && night.Status == BoardGamerConstants.GameNightStatus.Planned
+            && !night.IsHostedByCurrentPlayer;
+
+        night.AttendanceSummaryText = respondentCount > 0
+            ? $"{Math.Round(100.0 * acceptedCount / respondentCount)}% zugesagt ({acceptedCount}/{respondentCount})"
+            : null;
+
+        // "Mehr als 50% abgesagt" ohne Fließkommazahlen geprüft: declinedCount/respondentCount > 0.5
+        // ist gleichbedeutend mit declinedCount * 2 > respondentCount.
+        if (night.Status == BoardGamerConstants.GameNightStatus.Planned
+            && respondentCount > 0
+            && declinedCount * 2 > respondentCount)
+        {
+            night.Status = BoardGamerConstants.GameNightStatus.Cancelled;
+            await _gameNightRepository.UpdateAsync(night);
+        }
+    }
+
+    /// <summary>
     /// Löst für einen einzelnen Termin die Foreign-Key-Ids (LocationId, HostPlayerId)
     /// sowie die zugehörigen game_suggestions in lesbare Anzeigenamen auf und schreibt
     /// sie in die [Ignore]-Properties LocationName/HostName/GameName des Termins
@@ -553,7 +729,7 @@ public partial class EventViewModel : ObservableObject
     /// <summary>
     /// GameNights/UpcomingGameNights sind ObservableCollections und melden Änderungen
     /// (Add/Remove/Clear) automatisch an gebundene UI-Elemente. Die davon abgeleiteten,
-    /// berechneten Properties (PastGameNights, Top3UpcomingGameNights, HasUpcomingEvents)
+    /// berechneten Properties (PastGameNights, NextUpcomingGameNight, HasUpcomingEvents)
     /// haben aber kein eigenes Backing-Feld und werden deshalb NICHT automatisch neu
     /// ausgewertet. OnPropertyChanged(nameof(...)) sagt der UI explizit: "diese Property
     /// hat sich (indirekt) geändert, bitte neu abfragen".
@@ -561,15 +737,27 @@ public partial class EventViewModel : ObservableObject
     private void NotifyDerivedProperties()
     {
         OnPropertyChanged(nameof(PastGameNights));
-        OnPropertyChanged(nameof(Top3UpcomingGameNights));
+        OnPropertyChanged(nameof(NextUpcomingGameNight));
         OnPropertyChanged(nameof(HasUpcomingEvents));
+        OnPropertyChanged(nameof(FilteredUpcomingGameNights));
     }
 
     /// <summary>
-    /// Ermittelt aus UpcomingGameNights den chronologisch frühesten Termin und setzt bei
-    /// diesem EINEN GameNight.IsNextUpcoming auf true, bei allen anderen auf false. Damit
-    /// kann MainPage.xaml genau den nächsten anstehenden Termin optisch hervorheben
-    /// (siehe dort: DataTrigger auf IsNextUpcoming).
+    /// Setzt den Filter für die Terminliste auf EventPage. [RelayCommand] macht daraus
+    /// die Property "SetStatusFilterCommand", die die Filter-Buttons in EventPage.xaml
+    /// mit ihrem jeweiligen CommandParameter (z. B. "all", "planned", "cancelled") aufrufen.
+    /// </summary>
+    [RelayCommand]
+    private void SetStatusFilter(string filter)
+    {
+        StatusFilter = filter;
+    }
+
+    /// <summary>
+    /// Ermittelt aus UpcomingGameNights den chronologisch frühesten NICHT abgesagten Termin
+    /// (siehe GameNight.IsCancelled) und setzt bei diesem EINEN GameNight.IsNextUpcoming auf
+    /// true, bei allen anderen auf false - abgesagte Termine kommen für diese Markierung
+    /// nie in Frage, genau wie bei NextUpcomingGameNight.
     ///
     /// Wird nach jeder Änderung an UpcomingGameNights aufgerufen (Laden, Anlegen,
     /// Löschen), damit die Markierung immer den tatsächlich nächsten Termin trifft.
@@ -577,22 +765,12 @@ public partial class EventViewModel : ObservableObject
     private void RecomputeNextUpcoming()
     {
         var next = UpcomingGameNights
+            .Where(n => !n.IsCancelled)
             .OrderBy(n => ParseDate(n.ScheduledAt))
             .FirstOrDefault();
 
         foreach (var night in UpcomingGameNights)
             night.IsNextUpcoming = ReferenceEquals(night, next);
-    }
-
-    /// <summary>
-    /// Liefert die "Standardgruppe" der App. Aktuell gibt es noch keine echte
-    /// Gruppenauswahl/-verwaltung für den eingeloggten Spieler, deshalb wird
-    /// einfach die erste, nicht gelöschte Gruppe aus gaming_groups genommen.
-    /// </summary>
-    private async Task<GamingGroup?> GetDefaultGroupAsync()
-    {
-        var groups = await _databaseService.GetNotDeletedAsync<GamingGroup>();
-        return groups.FirstOrDefault();
     }
 
     /// <summary>

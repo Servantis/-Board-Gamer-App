@@ -38,9 +38,10 @@ public partial class EventPage : ContentPage
         // Erst die eigentlichen Termine laden, ...
         await ViewModel.LoadGameNightsAsync();
 
-        // ... dann die Auswahllisten (Orte/Spiele/Spieler) für das "Neuer Termin"-Popup.
-        // Das passiert schon hier und nicht erst beim Öffnen des Popups selbst, damit
-        // die Picker sofort befüllt sind, sobald der Nutzer auf "+" tippt.
+        // ... dann die Gruppen (Groups), denen der aktuelle Spieler angehört, für den
+        // Gruppen-Picker im "Neuer Termin"-Popup. Das passiert schon hier und nicht erst
+        // beim Öffnen des Popups selbst, damit der Picker sofort befüllt ist, sobald der
+        // Nutzer auf "+" tippt.
         await ViewModel.LoadReferenceDataAsync();
     }
 
@@ -66,7 +67,11 @@ public partial class EventPage : ContentPage
     /// <summary>
     /// Wird beim Antippen eines Termins in der Liste (CollectionView.ItemTemplate)
     /// ausgelöst - siehe TapGestureRecognizer in EventPage.xaml. Öffnet das
-    /// NewEventPopup im Bearbeiten-Modus für GENAU diesen Termin.
+    /// NewEventPopup im Bearbeiten-Modus für GENAU diesen Termin - aber nur, wenn der
+    /// aktuelle Spieler das auch darf (siehe GameNight.CanBeEditedByCurrentPlayer: nur
+    /// der Gastgeber, und nur solange der Termin nicht abgesagt ist). Andere
+    /// Gruppenmitglieder bekommen stattdessen einen Hinweis - sie können höchstens über
+    /// die Zusagen/Absagen-Buttons auf der Karte ihre eigene Antwort ändern.
     ///
     /// Woher kommt der angetippte Termin? "sender" ist hier der TapGestureRecognizer
     /// selbst (der erbt in .NET MAUI von Element). Ein TapGestureRecognizer, der
@@ -79,11 +84,43 @@ public partial class EventPage : ContentPage
         if (sender is not Element element || element.BindingContext is not GameNight night)
             return;
 
-        // Welche Spiele aktuell zu diesem Termin vorgeschlagen sind, steckt nicht direkt
-        // in "night" selbst (siehe game_suggestions-Tabelle) - deshalb erst hier laden,
-        // BEVOR das Popup erzeugt wird (ein Konstruktor kann nicht "await" benutzen).
+        if (!night.CanBeEditedByCurrentPlayer)
+        {
+            var message = night.IsCancelled
+                ? "Dieser Termin wurde abgesagt und kann nicht mehr bearbeitet werden."
+                : "Nur der Gastgeber kann diesen Termin bearbeiten. Du kannst hier höchstens deine Zusage oder Absage ändern.";
+
+            await Shell.Current.DisplayAlertAsync("Bearbeiten nicht möglich", message, "OK");
+            return;
+        }
+
+        // Welche Spiele aktuell zu diesem Termin vorgeschlagen sind, und welche Spiele in
+        // der Gruppe dieses Termins überhaupt zur Auswahl stehen, steckt nicht direkt in
+        // "night" selbst - deshalb erst hier laden, BEVOR das Popup erzeugt wird (ein
+        // Konstruktor kann nicht "await" benutzen).
+        var availableGames = await ViewModel.GetGamesForGroupAsync(night.GroupId);
         var suggestedGames = await ViewModel.GetSuggestedGamesAsync(night);
 
-        this.ShowPopup(new NewEventPopup(ViewModel, night, suggestedGames));
+        this.ShowPopup(new NewEventPopup(ViewModel, night, availableGames, suggestedGames));
+    }
+
+    // Zusagen/Absagen direkt aus der Terminliste: "sender" ist der jeweilige Button,
+    // dessen BindingContext (geerbt von der Karte, siehe EventPage.xaml) genau der
+    // GameNight ist, für den diese Karte gerade angezeigt wird. Nur sichtbar/aktiv, wenn
+    // GameNight.CanRespondToAttendance true ist (nicht Gastgeber, Termin noch "planned").
+    private async void OnAcceptClicked(object? sender, EventArgs e)
+    {
+        if (sender is not Element element || element.BindingContext is not GameNight night)
+            return;
+
+        await ViewModel.RespondToAttendanceAsync(night, BoardGamerConstants.AttendanceStatus.Accepted);
+    }
+
+    private async void OnDeclineClicked(object? sender, EventArgs e)
+    {
+        if (sender is not Element element || element.BindingContext is not GameNight night)
+            return;
+
+        await ViewModel.RespondToAttendanceAsync(night, BoardGamerConstants.AttendanceStatus.Declined);
     }
 }

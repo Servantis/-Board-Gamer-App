@@ -1,13 +1,20 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <!--
-    Dialog zum Anlegen eines neuen Termins.
+    Dialog zum Anlegen eines neuen Termins ODER zum Bearbeiten eines vorhandenen.
 
-    Wichtig: LocationPicker/HostPicker und GamesCollectionView haben hier KEIN
-    ItemsSource-Binding in XAML - das wird stattdessen im Code-Behind
-    (NewEventPopup.xaml.cs, Konstruktor) direkt gesetzt, z. B.:
-        LocationPicker.ItemsSource = _viewModel.Locations;
+    Wichtig: GroupPicker/GamesCollectionView haben hier KEIN ItemsSource-Binding in
+    XAML - das wird stattdessen im Code-Behind (NewEventPopup.xaml.cs, Konstruktor)
+    direkt gesetzt, z. B.:
+        GroupPicker.ItemsSource = _viewModel.Groups;
     Das ist hier bewusst so gelöst, weil dieses Popup ohne eigenen BindingContext
     arbeitet (siehe Kommentar in NewEventPopup.xaml.cs).
+
+    Gruppe, Gastgeber und Ort werden nur beim NEUEN Anlegen ausgewählt bzw. automatisch
+    bestimmt (siehe GroupSelectionSection): Gastgeber ist immer der aktuell angemeldete
+    Spieler, der Ort ergibt sich automatisch aus dessen eigenem Ort in der gewählten
+    Gruppe (siehe EventViewModel.GetOwnedLocationAsync). Beim BEARBEITEN eines
+    bestehenden Termins werden diese drei Werte nur noch informativ angezeigt
+    (ReadOnlyInfoSection), weil sie sich nachträglich nicht mehr ändern lassen.
 -->
 <toolkit:Popup
        x:Class="BoardGamerApp.Views.NewEventPopup"
@@ -62,22 +69,44 @@
                                                TimeSelected="OnInlineTimeChanged"/>
                             </VerticalStackLayout>
 
-                            <!-- Ort (aus locations, LocationId) -->
-                            <Picker x:Name="LocationPicker"
-                                    Title="Ort wählen"
-                                    ItemDisplayBinding="{Binding Name}"
-                                    BackgroundColor="#EDE6DD"/>
+                            <!-- Gruppe (aus Groups, nur Gruppen des aktuellen Spielers) - nur im
+                                 Anlegen-Modus sichtbar. Aus der gewählten Gruppe ergeben sich
+                                 automatisch Gastgeber (= aktueller Spieler) und Ort (dessen
+                                 eigener Ort in dieser Gruppe) - siehe OnGroupPickerChanged in
+                                 NewEventPopup.xaml.cs. AutoAssignInfoLabel zeigt das Ergebnis an
+                                 bzw. eine Fehlermeldung, falls kein eigener Ort existiert. -->
+                            <VerticalStackLayout x:Name="GroupSelectionSection" Spacing="4">
+                                   <Picker x:Name="GroupPicker"
+                                           Title="Gruppe wählen"
+                                           ItemDisplayBinding="{Binding Name}"
+                                           BackgroundColor="#EDE6DD"
+                                           SelectedIndexChanged="OnGroupPickerChanged"/>
 
-                            <!-- Spiele (aus games) - Mehrfachauswahl über Checkboxen: ein Tipp auf
-                                 GamesFieldBorder öffnet/schließt die Auswahlliste darunter, genau
-                                 wie sich bei Ort/Veranstalter der native Picker öffnet. Ausgewählt
-                                 wird über CollectionView.SelectionMode="Multiple"; jede Zeile zeigt
-                                 zusätzlich ein Kästchen-Symbol (☐/☑), das per VisualStateManager
-                                 zwischen den eingebauten Zuständen "Normal"/"Selected" umschaltet -
-                                 ganz ohne eigene CheckBox-Controls oder zusätzliches Data Binding.
-                                 Für jedes hier ausgewählte Spiel legt EventViewModel beim Speichern
-                                 einen eigenen game_suggestions-Eintrag an (siehe AddGameNightAsync/
-                                 UpdateGameNightAsync). -->
+                                   <Label x:Name="AutoAssignInfoLabel"
+                                          FontSize="13"
+                                          TextColor="Gray"/>
+                            </VerticalStackLayout>
+
+                            <!-- Read-only Zusammenfassung im Bearbeiten-Modus: Gruppe/Ort/Gastgeber
+                                 wurden beim Anlegen fest zugeordnet und lassen sich nachträglich
+                                 nicht mehr ändern. -->
+                            <VerticalStackLayout x:Name="ReadOnlyInfoSection" Spacing="2" IsVisible="False">
+                                   <Label x:Name="GroupInfoLabel" FontSize="13" TextColor="#3B2E25"/>
+                                   <Label x:Name="LocationInfoLabel" FontSize="13" TextColor="#3B2E25"/>
+                                   <Label x:Name="HostInfoLabel" FontSize="13" TextColor="#3B2E25"/>
+                            </VerticalStackLayout>
+
+                            <!-- Spiele vorschlagen (aus games der gewählten Gruppe) - Mehrfachauswahl
+                                 über Checkboxen: ein Tipp auf GamesFieldBorder öffnet/schließt die
+                                 Auswahlliste darunter, genau wie sich bei einem Picker die native
+                                 Auswahl öffnet. Ausgewählt wird über CollectionView.SelectionMode=
+                                 "Multiple"; jede Zeile zeigt zusätzlich ein Kästchen-Symbol (☐/☑),
+                                 das per VisualStateManager zwischen den eingebauten Zuständen
+                                 "Normal"/"Selected" umschaltet - ganz ohne eigene CheckBox-Controls
+                                 oder zusätzliches Data Binding. Für jedes hier ausgewählte Spiel legt
+                                 EventViewModel beim Speichern einen eigenen game_suggestions-Eintrag
+                                 an (siehe AddGameNightAsync/UpdateGameNightAsync) - die endgültige
+                                 Spielauswahl per Abstimmung ist ein separates, späteres Feature. -->
                             <VerticalStackLayout Spacing="0">
                                    <Border x:Name="GamesFieldBorder"
                                            BackgroundColor="#EDE6DD"
@@ -87,7 +116,7 @@
                                           </Border.GestureRecognizers>
 
                                           <Label x:Name="GamesFieldLabel"
-                                                 Text="Spiele wählen"
+                                                 Text="Spiele vorschlagen"
                                                  TextColor="Gray"/>
                                    </Border>
 
@@ -143,12 +172,6 @@
                                           </CollectionView.ItemTemplate>
                                    </CollectionView>
                             </VerticalStackLayout>
-
-                            <!-- Veranstalter (aus players, HostPlayerId) -->
-                            <Picker x:Name="HostPicker"
-                                    Title="Veranstalter wählen"
-                                    ItemDisplayBinding="{Binding Name}"
-                                    BackgroundColor="#EDE6DD"/>
 
                             <!-- Zusätzliche freie Notiz (Notes) -->
                             <Entry x:Name="NotesEntry"

@@ -29,6 +29,30 @@ public class GroupMemberRepository : IGroupMemberRepository
         return result.FirstOrDefault();
     }
 
+    /// <summary>
+    /// Liefert alle Gruppen, in denen der angegebene Spieler ein aktives Mitglied ist
+    /// (group_members.status = "active"). Wird z. B. für den Gruppen-Picker im
+    /// "Neuer Termin"-Popup benutzt, damit dort nur Gruppen zur Auswahl stehen, denen
+    /// der aktuelle Spieler tatsächlich angehört.
+    /// </summary>
+    public async Task<List<GamingGroup>> GetGroupsForPlayerAsync(string playerId)
+    {
+        var database = await _databaseService.GetConnectionAsync();
+
+        const string sql = """
+            SELECT gg.*
+            FROM gaming_groups gg
+            INNER JOIN group_members gm ON gm.group_id = gg.id
+            WHERE gm.player_id = ?
+              AND gm.status = 'active'
+              AND gm.deleted_at IS NULL
+              AND gg.deleted_at IS NULL
+            ORDER BY gg.name;
+            """;
+
+        return await database.QueryAsync<GamingGroup>(sql, playerId);
+    }
+
     public async Task<List<GroupMemberListItem>> GetMembersAsync()
     {
         var group = await GetDefaultGroupAsync();

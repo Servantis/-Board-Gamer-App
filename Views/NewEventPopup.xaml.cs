@@ -14,12 +14,14 @@ namespace BoardGamerApp.Views;
 /// GameNights-Liste, die auch auf der EventPage angezeigt wird.
 ///
 /// Zwei Konstruktoren, zwei Modi (siehe auch <see cref="_editingNight"/>):
-/// - <c>new NewEventPopup(vm)</c> -&gt; neuen Termin anlegen (leeres Formular).
-/// - <c>new NewEventPopup(vm, night, suggestedGames)</c> -&gt; vorhandenen Termin bearbeiten
-///   (Formular wird mit den Werten von "night" vorbefüllt).
+/// - <c>new NewEventPopup(vm)</c> -&gt; neuen Termin anlegen (leeres Formular, Gruppe
+///   muss im GroupPicker gewählt werden, Gastgeber/Ort ergeben sich automatisch).
+/// - <c>new NewEventPopup(vm, night, availableGames, suggestedGames)</c> -&gt; vorhandenen
+///   Termin bearbeiten (Formular wird mit den Werten von "night" vorbefüllt, Gruppe/
+///   Gastgeber/Ort werden nur noch informativ angezeigt, nicht mehr änderbar).
 ///
 /// Diese Klasse arbeitet bewusst ohne Data Binding (kein eigener BindingContext), sondern
-/// greift direkt per x:Name auf die XAML-Elemente zu (LocationPicker, GamesCollectionView, ...).
+/// greift direkt per x:Name auf die XAML-Elemente zu (GroupPicker, GamesCollectionView, ...).
 /// Das ist kein "falsches" MVVM, aber ein einfacherer, code-lastigerer Stil - für ein
 /// kleines Popup wie dieses völlig okay.
 /// </summary>
@@ -41,7 +43,7 @@ public partial class NewEventPopup : Popup
     /// <summary>
     /// Konstruktor zum Anlegen eines NEUEN Termins (leeres Formular).
     /// </summary>
-    public NewEventPopup(EventViewModel vm) : this(vm, null, null)
+    public NewEventPopup(EventViewModel vm) : this(vm, null, null, null)
     {
     }
 
@@ -51,29 +53,42 @@ public partial class NewEventPopup : Popup
     /// Termin angetippt wird.
     ///
     /// <paramref name="editingNight"/> ist der zu bearbeitende Termin selbst (gleiche
-    /// Id bleibt beim Speichern erhalten). <paramref name="suggestedGames"/> wird schon
-    /// AUSSERHALB dieses Konstruktors (in EventPage.xaml.cs, bevor das Popup erzeugt
-    /// wird) per <see cref="EventViewModel.GetSuggestedGamesAsync"/> ermittelt, weil das
-    /// Ermitteln asynchron ist (Datenbankzugriff) - ein Konstruktor kann aber kein
-    /// "await" benutzen.
+    /// Id bleibt beim Speichern erhalten). <paramref name="availableGames"/> sind alle
+    /// Spiele der Gruppe dieses Termins (für GamesCollectionView.ItemsSource) und
+    /// <paramref name="suggestedGames"/> die aktuell vorgeschlagenen (für die
+    /// Vorauswahl) - beide werden schon AUSSERHALB dieses Konstruktors (in
+    /// EventPage.xaml.cs, bevor das Popup erzeugt wird) ermittelt, weil das asynchron
+    /// (Datenbankzugriff) passiert - ein Konstruktor kann aber kein "await" benutzen.
     /// </summary>
-    public NewEventPopup(EventViewModel vm, GameNight? editingNight, IReadOnlyList<BoardGame>? suggestedGames)
+    public NewEventPopup(
+        EventViewModel vm,
+        GameNight? editingNight,
+        IReadOnlyList<BoardGame>? availableGames,
+        IReadOnlyList<BoardGame>? suggestedGames)
     {
         InitializeComponent();
         _viewModel = vm;
         _editingNight = editingNight;
 
-        // Auswahllisten kommen aus der DB (werden von EventPage.OnAppearing geladen,
-        // BEVOR dieses Popup überhaupt erzeugt wird), damit hier nur echte, vorhandene
-        // Orte/Spiele/Spieler ausgewählt werden können - kein Freitext mehr.
-        LocationPicker.ItemsSource = _viewModel.Locations;
-        GamesCollectionView.ItemsSource = _viewModel.Games;
-        HostPicker.ItemsSource = _viewModel.Players;
+        // Gruppen kommen aus der DB (werden von EventPage.OnAppearing geladen, BEVOR
+        // dieses Popup überhaupt erzeugt wird) - schon gefiltert auf die Gruppen, denen
+        // der aktuelle Spieler angehört (siehe EventViewModel.LoadReferenceDataAsync).
+        GroupPicker.ItemsSource = _viewModel.Groups;
 
         if (editingNight is not null)
         {
             // --- Bearbeiten-Modus: vorhandene Werte des Termins vorbelegen ---
             TitleLabel.Text = "Termin bearbeiten";
+
+            // Gruppe/Ort/Gastgeber wurden beim Anlegen fest zugeordnet und lassen sich
+            // nachträglich nicht mehr ändern - deshalb hier nur noch informativ als Text,
+            // statt als auswählbarer Picker.
+            GroupSelectionSection.IsVisible = false;
+            ReadOnlyInfoSection.IsVisible = true;
+
+            GroupInfoLabel.Text = $"Gruppe: {editingNight.GroupName}";
+            LocationInfoLabel.Text = $"Ort: {editingNight.LocationName}";
+            HostInfoLabel.Text = $"Gastgeber: {editingNight.HostName}";
 
             // ScheduledAt ist in der DB als UTC-ISO-String gespeichert (siehe GameNight.cs) -
             // für die Anzeige/Bearbeitung wandeln wir es wieder in lokale Zeit um.
@@ -88,18 +103,12 @@ public partial class NewEventPopup : Popup
             DateTimeLabel.Text = string.Format("{0:dd.MM.yyyy HH:mm}", _selectedDateTime);
             DateTimeLabel.TextColor = Colors.Black;
 
-            // Wichtig: Picker.SelectedItem muss genau dasselbe Objekt (Referenz) sein,
-            // das auch in der ItemsSource-Liste steckt - deshalb hier NICHT einfach ein
-            // neues Objekt mit passender Id bauen, sondern in Locations/Players nach der
-            // schon vorhandenen Instanz suchen (FirstOrDefault mit Id-Vergleich).
-            LocationPicker.SelectedItem = _viewModel.Locations
-                .FirstOrDefault(l => l.Id == editingNight.LocationId);
+            GamesCollectionView.ItemsSource = availableGames ?? new List<BoardGame>();
 
-            HostPicker.SelectedItem = _viewModel.Players
-                .FirstOrDefault(p => p.Id == editingNight.HostPlayerId);
-
-            // Die aktuell vorgeschlagenen Spiele wurden bereits vom Aufrufer (EventPage.xaml.cs)
-            // über EventViewModel.GetSuggestedGamesAsync ermittelt und hier hereingereicht.
+            // Wichtig: CollectionView.SelectedItems muss genau dieselben Objekte
+            // (Referenz) enthalten, die auch in der ItemsSource-Liste stecken - deshalb
+            // reicht EventPage.xaml.cs hier dieselben BoardGame-Instanzen herein, statt
+            // dass hier neue Objekte gebaut werden.
             if (suggestedGames is not null && suggestedGames.Count > 0)
             {
                 GamesCollectionView.SelectedItems = suggestedGames.Cast<object>().ToList();
@@ -114,6 +123,12 @@ public partial class NewEventPopup : Popup
 
             HiddenDatePicker.Date = DateTime.Now;
             HiddenTimePicker.Time = new TimeSpan(12, 0, 0);
+
+            ReadOnlyInfoSection.IsVisible = false;
+            GroupSelectionSection.IsVisible = true;
+
+            AutoAssignInfoLabel.Text = "Bitte zuerst eine Gruppe wählen.";
+            AutoAssignInfoLabel.TextColor = Colors.Gray;
         }
 
         // GamesFieldLabel zeigt direkt beim Öffnen des Popups die schon vorbelegten
@@ -124,9 +139,51 @@ public partial class NewEventPopup : Popup
         HiddenTimePicker.Unfocused += (s, e) => ApplyDateTime();
     }
 
+    // Wird ausgelöst, sobald im Anlegen-Modus eine Gruppe im GroupPicker gewählt wird.
+    // Ermittelt daraus automatisch den Ort (eigener Ort des aktuellen Spielers in dieser
+    // Gruppe, siehe EventViewModel.GetOwnedLocationAsync) und lädt die zu dieser Gruppe
+    // gehörenden Spiele neu in GamesCollectionView - hat der aktuelle Spieler keinen
+    // eigenen Ort in der Gruppe, wird das über AutoAssignInfoLabel als Fehler angezeigt
+    // (die eigentliche Blockade passiert beim Speichern in EventViewModel.AddGameNightAsync).
+    private async void OnGroupPickerChanged(object sender, EventArgs e)
+    {
+        var selectedGroup = GroupPicker.SelectedItem as GamingGroup;
+
+        if (selectedGroup is null)
+        {
+            AutoAssignInfoLabel.Text = "Bitte zuerst eine Gruppe wählen.";
+            AutoAssignInfoLabel.TextColor = Colors.Gray;
+
+            GamesCollectionView.ItemsSource = null;
+            UpdateGamesFieldLabel();
+
+            return;
+        }
+
+        var ownedLocation = await _viewModel.GetOwnedLocationAsync(selectedGroup.Id);
+
+        if (ownedLocation is null)
+        {
+            AutoAssignInfoLabel.Text =
+                $"Du hast in \"{selectedGroup.Name}\" noch keinen eigenen Ort hinterlegt. " +
+                "Ein Termin kann hier erst angelegt werden, sobald ein eigener Ort existiert.";
+            AutoAssignInfoLabel.TextColor = Colors.Firebrick;
+        }
+        else
+        {
+            AutoAssignInfoLabel.Text = $"Gastgeber: {_viewModel.CurrentPlayerName} - Ort: {ownedLocation.Name}";
+            AutoAssignInfoLabel.TextColor = Colors.Gray;
+        }
+
+        var games = await _viewModel.GetGamesForGroupAsync(selectedGroup.Id);
+        GamesCollectionView.ItemsSource = games;
+
+        UpdateGamesFieldLabel();
+    }
+
     // Tippt der Nutzer auf das Spiele-Feld, klappt die Checkbox-Liste darunter auf
     // bzw. wieder zu - optisch angelehnt an das Öffnen eines nativen Pickers wie bei
-    // Ort/Veranstalter, nur eben mit einer Mehrfachauswahl-Liste statt einer nativen
+    // Gruppe/Datum, nur eben mit einer Mehrfachauswahl-Liste statt einer nativen
     // Einzelauswahl.
     private void OnGamesFieldTapped(object sender, TappedEventArgs e)
     {
@@ -141,7 +198,7 @@ public partial class NewEventPopup : Popup
     }
 
     // Zeigt im Spiele-Feld die Titel aller aktuell ausgewählten Spiele an (durch Komma
-    // getrennt), oder den Platzhaltertext "Spiele wählen", solange noch nichts
+    // getrennt), oder den Platzhaltertext "Spiele vorschlagen", solange noch nichts
     // ausgewählt wurde.
     private void UpdateGamesFieldLabel()
     {
@@ -157,7 +214,7 @@ public partial class NewEventPopup : Popup
         }
         else
         {
-            GamesFieldLabel.Text = "Spiele wählen";
+            GamesFieldLabel.Text = "Spiele vorschlagen";
             GamesFieldLabel.TextColor = Colors.Gray;
         }
     }
@@ -211,43 +268,48 @@ public partial class NewEventPopup : Popup
     /// Zwei Fälle, je nachdem ob das Popup im Bearbeiten-Modus geöffnet wurde
     /// (_editingNight != null) oder nicht:
     /// - Neu anlegen: baut aus den Eingaben ein neues <see cref="GameNight"/>-Objekt
-    ///   und übergibt es an EventViewModel.AddGameNightAsync.
+    ///   und übergibt es zusammen mit der gewählten Gruppe an EventViewModel.AddGameNightAsync.
     /// - Bearbeiten: übernimmt die neuen Eingaben in den vorhandenen _editingNight
     ///   (gleiche Id!) und übergibt ihn an EventViewModel.UpdateGameNightAsync.
     ///
-    /// In beiden Fällen gilt: Location/Game/Host sind bereits existierende, in der DB
-    /// gespeicherte Objekte (aus den Pickern) - dadurch können LocationId/HostPlayerId
-    /// (Foreign Keys) nie ungültige Werte bekommen.
+    /// AddGameNightAsync/UpdateGameNightAsync geben ein bool zurück (Erfolg oder nicht) -
+    /// das Popup schließt sich nur bei Erfolg. So bleibt z. B. bei einer fehlenden
+    /// Gruppenauswahl oder einem fehlenden eigenen Ort das Popup offen, und der Nutzer
+    /// kann die Eingabe korrigieren, statt dass der Termin stillschweigend verworfen wird.
     /// </summary>
     private async void OnSaveClicked(object sender, EventArgs e)
     {
-        // Picker.SelectedItem ist vom Typ "object" (bzw. object?) - deshalb das
-        // "as GameLocation"/"as BoardGame"/"as Player": wurde nichts ausgewählt,
-        // ist SelectedItem null und "as ..." liefert dann einfach null zurück
-        // (statt eine Exception zu werfen wie ein normaler Cast mit "(GameLocation)").
-        var selectedLocation = LocationPicker.SelectedItem as GameLocation;
         var selectedGames = GamesCollectionView.SelectedItems
             .OfType<BoardGame>()
             .ToList();
-        var selectedHost = HostPicker.SelectedItem as Player;
+
+        bool success;
 
         if (_editingNight is not null)
         {
             // Bearbeiten-Modus: den vorhandenen Termin (gleiche Id) mit den neuen
-            // Eingaben aktualisieren.
+            // Eingaben aktualisieren. Gruppe/Gastgeber/Ort bleiben unverändert.
             _editingNight.ScheduledAt = _selectedDateTime.ToUniversalTime().ToString("o");
             _editingNight.Notes = string.IsNullOrWhiteSpace(NotesEntry.Text) ? null : NotesEntry.Text;
 
-            await _viewModel.UpdateGameNightAsync(
-                _editingNight,
-                selectedLocation,
-                selectedGames,
-                selectedHost);
+            success = await _viewModel.UpdateGameNightAsync(_editingNight, selectedGames);
         }
         else
         {
-            // Neu-Anlegen-Modus: GroupId wird von AddGameNightAsync automatisch auf die
-            // Standardgruppe gesetzt.
+            var selectedGroup = GroupPicker.SelectedItem as GamingGroup;
+
+            if (selectedGroup is null)
+            {
+                await Shell.Current.DisplayAlertAsync(
+                    "Gruppe fehlt",
+                    "Bitte wähle zuerst eine Gruppe für diesen Termin aus.",
+                    "OK");
+
+                return;
+            }
+
+            // Neu-Anlegen-Modus: GroupId/HostPlayerId/LocationId setzt AddGameNightAsync
+            // selbst (Gastgeber = aktueller Spieler, Ort = dessen eigener Ort in der Gruppe).
             var newNight = new GameNight
             {
                 ScheduledAt = _selectedDateTime.ToUniversalTime().ToString("o"),
@@ -255,13 +317,10 @@ public partial class NewEventPopup : Popup
                 Status = BoardGamerConstants.GameNightStatus.Planned
             };
 
-            await _viewModel.AddGameNightAsync(
-                newNight,
-                selectedLocation,
-                selectedGames,
-                selectedHost);
+            success = await _viewModel.AddGameNightAsync(newNight, selectedGroup, selectedGames);
         }
 
-        Close();
+        if (success)
+            Close();
     }
 }
