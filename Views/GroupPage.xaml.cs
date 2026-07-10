@@ -23,5 +23,4 @@ public partial class GroupPage : ContentPage
     {
         base.OnAppearing();
     }
-
 }

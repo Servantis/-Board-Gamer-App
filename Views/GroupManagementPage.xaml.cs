@@ -13,6 +13,16 @@ public partial class GroupManagementPage : ContentPage
         BindingContext = viewModel;
     }
 
+    protected override async void OnAppearing()
+    {
+        base.OnAppearing();
+
+        if (BindingContext is GroupMembersViewModel vm)
+        {
+            await vm.RefreshAsync();
+        }
+    }
+
     public string GroupId
     {
         set

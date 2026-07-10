@@ -1,7 +1,9 @@
+using BoardGamerApp.Messages;
 using BoardGamerApp.Models;
 using BoardGamerApp.Repositories;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
 using System.Collections.ObjectModel;
 
 namespace BoardGamerApp.ViewModels;
@@ -148,6 +150,10 @@ public partial class AddPlayerViewModel : ObservableObject
             await _groupMemberRepository.AddMemberAsync(
                 GroupId,
                 SelectedPlayer.Id);
+
+            // Message bei Änderung der Gruppenmitglieder senden, damit andere ViewModels reagieren können
+            WeakReferenceMessenger.Default.Send(
+                new GroupMembersChangedMessage(GroupId));
 
             await Shell.Current.GoToAsync("..");
         }

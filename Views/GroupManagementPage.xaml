@@ -83,15 +83,17 @@
                                             FontSize="14"
                                             TextColor="#7C6A58"/>
                                         </VerticalStackLayout>
-                                        <ImageButton
-                                            Grid.Column="2"
-                                       Source="delete_icon.png"
-                                       BackgroundColor="Transparent"
-                                       WidthRequest="20"
-                                       HeightRequest="20"
-                                       Padding="8"
-                                       IsVisible="{Binding CanRemove}"
-                                       Command="{Binding DeleteGroupMemberCommand}"/>
+                                            <ImageButton
+                                                Grid.Column="2"
+                                                Source="delete_icon.png"
+                                                BackgroundColor="Transparent"
+                                                WidthRequest="20"
+                                                HeightRequest="20"
+                                                Padding="8"
+                                                IsVisible="{Binding CanRemove}"
+                                                Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}},
+                                                                    Path=BindingContext.RemoveMemberCommand}"
+                                                CommandParameter="{Binding .}" />
                                     </Grid>
                                 </DataTemplate>
                             </CollectionView.ItemTemplate>

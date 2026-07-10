@@ -7,6 +7,8 @@ using CommunityToolkit.Mvvm.Input;
 using Microsoft.Maui.Controls;
 using System.Collections.ObjectModel;
 using System.Windows.Input;
+using BoardGamerApp.Messages;
+using CommunityToolkit.Mvvm.Messaging;
 
 namespace BoardGamerApp.ViewModels;
 
@@ -64,7 +66,6 @@ public partial class GroupMembersViewModel : ObservableObject
             .Where(member => member.Status == "active")
             .OrderBy(member => member.RotationOrder ?? int.MaxValue)
             .ThenBy(member => member.PlayerName);
-
     public GroupMembersViewModel(IGroupMemberRepository groupMemberRepository, CurrentPlayerService currentPlayerService)
     {
         _groupMemberRepository = groupMemberRepository;
@@ -79,6 +80,17 @@ public partial class GroupMembersViewModel : ObservableObject
         RemoveMemberCommand =
         new AsyncRelayCommand<GroupMemberListItem>(
             RemoveMemberAsync);
+
+        WeakReferenceMessenger.Default.Register<GroupMembersChangedMessage>(
+            this,
+            async (recipient, message) =>
+            {
+                System.Diagnostics.Debug.WriteLine("MESSAGE RECEIVED");
+                if (message.Value == GroupId)
+                {
+                    await LoadMembersAsync();
+                }
+            });
     }
 
     private async Task LoadMembersAsync()
@@ -108,9 +120,13 @@ public partial class GroupMembersViewModel : ObservableObject
 
             Members.Clear();
 
+            // prüfen, ob der aktuelle Spieler Mitglieder verwalten darf
+            var canRemoveMembers = CanCurrentPlayerRemoveMembers(members);
+
             foreach (var member in members)
             {
-                member.CanRemove = await CanCurrentPlayerRemoveMembersAsync();
+                member.CanRemove = canRemoveMembers &&
+                    member.PlayerId != _currentPlayerService.PlayerId;
 
                 Members.Add(member);
             }
@@ -222,12 +238,13 @@ public partial class GroupMembersViewModel : ObservableObject
     }
 
     // Ist der ausgewählte player admin oder owner ?
-    private async Task<bool> CanCurrentPlayerRemoveMembersAsync()
+    private bool CanCurrentPlayerRemoveMembers(
+        List<GroupMemberListItem> members)
     {
         var currentPlayerId = _currentPlayerService.PlayerId;
 
         var currentMember =
-            Members.FirstOrDefault(x =>
+            members.FirstOrDefault(x =>
                 x.PlayerId == currentPlayerId);
 
         if (currentMember == null)
@@ -239,7 +256,7 @@ public partial class GroupMembersViewModel : ObservableObject
 
     // Mitglied einer Gruppe entfernen
     private async Task RemoveMemberAsync(
-    GroupMemberListItem member)
+      GroupMemberListItem member)
     {
         if (member == null)
             return;
@@ -247,19 +264,43 @@ public partial class GroupMembersViewModel : ObservableObject
         var confirm =
             await Shell.Current.DisplayAlertAsync(
                 "Mitglied entfernen",
-                $"Soll {member.PlayerName} aus der Gruppe entfernt werden?",
+                $"Soll {member.PlayerName} wirklich entfernt werden?",
                 "Ja",
                 "Nein");
 
         if (!confirm)
             return;
 
+        try
+        {
+            await _groupMemberRepository.SoftDeleteGroupMemberAsync(
+                GroupId,
+                member.PlayerId);
 
-        await _groupMemberRepository.SoftDeleteGroupMemberAsync(
-            GroupId,
-            member.PlayerId);
+            // Sende Nachricht, dass sich die Mitgliederliste geändert hat
+            WeakReferenceMessenger.Default.Send(
+                 new GroupMembersChangedMessage(GroupId));
+                
+            Members.Remove(member);
+        }
+        catch (Exception ex)
+        {
+            await Shell.Current.DisplayAlertAsync(
+                "Fehler",
+                ex.Message,
+                "OK");
+        }
+    }
 
+    // zeig mir den aktuellen Stand der Seite 
+    public async Task RefreshAsync()
+    {
+        await LoadMembersAsync();
+    }
 
-        Members.Remove(member);
+    // Unregister, wenn das ViewModel nicht mehr benötigt wird, um Memory Leaks zu vermeiden
+    public void Cleanup()
+    {
+        WeakReferenceMessenger.Default.UnregisterAll(this);
     }
 }
