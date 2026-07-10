@@ -115,34 +115,46 @@
 
                                                                       </VerticalStackLayout>
 
-                                                                      <!-- "Bearbeiten"-Badge, optisch identisch zum "Bewerten"-Badge
-                                                                           auf PreviousEventsPage.xaml.
+                                                                        <VerticalStackLayout 
+                                                                            Grid.Column="1"
+                                                                            Spacing="8"
+                                                                            VerticalOptions="Center"
+                                                                            HorizontalOptions="End">
 
-                                                                           InputTransparent="True" auf Frame UND Label ist hier wichtig:
-                                                                           ein Frame mit eigener BackgroundColor "fängt" Touch-Events sonst
-                                                                           selbst ab, statt sie an das TapGestureRecognizer des äußeren
-                                                                           Frames (weiter oben, "OnEditEventClicked") weiterzugeben. Mit
-                                                                           InputTransparent="True" wird dieser Bereich für Touches
-                                                                           "durchsichtig" - der Tap landet dann beim äußeren Frame, egal
-                                                                           WO auf der Karte man tippt (auch direkt auf das Badge). -->
-                                                                      <Frame Grid.Column="1"
-                                                                             Padding="10,4"
-                                                                             CornerRadius="12"
-                                                                             BackgroundColor="#EDE6DD"
-                                                                             VerticalOptions="Center"
-                                                                             HorizontalOptions="End"
-                                                                             HasShadow="False"
-                                                                             InputTransparent="True">
-                                                                             <Label Text="Bearbeiten"
-                                                                                    FontSize="12"
-                                                                                    FontAttributes="Bold"
-                                                                                    TextColor="#7C6A58"
-                                                                                    HorizontalOptions="Center"
-                                                                                    VerticalOptions="Center"
-                                                                                    InputTransparent="True"/>
-                                                                      </Frame>
+                                                                        <Button 
+                                                                            Text="Vorschläge"
+                                                                            FontSize="12"
+                                                                            FontAttributes="Bold"
+                                                                            Padding="10,4"
+                                                                            HeightRequest="34"
+                                                                            BackgroundColor="#8B5E3C"
+                                                                            TextColor="White"
+                                                                            CornerRadius="12"
+                                                                            Command="{Binding Source={RelativeSource AncestorType={x:Type local:EventPage}}, Path=BindingContext.OpenSuggestionsCommand}"
+                                                                            CommandParameter="{Binding}" />
 
-                                                               </Grid>
+                                                                        <Frame 
+                                                                            Padding="10,4"
+                                                                            CornerRadius="12"
+                                                                            BackgroundColor="#EDE6DD"
+                                                                            VerticalOptions="Center"
+                                                                            HorizontalOptions="End"
+                                                                            HasShadow="False"
+                                                                            InputTransparent="True">
+
+                                                                            <Label 
+                                                                                Text="Bearbeiten"
+                                                                                FontSize="12"
+                                                                                FontAttributes="Bold"
+                                                                                TextColor="#7C6A58"
+                                                                                HorizontalOptions="Center"
+                                                                                VerticalOptions="Center"
+                                                                                InputTransparent="True" />
+                                                                        </Frame>
+
+                                                                       </VerticalStackLayout>
+
+                                                                </Grid>
 
                                                         </Frame>
                                                  </SwipeView>

@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="utf-8" ?>
+
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:viewModels="clr-namespace:BoardGamerApp.ViewModels"
+             xmlns:models="clr-namespace:BoardGamerApp.Models"
+             x:Class="BoardGamerApp.Views.GameNightSuggestionsPage"
+             x:DataType="viewModels:GameNightSuggestionsViewModel"
+             Title="Spielvorschläge"
+             BackgroundColor="#F8F5F0">
+
+    <Grid RowDefinitions="Auto,Auto,*"
+          Padding="20"
+          RowSpacing="16">
+
+        <VerticalStackLayout Grid.Row="0"
+                             Spacing="4">
+
+            <Label Text="Spielvorschläge"
+                   FontSize="24"
+                   FontAttributes="Bold"
+                   TextColor="#3B2E25" />
+
+            <Label Text="{Binding EventInfoText}"
+                   FontSize="14"
+                   TextColor="#7C6A58" />
+
+        </VerticalStackLayout>
+
+        <Button Grid.Row="1"
+                Text="Spiel vorschlagen"
+                BackgroundColor="#8B5E3C"
+                TextColor="White"
+                CornerRadius="14"
+                HeightRequest="46"
+                Command="{Binding AddSuggestionCommand}" />
+
+        <CollectionView Grid.Row="2"
+                        ItemsSource="{Binding Suggestions}"
+                        SelectionMode="None">
+
+            <CollectionView.EmptyView>
+                <VerticalStackLayout Padding="20"
+                                     Spacing="10"
+                                     HorizontalOptions="Center"
+                                     VerticalOptions="Center">
+
+                    <Label Text="Noch keine Spielvorschläge"
+                           FontSize="18"
+                           FontAttributes="Bold"
+                           HorizontalTextAlignment="Center"
+                           TextColor="#3B2E25" />
+
+                    <Label Text="Schlage ein Spiel vor, damit die Gruppe abstimmen kann."
+                           FontSize="14"
+                           TextColor="#7C6A58"
+                           HorizontalTextAlignment="Center" />
+
+                </VerticalStackLayout>
+            </CollectionView.EmptyView>
+
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="models:GameSuggestionListItem">
+
+                    <Border StrokeThickness="0"
+                            BackgroundColor="White"
+                            Padding="16"
+                            Margin="0,0,0,12"
+                            StrokeShape="RoundRectangle 14">
+
+                        <Grid ColumnDefinitions="*,Auto"
+                              ColumnSpacing="12">
+
+                            <VerticalStackLayout Grid.Column="0"
+                                                 Spacing="5">
+
+                                <Label Text="{Binding GameTitle}"
+                                       FontSize="18"
+                                       FontAttributes="Bold"
+                                       TextColor="#0F172A" />
+
+                                <Label Text="{Binding SuggestedByPlayerName, StringFormat='Vorgeschlagen von: {0}'}"
+                                       FontSize="13"
+                                       TextColor="#7C6A58" />
+
+                                <Label Text="{Binding PlayerRange, StringFormat='Spieler: {0}'}"
+                                       FontSize="13"
+                                       TextColor="#334155" />
+
+                                <Label Text="{Binding DurationText, StringFormat='Dauer: {0}'}"
+                                       FontSize="13"
+                                       TextColor="#334155" />
+
+                                <Label Text="{Binding Comment}"
+                                       FontSize="13"
+                                       TextColor="#334155"
+                                       IsVisible="{Binding Comment, Converter={StaticResource StringToBoolConverter}}" />
+
+                            </VerticalStackLayout>
+
+                            <VerticalStackLayout Grid.Column="1"
+                                                 Spacing="6"
+                                                 VerticalOptions="Center"
+                                                 HorizontalOptions="End">
+
+                                <Label Text="{Binding VoteCount, StringFormat='{0} Stimmen'}"
+                                       FontSize="13"
+                                       FontAttributes="Bold"
+                                       TextColor="#3B2E25"
+                                       HorizontalTextAlignment="Center" />
+
+                                <Button Text="Abstimmen"
+                                        FontSize="12"
+                                        BackgroundColor="#EDE6DD"
+                                        TextColor="#3B2E25"
+                                        CornerRadius="12"
+                                        Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.ToggleVoteCommand}"
+                                        CommandParameter="{Binding}" />
+
+                            </VerticalStackLayout>
+
+                        </Grid>
+
+                    </Border>
+
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+
+        </CollectionView>
+
+    </Grid>
+</ContentPage>

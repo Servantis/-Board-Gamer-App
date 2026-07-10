@@ -1,11 +1,12 @@
 namespace BoardGamerApp.ViewModels;
 
-using System.Collections.ObjectModel;
 using BoardGamerApp.Models;
 using BoardGamerApp.Repositories;
 using BoardGamerApp.Services;
+using BoardGamerApp.Views;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using System.Collections.ObjectModel;
 
 /// <summary>
 /// ViewModel für die Terminverwaltung (Views/EventPage.xaml, Views/NewEventPopup.xaml).
@@ -474,6 +475,29 @@ public partial class EventViewModel : ObservableObject
         );
     }
 
+
+    [RelayCommand]
+    private async Task OpenSuggestionsAsync(GameNight? night)
+    {
+        if (night is null)
+        {
+            await Shell.Current.DisplayAlertAsync(
+                "Fehler",
+                "Es wurde kein Termin übergeben.",
+                "OK");
+
+            return;
+        }
+
+        await Shell.Current.GoToAsync(
+            nameof(GameNightSuggestionsPage),
+            new Dictionary<string, object>
+            {
+            { "GameNight", night }
+            });
+    }
+
+
     /// <summary>
     /// Prüft, ob ein Termin automatisch als "completed" (erledigt) markiert werden muss,
     /// und schreibt diesen Status-Wechsel bei Bedarf dauerhaft in die Datenbank.
@@ -605,4 +629,7 @@ public partial class EventViewModel : ObservableObject
         return DateTime.Parse(isoString, null, System.Globalization.DateTimeStyles.RoundtripKind)
                        .ToLocalTime();
     }
+
+   
+
 }
