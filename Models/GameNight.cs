@@ -165,4 +165,21 @@ public class GameNight : BaseSyncEntity
     /// </summary>
     [Ignore]
     public bool IsNextUpcoming { get; set; }
+
+    [Ignore]
+    public string? TopVotedGameName { get; set; }
+
+    [Ignore]
+    public int TopVotedGameVoteCount { get; set; }
+
+    [Ignore]
+    public bool HasTopVotedGame =>
+        !string.IsNullOrWhiteSpace(TopVotedGameName) && TopVotedGameVoteCount > 0;
+
+    [Ignore]
+    public string TopVotedGameDisplayText =>
+        HasTopVotedGame
+            ? $"Favorit: {TopVotedGameName} ({TopVotedGameVoteCount} {(TopVotedGameVoteCount == 1 ? "Stimme" : "Stimmen")})"
+            : string.Empty;
+
 }

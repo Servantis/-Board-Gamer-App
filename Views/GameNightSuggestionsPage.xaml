@@ -99,23 +99,49 @@
                             </VerticalStackLayout>
 
                             <VerticalStackLayout Grid.Column="1"
-                                                 Spacing="6"
-                                                 VerticalOptions="Center"
-                                                 HorizontalOptions="End">
+                                Spacing="8"
+                                VerticalOptions="Center"
+                                HorizontalOptions="End">
 
-                                <Label Text="{Binding VoteCount, StringFormat='{0} Stimmen'}"
-                                       FontSize="13"
-                                       FontAttributes="Bold"
-                                       TextColor="#3B2E25"
-                                       HorizontalTextAlignment="Center" />
+                                <Frame Padding="8,3"
+                                    CornerRadius="10"
+                                    BackgroundColor="#8B5E3C"
+                                    HasShadow="False"
+                                    IsVisible="{Binding IsTopSuggestion}">
 
-                                <Button Text="Abstimmen"
-                                        FontSize="12"
-                                        BackgroundColor="#EDE6DD"
-                                        TextColor="#3B2E25"
-                                        CornerRadius="12"
-                                        Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.ToggleVoteCommand}"
-                                        CommandParameter="{Binding}" />
+                                    <Label Text="Favorit"
+                                    FontSize="11"
+                                    FontAttributes="Bold"
+                                    TextColor="White"
+                                    HorizontalTextAlignment="Center" />
+
+                                </Frame>
+
+                                <Label Text="{Binding VoteCountText}"
+                                FontSize="13"
+                                FontAttributes="Bold"
+                                TextColor="#3B2E25"
+                                HorizontalTextAlignment="Center" />
+
+                                <Button Text="{Binding VoteButtonText}"
+                                FontSize="12"
+                                Padding="10,4"
+                                BackgroundColor="#EDE6DD"
+                                TextColor="#3B2E25"
+                                CornerRadius="12"
+                                Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.ToggleVoteCommand}"
+                                CommandParameter="{Binding}">
+
+                                    <Button.Triggers>
+                                        <DataTrigger TargetType="Button"
+                                            Binding="{Binding HasCurrentPlayerVoted}"
+                                            Value="True">
+                                            <Setter Property="BackgroundColor" Value="#8B5E3C" />
+                                            <Setter Property="TextColor" Value="White" />
+                                        </DataTrigger>
+                                    </Button.Triggers>
+
+                                </Button>
 
                             </VerticalStackLayout>
 

@@ -35,6 +35,7 @@ public partial class EventViewModel : ObservableObject
     // wo EventViewModel registriert wird). Vorteil: Das ViewModel muss nicht wissen,
     // WIE die Datenbank-Verbindung aufgebaut wird, sondern nutzt einfach die fertigen Repositories.
     private readonly GameNightRepository _gameNightRepository;
+    private readonly IGameSuggestionRepository _gameSuggestionRepository;
     private readonly BoardGameRepository _boardGameRepository;
     private readonly IPlayerRepository _playerRepository;
     private readonly DatabaseService _databaseService;
@@ -78,14 +79,16 @@ public partial class EventViewModel : ObservableObject
     public bool HasUpcomingEvents => UpcomingGameNights.Count > 0;
 
     public EventViewModel(
-        GameNightRepository gameNightRepository,
-        BoardGameRepository boardGameRepository,
-        IPlayerRepository playerRepository,
-        DatabaseService databaseService)
+     GameNightRepository gameNightRepository,
+     BoardGameRepository boardGameRepository,
+     IPlayerRepository playerRepository,
+     IGameSuggestionRepository gameSuggestionRepository,
+     DatabaseService databaseService)
     {
         _gameNightRepository = gameNightRepository;
         _boardGameRepository = boardGameRepository;
         _playerRepository = playerRepository;
+        _gameSuggestionRepository = gameSuggestionRepository;
         _databaseService = databaseService;
     }
 
@@ -122,6 +125,7 @@ public partial class EventViewModel : ObservableObject
             var players = await _databaseService.GetNotDeletedAsync<Player>();
             var games = await _databaseService.GetNotDeletedAsync<BoardGame>();
             var suggestions = await _databaseService.GetNotDeletedAsync<GameSuggestion>();
+            var votes = await _databaseService.GetNotDeletedAsync<GameVote>();
 
             // In ein Dictionary (Id -> Objekt) umwandeln, damit das Nachschlagen pro Termin
             // gleich schnell ist (O(1) statt jedes Mal die ganze Liste zu durchsuchen).
@@ -141,7 +145,7 @@ public partial class EventViewModel : ObservableObject
                 // unten für die genaue Regel.
                 await ApplyCompletedStatusIfDueAsync(night);
 
-                ApplyDisplayNames(night, groupsById, locationsById, playersById, gamesById, suggestions);
+                ApplyDisplayNames(night, groupsById, locationsById, playersById, gamesById, suggestions,votes);
 
                 GameNights.Add(night);
 
@@ -240,10 +244,10 @@ public partial class EventViewModel : ObservableObject
     /// im Popup, siehe NewEventPopup.xaml, GamesCollectionView).
     /// </summary>
     public async Task AddGameNightAsync(
-        GameNight night,
-        GameLocation? location,
-        IReadOnlyList<BoardGame> games,
-        Player? host)
+    GameNight night,
+    GameLocation? location,
+    IReadOnlyList<BoardGame> games,
+    Player? host)
     {
         // Falls der Aufrufer (Popup) noch keine GroupId gesetzt hat, wird automatisch
         // die Standardgruppe verwendet. Gibt es gar keine Gruppe, brechen wir mit
@@ -283,43 +287,28 @@ public partial class EventViewModel : ObservableObject
 
             await _gameNightRepository.AddAsync(night);
 
-            // Für jedes ausgewählte Spiel legen wir einen eigenen game_suggestions-
-            // Eintrag an - dadurch kann ein Termin (wie im Datenmodell vorgesehen)
-            // mehrere vorgeschlagene Spiele haben. Diese Tabelle verlangt "wer hat das
-            // Spiel vorgeschlagen" (SuggestedByPlayerId, NOT NULL) - wir nehmen dafür
-            // den Veranstalter, und falls keiner gewählt wurde, ersatzweise den ersten
-            // verfügbaren Spieler.
-            if (games.Count > 0)
-            {
-                var suggestedByPlayerId = host?.Id ?? Players.FirstOrDefault()?.Id;
+            // Spielvorschläge werden jetzt zentral über das GameSuggestionRepository synchronisiert.
+            // Dadurch werden später keine Votes zerstört, weil wir keine game_suggestions hart löschen.
+            await SyncGameSuggestionsForNightAsync(night, games, host);
 
-                if (!string.IsNullOrWhiteSpace(suggestedByPlayerId))
-                {
-                    foreach (var game in games)
-                    {
-                        var suggestion = new GameSuggestion
-                        {
-                            GameNightId = night.Id,
-                            GameId = game.Id,
-                            SuggestedByPlayerId = suggestedByPlayerId
-                        };
-
-                        await _databaseService.InsertAsync(suggestion);
-                    }
-                }
-            }
-
-            // Die Anzeigenamen setzen wir direkt hier, statt die ganze Liste neu aus der
-            // DB zu laden - das spart einen kompletten Reload nur für einen neuen Termin.
             night.GroupName = group?.Name;
             night.LocationName = location?.Name;
             night.HostName = host?.Name;
-            night.GameName = games.Count > 0 ? string.Join(", ", games.Select(g => g.Title)) : null;
+            night.GameName = games.Count > 0
+                ? string.Join(", ", games.Select(g => g.Title))
+                : null;
+
+            // Neuer Termin hat direkt nach dem Erstellen noch keine Votes.
+            // Deshalb gibt es hier noch keinen Favoriten.
+            night.TopVotedGameName = null;
+            night.TopVotedGameVoteCount = 0;
 
             GameNights.Add(night);
 
             if (ParseDate(night.ScheduledAt) >= DateTime.Now)
+            {
                 UpcomingGameNights.Add(night);
+            }
 
             RecomputeNextUpcoming();
             NotifyDerivedProperties();
@@ -353,10 +342,10 @@ public partial class EventViewModel : ObservableObject
     /// oder Vergangenheit gehört - ein kompletter Reload behandelt das automatisch mit.
     /// </summary>
     public async Task UpdateGameNightAsync(
-        GameNight night,
-        GameLocation? location,
-        IReadOnlyList<BoardGame> games,
-        Player? host)
+    GameNight night,
+    GameLocation? location,
+    IReadOnlyList<BoardGame> games,
+    Player? host)
     {
         try
         {
@@ -365,35 +354,7 @@ public partial class EventViewModel : ObservableObject
 
             await _gameNightRepository.UpdateAsync(night);
 
-            // Alle bisherigen Spielvorschläge für diesen Termin entfernen ...
-            var existingSuggestions = (await _databaseService.GetNotDeletedAsync<GameSuggestion>())
-                .Where(s => s.GameNightId == night.Id)
-                .ToList();
-
-            foreach (var suggestion in existingSuggestions)
-                await _databaseService.HardDeleteAsync(suggestion);
-
-            // ... und für jedes (neu) ausgewählte Spiel einen frischen Vorschlag anlegen
-            // (siehe AddGameNightAsync für dieselbe Logik).
-            if (games.Count > 0)
-            {
-                var suggestedByPlayerId = host?.Id ?? Players.FirstOrDefault()?.Id;
-
-                if (!string.IsNullOrWhiteSpace(suggestedByPlayerId))
-                {
-                    foreach (var game in games)
-                    {
-                        var suggestion = new GameSuggestion
-                        {
-                            GameNightId = night.Id,
-                            GameId = game.Id,
-                            SuggestedByPlayerId = suggestedByPlayerId
-                        };
-
-                        await _databaseService.InsertAsync(suggestion);
-                    }
-                }
-            }
+            await SyncGameSuggestionsForNightAsync(night, games, host);
 
             await LoadGameNightsAsync();
         }
@@ -534,25 +495,18 @@ public partial class EventViewModel : ObservableObject
     /// nur für die Anzeige in der UI gebraucht.
     /// </summary>
     private static void ApplyDisplayNames(
-        GameNight night,
-        Dictionary<string, GamingGroup> groupsById,
-        Dictionary<string, GameLocation> locationsById,
-        Dictionary<string, Player> playersById,
-        Dictionary<string, BoardGame> gamesById,
-        List<GameSuggestion> suggestions)
+    GameNight night,
+    Dictionary<string, GamingGroup> groupsById,
+    Dictionary<string, GameLocation> locationsById,
+    Dictionary<string, Player> playersById,
+    Dictionary<string, BoardGame> gamesById,
+    List<GameSuggestion> suggestions,
+    List<GameVote> votes)
     {
-        // GroupId ist (anders als LocationId/HostPlayerId) NIE null - jeder Termin
-        // gehört immer genau einer Gruppe (siehe GameNight.GroupId) - trotzdem hier
-        // TryGetValue statt direktem Zugriff, für den (unwahrscheinlichen) Fall, dass
-        // die Gruppe zwischenzeitlich gelöscht wurde.
         night.GroupName = groupsById.TryGetValue(night.GroupId, out var group)
             ? group.Name
             : null;
 
-        // TryGetValue statt "locationsById[night.LocationId]", weil es durchaus sein kann,
-        // dass LocationId null ist (kein Ort gewählt) oder theoretisch auf einen
-        // inzwischen gelöschten Ort zeigt - in beiden Fällen wollen wir keinen Absturz,
-        // sondern einfach "kein Name vorhanden" (null).
         night.LocationName = night.LocationId is not null && locationsById.TryGetValue(night.LocationId, out var location)
             ? location.Name
             : null;
@@ -561,19 +515,66 @@ public partial class EventViewModel : ObservableObject
             ? player.Name
             : null;
 
-        // Ein Termin kann (laut Datenmodell) mehrere vorgeschlagene Spiele haben,
-        // deshalb filtern wir hier alle passenden game_suggestions-Einträge heraus
-        // und verbinden ihre Titel mit Komma - meistens wird das aber genau ein Titel sein.
-        var gameTitles = suggestions
+        var suggestionsForNight = suggestions
             .Where(s => s.GameNightId == night.Id)
-            .Select(s => gamesById.TryGetValue(s.GameId, out var game) ? game.Title : null)
-            .Where(title => title is not null);
+            .ToList();
 
-        night.GameName = gameTitles.Any()
+        var gameTitles = suggestionsForNight
+            .Select(s => gamesById.TryGetValue(s.GameId, out var game) ? game.Title : null)
+            .Where(title => title is not null)
+            .ToList();
+
+        night.GameName = gameTitles.Count > 0
             ? string.Join(", ", gameTitles)
             : null;
+
+        ApplyTopVotedGame(night, suggestionsForNight, gamesById, votes);
     }
 
+
+    private static void ApplyTopVotedGame(
+    GameNight night,
+    List<GameSuggestion> suggestionsForNight,
+    Dictionary<string, BoardGame> gamesById,
+    List<GameVote> votes)
+    {
+        night.TopVotedGameName = null;
+        night.TopVotedGameVoteCount = 0;
+
+        if (suggestionsForNight.Count == 0)
+        {
+            return;
+        }
+
+        var voteCounts = suggestionsForNight
+            .Select(suggestion => new
+            {
+                Suggestion = suggestion,
+                VoteCount = votes.Count(vote => vote.SuggestionId == suggestion.Id)
+            })
+            .ToList();
+
+        var maxVotes = voteCounts.Max(x => x.VoteCount);
+
+        if (maxVotes <= 0)
+        {
+            return;
+        }
+
+        var topGameTitles = voteCounts
+            .Where(x => x.VoteCount == maxVotes)
+            .Select(x => gamesById.TryGetValue(x.Suggestion.GameId, out var game) ? game.Title : null)
+            .Where(title => !string.IsNullOrWhiteSpace(title))
+            .ToList();
+
+        if (topGameTitles.Count == 0)
+        {
+            return;
+        }
+
+        night.TopVotedGameName = string.Join(", ", topGameTitles);
+        night.TopVotedGameVoteCount = maxVotes;
+    }
     /// <summary>
     /// GameNights/UpcomingGameNights sind ObservableCollections und melden Änderungen
     /// (Add/Remove/Clear) automatisch an gebundene UI-Elemente. Die davon abgeleiteten,
@@ -630,6 +631,60 @@ public partial class EventViewModel : ObservableObject
                        .ToLocalTime();
     }
 
-   
+    private async Task SyncGameSuggestionsForNightAsync(
+    GameNight night,
+    IReadOnlyList<BoardGame> selectedGames,
+    Player? host)
+    {
+        var selectedGameIds = selectedGames
+            .Select(game => game.Id)
+            .ToHashSet();
+
+        var existingSuggestions = (await _databaseService.GetNotDeletedAsync<GameSuggestion>())
+            .Where(suggestion => suggestion.GameNightId == night.Id)
+            .ToList();
+
+        // Vorschläge, die nicht mehr ausgewählt sind, nur soft-deleten.
+        // Dadurch bleiben vorhandene Votes in game_votes erhalten.
+        foreach (var existingSuggestion in existingSuggestions)
+        {
+            if (!selectedGameIds.Contains(existingSuggestion.GameId))
+            {
+                await _gameSuggestionRepository.SoftDeleteSuggestionAsync(existingSuggestion.Id);
+            }
+        }
+
+        if (selectedGames.Count == 0)
+        {
+            return;
+        }
+
+        var suggestedByPlayerId = host?.Id ?? Players.FirstOrDefault()?.Id;
+
+        if (string.IsNullOrWhiteSpace(suggestedByPlayerId))
+        {
+            return;
+        }
+
+        var activeExistingGameIds = existingSuggestions
+            .Where(suggestion => selectedGameIds.Contains(suggestion.GameId))
+            .Select(suggestion => suggestion.GameId)
+            .ToHashSet();
+
+        foreach (var selectedGame in selectedGames)
+        {
+            if (activeExistingGameIds.Contains(selectedGame.Id))
+            {
+                continue;
+            }
+
+            await _gameSuggestionRepository.AddSuggestionAsync(
+                night.Id,
+                selectedGame.Id,
+                suggestedByPlayerId,
+                null);
+        }
+    }
+
 
 }

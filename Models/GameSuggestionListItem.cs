@@ -30,6 +30,18 @@ public class GameSuggestionListItem
 
     public bool HasCurrentPlayerVoted => HasCurrentPlayerVotedValue == 1;
 
+    public bool IsTopSuggestion { get; set; }
+
+    public string VoteButtonText =>
+        HasCurrentPlayerVoted
+            ? "Stimme entfernen"
+            : "Abstimmen";
+
+    public string VoteCountText =>
+        VoteCount == 1
+            ? "1 Stimme"
+            : $"{VoteCount} Stimmen";
+
     public string PlayerRange
     {
         get

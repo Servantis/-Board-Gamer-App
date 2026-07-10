@@ -152,12 +152,12 @@ public class GameSuggestionRepository : IGameSuggestionRepository
     public async Task ToggleVoteAsync(
     string suggestionId,
     string playerId)
-    {
-        var database = await _databaseService.GetConnectionAsync();
+{
+    var database = await _databaseService.GetConnectionAsync();
 
-        var now = DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ss.fffZ");
+    var now = DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ss.fffZ");
 
-        const string existingSql = """
+    const string existingSql = """
         SELECT 
             id AS Id,
             deleted_at AS DeletedAt
@@ -167,17 +167,17 @@ public class GameSuggestionRepository : IGameSuggestionRepository
         LIMIT 1;
         """;
 
-        var existingVotes = await database.QueryAsync<GameVoteExistingRow>(
-            existingSql,
-            suggestionId,
-            playerId);
+    var existingVotes = await database.QueryAsync<GameVoteExistingRow>(
+        existingSql,
+        suggestionId,
+        playerId);
 
-        var existingVote = existingVotes.FirstOrDefault();
+    var existingVote = existingVotes.FirstOrDefault();
 
-        // Fall 1: Es gibt noch gar keinen Vote
-        if (existingVote is null)
-        {
-            const string insertSql = """
+    // Fall 1: Es gibt noch gar keinen Vote
+    if (existingVote is null)
+    {
+        const string insertSql = """
             INSERT INTO game_votes (
                 id,
                 suggestion_id,
@@ -190,21 +190,21 @@ public class GameSuggestionRepository : IGameSuggestionRepository
             VALUES (?, ?, ?, 1, ?, ?, 1);
             """;
 
-            await database.ExecuteAsync(
-                insertSql,
-                Guid.NewGuid().ToString(),
-                suggestionId,
-                playerId,
-                now,
-                now);
+        await database.ExecuteAsync(
+            insertSql,
+            Guid.NewGuid().ToString(),
+            suggestionId,
+            playerId,
+            now,
+            now);
 
-            return;
-        }
+        return;
+    }
 
-        // Fall 2: Vote existiert, wurde aber vorher entfernt → reaktivieren
-        if (!string.IsNullOrWhiteSpace(existingVote.DeletedAt))
-        {
-            const string reactivateSql = """
+    // Fall 2: Vote existiert, wurde aber vorher entfernt → reaktivieren
+    if (!string.IsNullOrWhiteSpace(existingVote.DeletedAt))
+    {
+        const string reactivateSql = """
             UPDATE game_votes
             SET vote_value = 1,
                 deleted_at = NULL,
@@ -213,16 +213,16 @@ public class GameSuggestionRepository : IGameSuggestionRepository
             WHERE id = ?;
             """;
 
-            await database.ExecuteAsync(
-                reactivateSql,
-                now,
-                existingVote.Id);
+        await database.ExecuteAsync(
+            reactivateSql,
+            now,
+            existingVote.Id);
 
-            return;
-        }
+        return;
+    }
 
-        // Fall 3: Vote existiert und ist aktiv → entfernen
-        const string softDeleteSql = """
+    // Fall 3: Vote existiert und ist aktiv → entfernen
+    const string softDeleteSql = """
         UPDATE game_votes
         SET deleted_at = ?,
             updated_at = ?,
@@ -230,12 +230,12 @@ public class GameSuggestionRepository : IGameSuggestionRepository
         WHERE id = ?;
         """;
 
-        await database.ExecuteAsync(
-            softDeleteSql,
-            now,
-            now,
-            existingVote.Id);
-    }
+    await database.ExecuteAsync(
+        softDeleteSql,
+        now,
+        now,
+        existingVote.Id);
+}
 
     public async Task SoftDeleteSuggestionAsync(string suggestionId)
     {

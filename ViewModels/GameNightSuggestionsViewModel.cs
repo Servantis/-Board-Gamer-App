@@ -83,10 +83,11 @@ public partial class GameNightSuggestionsViewModel : ObservableObject
         try
         {
             IsBusy = true;
-
             var suggestions = await _suggestionRepository.GetSuggestionsForGameNightAsync(
                 GameNight.Id,
                 _currentPlayerService.PlayerId);
+
+            MarkTopSuggestions(suggestions);
 
             Suggestions.Clear();
 
@@ -196,5 +197,30 @@ public partial class GameNightSuggestionsViewModel : ObservableObject
             comment);
 
         await LoadSuggestionsAsync();
+    }
+
+    private static void MarkTopSuggestions(List<GameSuggestionListItem> suggestions)
+    {
+        foreach (var suggestion in suggestions)
+        {
+            suggestion.IsTopSuggestion = false;
+        }
+
+        if (suggestions.Count == 0)
+        {
+            return;
+        }
+
+        var highestVoteCount = suggestions.Max(s => s.VoteCount);
+
+        if (highestVoteCount <= 0)
+        {
+            return;
+        }
+
+        foreach (var suggestion in suggestions.Where(s => s.VoteCount == highestVoteCount))
+        {
+            suggestion.IsTopSuggestion = true;
+        }
     }
 }
