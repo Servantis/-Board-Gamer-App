@@ -99,8 +99,25 @@
                                                                                     FontSize="14"
                                                                                     TextColor="#334155"
                                                                                     IsVisible="{Binding GameName, Converter={StaticResource StringToBoolConverter}}"/>
+                                                                            <Border BackgroundColor="#FFF3D8"
+                                                                            Stroke="#B87945"
+                                                                            StrokeThickness="1"
+                                                                            Padding="8,5"
+                                                                            Margin="0,4,0,0"
+                                                                            StrokeShape="RoundRectangle 10"
+                                                                            IsVisible="{Binding HasTopVotedGame}">
 
-                                                                             <!-- Notiz -->
+                                                                            <Label Text="{Binding TopVotedGameDisplayText}"
+                                                                            FontSize="13"
+                                                                            FontAttributes="Bold"
+                                                                            TextColor="#8B5E3C" />
+                                                                            </Border>
+                                                                            <Label Text="{Binding HostName, StringFormat='Ausrichter: {0}'}"
+                                                                             FontSize="14"
+                                                                            TextColor="#1E3A8A"
+                                                                            FontAttributes="Bold"
+                                                                            IsVisible="{Binding HostName, Converter={StaticResource StringToBoolConverter}}"/>
+                                            <!-- Notiz -->
                                                                              <Label Text="{Binding Notes, StringFormat='Notiz: {0}'}"
                                                                                     FontSize="14"
                                                                                     TextColor="#334155"
