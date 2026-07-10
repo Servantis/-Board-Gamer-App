@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="utf-8" ?>
+
+<ContentPage
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:viewModels="clr-namespace:BoardGamerApp.ViewModels"
+    xmlns:models="clr-namespace:BoardGamerApp.Models"
+    x:Class="BoardGamerApp.Views.AddPlayerPage"
+    x:DataType="viewModels:AddPlayerViewModel"
+    Title="Spieler hinzufügen"
+    BackgroundColor="#F8F5F0">
+
+    <ScrollView>
+
+        <VerticalStackLayout
+            Padding="30"
+            Spacing="20">
+
+            <Label
+                Text="Spieler hinzufügen"
+                FontSize="24"
+                FontAttributes="Bold"/>
+
+            <!-- Suchfeld -->
+            <Entry
+                Placeholder="Name oder E-Mail eingeben..."
+                Text="{Binding SearchText}" />
+
+            <!-- Suchergebnisse -->
+            <Border
+                BackgroundColor="White"
+                StrokeThickness="1"
+                Stroke="#DDDDDD"
+                IsVisible="{Binding HasSearchResults}">
+
+                <CollectionView
+                    ItemsSource="{Binding SearchResults}"
+                    SelectionMode="None"
+                    MaximumHeightRequest="220">
+
+                    <CollectionView.ItemTemplate>
+
+                        <DataTemplate x:DataType="models:Player">
+
+                            <Grid
+                                Padding="12"
+                                ColumnDefinitions="*,Auto">
+
+                                <VerticalStackLayout>
+
+                                    <Label
+                                        Text="{Binding Name}"
+                                        FontAttributes="Bold"
+                                        FontSize="16"/>
+
+                                    <Label
+                                        Text="{Binding Email}"
+                                        FontSize="13"
+                                        TextColor="Gray"/>
+
+                                </VerticalStackLayout>
+
+                                <Grid.GestureRecognizers>
+
+                                    <TapGestureRecognizer
+                                        Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.SelectPlayerCommand}"
+                                        CommandParameter="{Binding .}" />
+
+                                </Grid.GestureRecognizers>
+
+                            </Grid>
+
+                        </DataTemplate>
+
+                    </CollectionView.ItemTemplate>
+
+                </CollectionView>
+
+            </Border>
+
+            <!-- Ausgewählter Spieler -->
+
+            <Border
+                BackgroundColor="White"
+                StrokeThickness="0"
+                StrokeShape="RoundRectangle 12"
+                Padding="15">
+
+                <VerticalStackLayout
+                    Spacing="6">
+
+                    <Label
+                        Text="Ausgewählter Spieler"
+                        FontAttributes="Bold"
+                        FontSize="16"/>
+
+                    <Label
+                        Text="{Binding SelectedPlayer.Name}"
+                        FontSize="16"/>
+
+                    <Label
+                        Text="{Binding SelectedPlayer.Email}"
+                        FontSize="14"
+                        TextColor="Gray"/>
+
+                </VerticalStackLayout>
+
+            </Border>
+
+            <!-- Buttons -->
+
+            <Grid
+                ColumnDefinitions="*,*"
+                ColumnSpacing="15">
+
+                <Button
+                    Grid.Column="0"
+                    Text="Abbrechen"
+                    Command="{Binding CancelCommand}" />
+
+                <Button
+                    Grid.Column="1"
+                    Text="Hinzufügen"
+                    Command="{Binding SaveCommand}" />
+
+            </Grid>
+
+            <ActivityIndicator
+                IsRunning="{Binding IsBusy}"
+                IsVisible="{Binding IsBusy}" />
+
+        </VerticalStackLayout>
+
+    </ScrollView>
+
+</ContentPage>

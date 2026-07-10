@@ -16,4 +16,10 @@ public class GamingGroup : BaseSyncEntity
     [NotNull]
     [Column("created_by_player_id")]
     public string CreatedByPlayerId { get; set; } = string.Empty;
+
+    [Ignore]
+    public bool CanDelete { get; set; }
+
+    [Ignore]
+    public bool CanLeave => !CanDelete;
 }

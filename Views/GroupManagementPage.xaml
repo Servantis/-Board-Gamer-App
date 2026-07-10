@@ -5,7 +5,7 @@
              xmlns:models="clr-namespace:BoardGamerApp.Models"
              x:Class="BoardGamerApp.Views.GroupManagementPage"
              x:DataType="viewModels:GroupMembersViewModel"
-             Title="Gruppe"
+             Title=""
              BackgroundColor="#F8F5F0">
     <Grid RowDefinitions="Auto,*,80">
 
@@ -14,29 +14,17 @@
             <VerticalStackLayout Padding="30,0"
                               Spacing="25">
 
-                <Grid ColumnDefinitions="*,Auto"
-                  Margin="0,15,0,0">
+                <Grid ColumnDefinitions="Auto,Auto,*"
+                  Margin="0,15,0,0"
+                  ColumnSpacing="8">
 
                     <!-- Titel -->
-                    <Label Text="Gruppe"
-                        Style="{StaticResource SubHeadline}"
-                        FontSize="18"
-                        HorizontalOptions="Start"
-                        VerticalOptions="Center"
-                        SemanticProperties.HeadingLevel="Level1"/>
-
-                    <!-- Button rechts -->
-                    <Button Grid.Column="1"
-                             BackgroundColor="Transparent"
-                             Padding="10"
-                             Command="{Binding ManageMembersCommand}">
-                        <Button.ImageSource>
-                            <FontImageSource Glyph="👥"
-                              Size="22"
-                              Color="#3B2E25"/>
-                        </Button.ImageSource>
-
-                    </Button>
+                    <Label Grid.Column="0"
+                       Text="Mitgliederverwaltung"
+                       Style="{StaticResource SubHeadline}"
+                       FontSize="18"
+                       VerticalOptions="Center"
+                       SemanticProperties.HeadingLevel="Level1"/>
                 </Grid>
 
                 <Border StrokeThickness="0"
@@ -95,14 +83,17 @@
                                             FontSize="14"
                                             TextColor="#7C6A58"/>
                                         </VerticalStackLayout>
-                                        <ImageButton
-                                            Grid.Column="2"
-                                       Source="delete_icon.png"
-                                       BackgroundColor="Transparent"
-                                       WidthRequest="24"
-                                       HeightRequest="24"
-                                       Command="{Binding DeleteCommand}"
-                                       />
+                                            <ImageButton
+                                                Grid.Column="2"
+                                                Source="delete_icon.png"
+                                                BackgroundColor="Transparent"
+                                                WidthRequest="20"
+                                                HeightRequest="20"
+                                                Padding="8"
+                                                IsVisible="{Binding CanRemove}"
+                                                Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}},
+                                                                    Path=BindingContext.RemoveMemberCommand}"
+                                                CommandParameter="{Binding .}" />
                                     </Grid>
                                 </DataTemplate>
                             </CollectionView.ItemTemplate>
@@ -113,72 +104,29 @@
             </VerticalStackLayout>
         </ScrollView>
 
-        <!-- Footer Navigation -->
-        <Grid Grid.Row="2"
-       BackgroundColor="#F8F5F0"
-       Padding="20,10"
-       ColumnDefinitions="*,Auto,*"
-       VerticalOptions="End">
 
-            <!-- Termine -->
-            <VerticalStackLayout Grid.Column="0"
-                          HorizontalOptions="Center"
-                          VerticalOptions="Center">
+        <!--Add-Button-->
+        <Border
+           Grid.Row="2"
+           WidthRequest="60"
+           HeightRequest="60"
+           StrokeShape="RoundRectangle 12"
+           BackgroundColor="#8B5E3C"
+       
+           VerticalOptions="End"
+           HorizontalOptions="Center"
+           InputTransparent="False">
 
-                <VerticalStackLayout.GestureRecognizers>
-                    <TapGestureRecognizer Tapped="OnEventClicked"/>
-                </VerticalStackLayout.GestureRecognizers>
+            <Border.GestureRecognizers>
+                <TapGestureRecognizer Command="{Binding OpenAddPlayerPageCommand}" />
+            </Border.GestureRecognizers>
 
-                <Image Source="calender_icon.png"
-                HeightRequest="24"
-                WidthRequest="24"/>
-
-                <Label Text="Termine"
-                FontSize="12"
-                TextColor="#8B5E3C"
-                HorizontalOptions="Center"/>
-            </VerticalStackLayout>
-
-            <!-- Plus Button -->
-            <Frame Grid.Column="1"
-            WidthRequest="60"
-            HeightRequest="60"
-            CornerRadius="30"
-            BackgroundColor="#8B5E3C"
-            HasShadow="True"
-            VerticalOptions="Center"
-            HorizontalOptions="Center">
-
-                <Frame.GestureRecognizers>
-                    <!--Durch dazugehörige OnxxxxClicked-Methode ersetzen-->
-                    <TapGestureRecognizer Tapped="OnMessageClicked"/>
-                </Frame.GestureRecognizers>
-
-                <Image Source="envelope_icon.png"
-                HeightRequest="28"
-                WidthRequest="28"
-                VerticalOptions="Center"
-                HorizontalOptions="Center"/>
-            </Frame>
-
-            <!-- Gruppe -->
-            <VerticalStackLayout Grid.Column="2"
-                          HorizontalOptions="Center"
-                          VerticalOptions="Center">
-                <!-- OnClick Methode für Gruppenansicht -->
-                <VerticalStackLayout.GestureRecognizers>
-                    <TapGestureRecognizer Tapped="OnGroupClicked"/>
-                </VerticalStackLayout.GestureRecognizers>
-
-                <Image Source="group_icon.png"
-                HeightRequest="24"
-                WidthRequest="24"/>
-
-                <Label Text="Gruppe"
-                FontSize="12"
-                TextColor="#8B5E3C"
-                HorizontalOptions="Center"/>
-            </VerticalStackLayout>
-        </Grid>
+            <Image Source="plus_icon.png"
+               HeightRequest="28"
+               WidthRequest="28"
+               VerticalOptions="Center"
+               HorizontalOptions="Center"
+               InputTransparent="True" />
+        </Border>
     </Grid>
 </ContentPage>

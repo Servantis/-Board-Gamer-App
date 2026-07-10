@@ -1,7 +1,9 @@
 using BoardGamerApp.ViewModels;
+using Microsoft.Maui.Controls;
 
 namespace BoardGamerApp.Views;
 
+[QueryProperty(nameof(GroupId), "groupId")]
 public partial class GroupManagementPage : ContentPage
 {
     public GroupManagementPage(GroupMembersViewModel viewModel)
@@ -11,20 +13,24 @@ public partial class GroupManagementPage : ContentPage
         BindingContext = viewModel;
     }
 
-    private async void OnEventClicked(object sender, TappedEventArgs e)
+    protected override async void OnAppearing()
     {
-        // Anpassen an deine echte Route
-        await Shell.Current.GoToAsync("//events");
+        base.OnAppearing();
+
+        if (BindingContext is GroupMembersViewModel vm)
+        {
+            await vm.RefreshAsync();
+        }
     }
 
-    private async void OnMessageClicked(object sender, TappedEventArgs e)
+    public string GroupId
     {
-        await DisplayAlertAsync("Nachricht", "Nachrichtenfunktion folgt später.", "OK");
-    }
-
-    private async void OnGroupClicked(object sender, TappedEventArgs e)
-    {
-        // Du bist vermutlich schon auf der Gruppenseite.
-        await Shell.Current.GoToAsync("//group");
+        set
+        {
+            if (BindingContext is GroupMembersViewModel vm)
+            {
+                vm.GroupId = value;
+            }
+        }
     }
 }

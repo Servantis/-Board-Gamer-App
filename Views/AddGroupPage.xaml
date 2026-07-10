@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:viewModels="clr-namespace:BoardGamerApp.ViewModels"
+    x:Class="BoardGamerApp.Views.AddGroupPage"
+    x:DataType="viewModels:AddGroupViewModel"
+    Title="Neue Gruppe">
+
+    <ScrollView>
+
+        <VerticalStackLayout
+            Padding="30"
+            Spacing="20">
+
+            <Label
+                Text="Neue Gruppe erstellen"
+                FontSize="24"
+                FontAttributes="Bold" />
+
+            <Entry
+                Placeholder="Gruppenname"
+                Text="{Binding Name}" />
+
+            <Editor
+                Placeholder="Beschreibung (optional)"
+                AutoSize="TextChanges"
+                HeightRequest="120"
+                Text="{Binding Description}" />
+
+            <Grid
+                ColumnDefinitions="*,*"
+                ColumnSpacing="15">
+
+                <Button
+                    Grid.Column="0"
+                    Text="Abbrechen"
+                    Command="{Binding CancelCommand}" />
+
+                <Button
+                    Grid.Column="1"
+                    Text="Speichern"
+                    Command="{Binding SaveCommand}" />
+
+            </Grid>
+
+            <ActivityIndicator
+                IsRunning="{Binding IsBusy}"
+                IsVisible="{Binding IsBusy}" />
+
+        </VerticalStackLayout>
+
+    </ScrollView>
+
+</ContentPage>

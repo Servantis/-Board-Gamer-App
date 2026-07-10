@@ -44,6 +44,13 @@ public partial class AppShell : Shell
         Routing.RegisterRoute(nameof(GamesPage), typeof(GamesPage));
         Routing.RegisterRoute(nameof(RatingPage), typeof(RatingPage));
         Routing.RegisterRoute(nameof(EventPage), typeof(EventPage));
+        Routing.RegisterRoute(nameof(MessagePage), typeof(MessagePage));
+        Routing.RegisterRoute(nameof(PreviousEventsPage), typeof(PreviousEventsPage));
+        Routing.RegisterRoute(nameof(GroupOverviewPage), typeof(GroupOverviewPage));
+
+        // Gruppen Seiten 
+        Routing.RegisterRoute(nameof(AddGroupPage), typeof(AddGroupPage));
+        Routing.RegisterRoute(nameof(AddPlayerPage), typeof(AddPlayerPage));
         Routing.RegisterRoute(nameof(GroupPage), typeof(GroupPage));
         Routing.RegisterRoute(nameof(GroupManagementPage), typeof(GroupManagementPage));
         Routing.RegisterRoute(nameof(MessagePage), typeof(MessagePage));

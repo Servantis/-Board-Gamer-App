@@ -1,4 +1,6 @@
-﻿namespace BoardGamerApp.Models;
+﻿using SQLite;
+
+namespace BoardGamerApp.Models;
 
 public class GroupMemberListItem
 {
@@ -53,4 +55,8 @@ public class GroupMemberListItem
 
     // Wird im ViewModel anhand der Rotation gesetzt.
     public bool IsNextHost { get; set; }
+
+    // bool für Löschbutton ander Gruppen-Mitglieder: admins/owner -> angezeigen, member -> keine Button
+    [Ignore]
+    public bool CanRemove { get; set; }
 }

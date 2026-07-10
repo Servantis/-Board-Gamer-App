@@ -9,6 +9,8 @@ public interface IGroupMemberRepository
     /// <summary>Liefert alle Gruppen, in denen ein Spieler aktives Mitglied ist.</summary>
     Task<List<GamingGroup>> GetGroupsForPlayerAsync(string playerId);
 
+    Task<GamingGroup?> GetGroupByIdAsync(string groupId);
+
     Task<List<GroupMemberListItem>> GetMembersAsync();
 
     Task<List<GroupMemberListItem>> GetMembersByGroupIdAsync(string groupId);
@@ -27,5 +29,5 @@ public interface IGroupMemberRepository
 
     Task UpdateRotationOrderAsync(string memberId, int? rotationOrder);
 
-    Task SoftDeleteMemberAsync(string memberId);
+    Task SoftDeleteGroupMemberAsync(string groupId, string playerId);
 }

@@ -53,6 +53,23 @@ public class GroupMemberRepository : IGroupMemberRepository
         return await database.QueryAsync<GamingGroup>(sql, playerId);
     }
 
+    public async Task<GamingGroup?> GetGroupByIdAsync(string groupId)
+    {
+        var database = await _databaseService.GetConnectionAsync();
+
+        const string sql = """
+        SELECT *
+        FROM gaming_groups
+        WHERE id = ?
+          AND deleted_at IS NULL
+        LIMIT 1;
+        """;
+
+        var result = await database.QueryAsync<GamingGroup>(sql, groupId);
+
+        return result.FirstOrDefault();
+    }
+
     public async Task<List<GroupMemberListItem>> GetMembersAsync()
     {
         var group = await GetDefaultGroupAsync();
@@ -116,32 +133,80 @@ public class GroupMemberRepository : IGroupMemberRepository
     }
 
     public async Task AddMemberAsync(
-        string groupId,
-        string playerId,
-        string role = "member",
-        int? rotationOrder = null)
+     string groupId,
+     string playerId,
+     string role = "member",
+     int? rotationOrder = null)
     {
         var database = await _databaseService.GetConnectionAsync();
 
         var now = DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ss.fffZ");
 
-        const string sql = """
-            INSERT INTO group_members (
-                id,
-                group_id,
-                player_id,
-                role,
-                status,
-                rotation_order,
-                created_at,
-                updated_at,
-                version
-            )
-            VALUES (?, ?, ?, ?, 'active', ?, ?, ?, 1);
+        // Prüfen, ob bereits ein Datensatz für diese Gruppe und diesen Spieler existiert
+        const string existingSql = """
+        SELECT *
+        FROM group_members
+        WHERE group_id = ?
+          AND player_id = ?
+        LIMIT 1;
+        """;
+
+        var existingMember = (await database.QueryAsync<GroupMember>(
+            existingSql,
+            groupId,
+            playerId))
+            .FirstOrDefault();
+
+        if (existingMember != null)
+        {
+            // Spieler ist bereits aktives Mitglied
+            if (existingMember.DeletedAt == null)
+            {
+                throw new InvalidOperationException(
+                    "Der Spieler ist bereits Mitglied dieser Gruppe.");
+            }
+
+            // Spieler war früher Mitglied -> Datensatz reaktivieren
+            const string reactivateSql = """
+            UPDATE group_members
+            SET
+                deleted_at = NULL,
+                status = 'active',
+                role = ?,
+                rotation_order = ?,
+                updated_at = ?,
+                version = version + 1
+            WHERE id = ?;
             """;
 
+            await database.ExecuteAsync(
+                reactivateSql,
+                role,
+                rotationOrder,
+                now,
+                existingMember.Id);
+
+            return;
+        }
+
+        // Spieler war noch nie Mitglied -> neuen Datensatz anlegen
+        const string insertSql = """
+        INSERT INTO group_members (
+            id,
+            group_id,
+            player_id,
+            role,
+            status,
+            rotation_order,
+            created_at,
+            updated_at,
+            version
+        )
+        VALUES (?, ?, ?, ?, 'active', ?, ?, ?, 1);
+        """;
+
         await database.ExecuteAsync(
-            sql,
+            insertSql,
             Guid.NewGuid().ToString(),
             groupId,
             playerId,
@@ -197,22 +262,31 @@ public class GroupMemberRepository : IGroupMemberRepository
         await database.ExecuteAsync(sql, rotationOrder, now, memberId);
     }
 
-    public async Task SoftDeleteMemberAsync(string memberId)
+    public async Task SoftDeleteGroupMemberAsync(
+    string groupId,
+    string playerId)
     {
         var database = await _databaseService.GetConnectionAsync();
 
         var now = DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ss.fffZ");
 
         const string sql = """
-            UPDATE group_members
-            SET deleted_at = ?,
-                updated_at = ?,
-                status = 'removed',
-                version = version + 1
-            WHERE id = ?
-              AND deleted_at IS NULL;
-            """;
+        UPDATE group_members
+        SET
+            deleted_at = ?,
+            updated_at = ?,
+            status = 'removed',
+            version = version + 1
+        WHERE group_id = ?
+          AND player_id = ?
+          AND deleted_at IS NULL;
+        """;
 
-        await database.ExecuteAsync(sql, now, now, memberId);
+        await database.ExecuteAsync(
+            sql,
+            now,
+            now,
+            groupId,
+            playerId);
     }
 }

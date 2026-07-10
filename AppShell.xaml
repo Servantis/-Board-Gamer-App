@@ -47,6 +47,16 @@
 
     </FlyoutItem>
 
+    <!-- Meine Gruppen - Übersicht -->
+    <FlyoutItem Title="Meine Gruppen"
+                Route="groups">
+
+        <ShellContent Title="Meine Gruppen"
+                      Route="GroupOverview"
+                      ContentTemplate="{DataTemplate views:GroupOverviewPage}" />
+
+    </FlyoutItem>
+
     <!-- Debug-Bereich: standardmäßig unsichtbar -->
     <FlyoutItem x:Name="DebugFlyoutItem"
                 Title="Debug"
