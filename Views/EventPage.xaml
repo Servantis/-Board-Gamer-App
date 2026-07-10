@@ -175,8 +175,25 @@
                                                                                     FontSize="14"
                                                                                     TextColor="#334155"
                                                                                     IsVisible="{Binding GameName, Converter={StaticResource StringToBoolConverter}}"/>
+                                                                            <Border BackgroundColor="#FFF3D8"
+                                                                            Stroke="#B87945"
+                                                                            StrokeThickness="1"
+                                                                            Padding="8,5"
+                                                                            Margin="0,4,0,0"
+                                                                            StrokeShape="RoundRectangle 10"
+                                                                            IsVisible="{Binding HasTopVotedGame}">
 
-                                                                             <!-- Notiz -->
+                                                                            <Label Text="{Binding TopVotedGameDisplayText}"
+                                                                            FontSize="13"
+                                                                            FontAttributes="Bold"
+                                                                            TextColor="#8B5E3C" />
+                                                                            </Border>
+                                                                            <Label Text="{Binding HostName, StringFormat='Ausrichter: {0}'}"
+                                                                             FontSize="14"
+                                                                            TextColor="#1E3A8A"
+                                                                            FontAttributes="Bold"
+                                                                            IsVisible="{Binding HostName, Converter={StaticResource StringToBoolConverter}}"/>
+                                            <!-- Notiz -->
                                                                              <Label Text="{Binding Notes, StringFormat='Notiz: {0}'}"
                                                                                     FontSize="14"
                                                                                     TextColor="#334155"
@@ -224,38 +241,62 @@
 
                                                                       </VerticalStackLayout>
 
-                                                                      <!-- "Bearbeiten"-Badge: nur sichtbar, wenn der aktuelle Spieler
-                                                                           diesen Termin auch bearbeiten darf (siehe
-                                                                           GameNight.CanBeEditedByCurrentPlayer - nur der Gastgeber,
-                                                                           nicht bei abgesagten Terminen). Optisch identisch zum
-                                                                           "Bewerten"-Badge auf PreviousEventsPage.xaml.
+                                                                        <!-- "Vorschläge"-Button (Kollegen-Feature Spielvorschläge/Abstimmen)
+                                                                             und "Bearbeiten"-Badge übereinander in einer Spalte.
+                                                                             "Bearbeiten" ist nur sichtbar, wenn der aktuelle Spieler diesen
+                                                                             Termin auch bearbeiten darf (siehe
+                                                                             GameNight.CanBeEditedByCurrentPlayer - nur der Gastgeber, nicht
+                                                                             bei abgesagten Terminen). Optisch identisch zum
+                                                                             "Bewerten"-Badge auf PreviousEventsPage.xaml.
 
-                                                                           InputTransparent="True" auf Frame UND Label ist hier wichtig:
-                                                                           ein Frame mit eigener BackgroundColor "fängt" Touch-Events sonst
-                                                                           selbst ab, statt sie an das TapGestureRecognizer des äußeren
-                                                                           Frames (weiter oben, "OnEditEventClicked") weiterzugeben. Mit
-                                                                           InputTransparent="True" wird dieser Bereich für Touches
-                                                                           "durchsichtig" - der Tap landet dann beim äußeren Frame, egal
-                                                                           WO auf der Karte man tippt (auch direkt auf das Badge). -->
-                                                                      <Frame Grid.Column="1"
-                                                                             Padding="10,4"
-                                                                             CornerRadius="12"
-                                                                             BackgroundColor="#EDE6DD"
-                                                                             VerticalOptions="Center"
-                                                                             HorizontalOptions="End"
-                                                                             HasShadow="False"
-                                                                             InputTransparent="True"
-                                                                             IsVisible="{Binding CanBeEditedByCurrentPlayer}">
-                                                                             <Label Text="Bearbeiten"
-                                                                                    FontSize="12"
-                                                                                    FontAttributes="Bold"
-                                                                                    TextColor="#7C6A58"
-                                                                                    HorizontalOptions="Center"
-                                                                                    VerticalOptions="Center"
-                                                                                    InputTransparent="True"/>
-                                                                      </Frame>
+                                                                             InputTransparent="True" auf Frame UND Label ist hier wichtig:
+                                                                             ein Frame mit eigener BackgroundColor "fängt" Touch-Events sonst
+                                                                             selbst ab, statt sie an das TapGestureRecognizer des äußeren
+                                                                             Frames (weiter oben, "OnEditEventClicked") weiterzugeben. Mit
+                                                                             InputTransparent="True" wird dieser Bereich für Touches
+                                                                             "durchsichtig" - der Tap landet dann beim äußeren Frame, egal
+                                                                             WO auf der Karte man tippt (auch direkt auf das Badge). -->
+                                                                        <VerticalStackLayout
+                                                                            Grid.Column="1"
+                                                                            Spacing="8"
+                                                                            VerticalOptions="Center"
+                                                                            HorizontalOptions="End">
 
-                                                               </Grid>
+                                                                        <Button
+                                                                            Text="Vorschläge"
+                                                                            FontSize="12"
+                                                                            FontAttributes="Bold"
+                                                                            Padding="10,4"
+                                                                            HeightRequest="34"
+                                                                            BackgroundColor="#8B5E3C"
+                                                                            TextColor="White"
+                                                                            CornerRadius="12"
+                                                                            Command="{Binding Source={RelativeSource AncestorType={x:Type local:EventPage}}, Path=BindingContext.OpenSuggestionsCommand}"
+                                                                            CommandParameter="{Binding}" />
+
+                                                                        <Frame
+                                                                            Padding="10,4"
+                                                                            CornerRadius="12"
+                                                                            BackgroundColor="#EDE6DD"
+                                                                            VerticalOptions="Center"
+                                                                            HorizontalOptions="End"
+                                                                            HasShadow="False"
+                                                                            InputTransparent="True"
+                                                                            IsVisible="{Binding CanBeEditedByCurrentPlayer}">
+
+                                                                            <Label
+                                                                                Text="Bearbeiten"
+                                                                                FontSize="12"
+                                                                                FontAttributes="Bold"
+                                                                                TextColor="#7C6A58"
+                                                                                HorizontalOptions="Center"
+                                                                                VerticalOptions="Center"
+                                                                                InputTransparent="True" />
+                                                                        </Frame>
+
+                                                                       </VerticalStackLayout>
+
+                                                                </Grid>
 
                                                         </Frame>
                                                  </SwipeView>

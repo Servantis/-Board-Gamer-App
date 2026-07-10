@@ -43,6 +43,10 @@ public static class MauiProgram
                 //--Event Services
                 builder.Services.AddSingleton<IsoToDisplayDateConverter>();
 
+                //Event Suggestions Services
+                builder.Services.AddTransient<GameNightSuggestionsViewModel>();
+                builder.Services.AddTransient<GameNightSuggestionsPage>();
+
                 //--Database Service
                 builder.Services.AddSingleton<DatabaseService>();
 
@@ -51,6 +55,7 @@ public static class MauiProgram
                 builder.Services.AddSingleton<IPlayerRepository, PlayerRepository>();
                 builder.Services.AddSingleton<IPlayerDeviceRepository, PlayerDeviceRepository>();
                 builder.Services.AddSingleton<IGroupMemberRepository, GroupMemberRepository>();
+                builder.Services.AddSingleton<IGameSuggestionRepository, GameSuggestionRepository>();
                 // Transient statt Singleton: es ist okay, wenn bei Bedarf mehrfach ein
                 // neues GameNightRepository-Objekt erzeugt wird, weil es selbst keinen
                 // eigenen Zustand hält (nur eine Referenz auf den gemeinsamen DatabaseService).

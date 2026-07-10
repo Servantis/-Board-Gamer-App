@@ -80,6 +80,23 @@
                                                  TextColor="#334155"
                                                  IsVisible="{Binding GameName, Converter={StaticResource StringToBoolConverter}}"/>
 
+                                          <!-- Meistgewähltes Spiel laut Abstimmung der Gruppe (Kollegen-
+                                               Feature Spielvorschläge/Abstimmen), siehe
+                                               EventViewModel.ApplyTopVotedGame. -->
+                                          <Border BackgroundColor="#FFF3D8"
+                                                  Stroke="#B87945"
+                                                  StrokeThickness="1"
+                                                  Padding="8,5"
+                                                  Margin="0,4,0,0"
+                                                  StrokeShape="RoundRectangle 10"
+                                                  IsVisible="{Binding HasTopVotedGame}">
+
+                                                 <Label Text="{Binding TopVotedGameDisplayText}"
+                                                        FontSize="13"
+                                                        FontAttributes="Bold"
+                                                        TextColor="#8B5E3C" />
+                                          </Border>
+
                                           <!-- Prozentanzeige der Zusagen (ohne Gastgeber), siehe
                                                EventViewModel.ApplyAttendanceInfoAsync. -->
                                           <Label Text="{Binding AttendanceSummaryText}"

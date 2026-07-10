@@ -99,7 +99,20 @@
                                                FontSize="14"
                                                TextColor="#7C6A58"
                                                IsVisible="{Binding GameName, Converter={StaticResource StringToBoolConverter}}"/>
+                                        <Border BackgroundColor="#FFF3D8"
+                                                Stroke="#B87945"
+                                                StrokeThickness="1"
+                                                Padding="8,5"
+                                                Margin="0,4,0,0"
+                                                StrokeShape="RoundRectangle 10"
+                                                IsVisible="{Binding HasTopVotedGame}">
 
+                                            <Label Text="{Binding TopVotedGameDisplayText}"
+                                            FontSize="13"
+                                            FontAttributes="Bold"
+                                            TextColor="#8B5E3C" />
+
+                                        </Border>
                                     </VerticalStackLayout>
 
                                     <!-- Bewertungs-Badge.

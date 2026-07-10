@@ -225,4 +225,28 @@ public class GameNight : BaseSyncEntity
     /// </summary>
     [Ignore]
     public bool CanBeEditedByCurrentPlayer => IsHostedByCurrentPlayer && !IsCancelled;
+
+    // ---------------------------------------------------------------------
+    // Die folgenden vier Properties gehören zum Spielvorschläge/Abstimmen-Feature
+    // (EventViewModel.ApplyTopVotedGame, Views/MainPage.xaml, Views/EventPage.xaml,
+    // Views/GameNightSuggestionsPage.xaml). Sie werten die Tabellen "game_suggestions"
+    // und "game_votes" für diesen Termin aus und sind, wie die anderen
+    // Anzeige-Properties hier, [Ignore] - also nicht in der DB gespeichert.
+    // ---------------------------------------------------------------------
+
+    [Ignore]
+    public string? TopVotedGameName { get; set; }
+
+    [Ignore]
+    public int TopVotedGameVoteCount { get; set; }
+
+    [Ignore]
+    public bool HasTopVotedGame =>
+        !string.IsNullOrWhiteSpace(TopVotedGameName) && TopVotedGameVoteCount > 0;
+
+    [Ignore]
+    public string TopVotedGameDisplayText =>
+        HasTopVotedGame
+            ? $"Favorit: {TopVotedGameName} ({TopVotedGameVoteCount} {(TopVotedGameVoteCount == 1 ? "Stimme" : "Stimmen")})"
+            : string.Empty;
 }
