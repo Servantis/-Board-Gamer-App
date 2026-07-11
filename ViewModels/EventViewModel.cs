@@ -97,10 +97,12 @@ public partial class EventViewModel : ObservableObject
     /// ApplyAttendanceInfoAsync). Wird über SetStatusFilterCommand gesetzt (siehe
     /// EventPage.xaml, Filter-Buttons). [NotifyPropertyChangedFor] sorgt dafür, dass sich
     /// FilteredUpcomingGameNights automatisch neu berechnet, sobald sich der Filter ändert.
+    /// Default ist .Planned, damit beim Öffnen der EventPage direkt nur die noch
+    /// geplanten (nicht die abgesagten) Termine zu sehen sind.
     /// </summary>
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(FilteredUpcomingGameNights))]
-    private string statusFilter = "all";
+    private string statusFilter = BoardGamerConstants.GameNightStatus.Planned;
 
     /// <summary>
     /// UpcomingGameNights, gefiltert nach StatusFilter. EventPage.xaml bindet die
@@ -599,6 +601,47 @@ public partial class EventViewModel : ObservableObject
             });
     }
 
+    /// <summary>
+    /// Wird über den "Termin absagen"-Button auf der Terminkarte ausgelöst (siehe
+    /// EventPage.xaml, nur sichtbar für den Gastgeber, solange der Termin noch "planned"
+    /// ist - siehe GameNight.CanCancelEventByHost). Fragt vorher per Sicherheitsabfrage
+    /// nach, weil eine komplette Absage - anders als eine einzelne Zu-/Absage - alle
+    /// Gruppenmitglieder betrifft und sich nicht rückgängig machen lässt.
+    /// </summary>
+    [RelayCommand]
+    private async Task CancelEventAsync(GameNight? night)
+    {
+        if (night is null || !night.CanCancelEventByHost)
+            return;
+
+        var confirm = await Shell.Current.DisplayAlertAsync(
+            "Termin absagen",
+            "Möchtest du diesen Termin wirklich ganz absagen? Alle Gruppenmitglieder sehen den Termin dann als abgesagt.",
+            "Ja, absagen",
+            "Abbrechen");
+
+        if (!confirm)
+            return;
+
+        try
+        {
+            night.Status = BoardGamerConstants.GameNightStatus.Cancelled;
+            await _gameNightRepository.UpdateAsync(night);
+
+            // Kompletter Reload statt nur lokaler Anpassung, weil sich durch die Absage
+            // auch NextUpcomingGameNight/FilteredUpcomingGameNights ändern können (siehe
+            // GameNight.IsCancelled) - GameNight selbst hat kein INotifyPropertyChanged.
+            await LoadGameNightsAsync();
+        }
+        catch (Exception ex)
+        {
+            await Shell.Current.DisplayAlertAsync(
+                "Fehler",
+                $"Der Termin konnte nicht abgesagt werden.\n{ex.Message}",
+                "OK");
+        }
+    }
+
 
     /// <summary>
     /// Prüft, ob ein Termin automatisch als "completed" (erledigt) markiert werden muss,
@@ -633,12 +676,16 @@ public partial class EventViewModel : ObservableObject
     /// die Ignore-Properties MyAttendanceStatus/MyAttendanceStatusText/
     /// CanRespondToAttendance/AttendanceSummaryText (siehe GameNight.cs).
     ///
-    /// Regel für die automatische Absage: "mehr als 50%" heißt hier - von den aktiven
-    /// Gruppenmitgliedern OHNE den Gastgeber (der Gastgeber nimmt automatisch teil und
-    /// wird deshalb weder gezählt noch gefragt) haben mehr als die Hälfte abgesagt. Ist
-    /// das der Fall und der Termin noch "planned", wird er auf "cancelled" gesetzt und
-    /// dauerhaft gespeichert - nach demselben Prinzip wie ApplyCompletedStatusIfDueAsync,
-    /// nur mit einer anderen Bedingung.
+    /// Zwei unterschiedliche Zählweisen kommen hier bewusst zum Einsatz:
+    /// - Für die ANZEIGE (AttendanceSummaryText) zählt der Gastgeber automatisch als
+    ///   "zugesagt" mit (er nimmt ja ohnehin teil) - aus "2 von 2 befragten Mitgliedern
+    ///   zugesagt" wird z. B. "3 von 3 Gruppenmitgliedern zugesagt", inklusive Gastgeber.
+    /// - Für die AUTOMATISCHE ABSAGE-REGEL zählt weiterhin nur, wer tatsächlich befragt
+    ///   wurde: "mehr als 50%" heißt hier - von den aktiven Gruppenmitgliedern OHNE den
+    ///   Gastgeber (der wird ja nicht gefragt, ob der Termin bei ihm stattfindet) haben
+    ///   mehr als die Hälfte abgesagt. Ist das der Fall und der Termin noch "planned",
+    ///   wird er auf "cancelled" gesetzt und dauerhaft gespeichert - nach demselben
+    ///   Prinzip wie ApplyCompletedStatusIfDueAsync, nur mit einer anderen Bedingung.
     /// </summary>
     private async Task ApplyAttendanceInfoAsync(
         GameNight night,
@@ -668,8 +715,18 @@ public partial class EventViewModel : ObservableObject
             && night.Status == BoardGamerConstants.GameNightStatus.Planned
             && !night.IsHostedByCurrentPlayer;
 
-        night.AttendanceSummaryText = respondentCount > 0
-            ? $"{Math.Round(100.0 * acceptedCount / respondentCount)}% zugesagt ({acceptedCount}/{respondentCount})"
+        // Für die Anzeige zählt der Gastgeber mit dazu (er nimmt ja automatisch teil) -
+        // aus "2/2 zugesagt" (nur die befragten Mitglieder) wird so z. B. "3/3 zugesagt"
+        // (Gastgeber + alle befragten Mitglieder). activeGroupMemberCount enthält den
+        // Gastgeber bereits als aktives Gruppenmitglied, deshalb reicht es, beim
+        // Zähler (acceptedCount) den Gastgeber als "automatisch zugesagt" dazuzuzählen.
+        // Für die automatische Absage-Regel unten bleibt es bewusst bei
+        // respondentCount/declinedCount OHNE Gastgeber, weil dort nur die tatsächlich
+        // befragten Mitglieder zählen sollen.
+        var acceptedCountWithHost = acceptedCount + (activeGroupMemberCount > 0 ? 1 : 0);
+
+        night.AttendanceSummaryText = activeGroupMemberCount > 0
+            ? $"{Math.Round(100.0 * acceptedCountWithHost / activeGroupMemberCount)}% zugesagt ({acceptedCountWithHost}/{activeGroupMemberCount})"
             : null;
 
         // "Mehr als 50% abgesagt" ohne Fließkommazahlen geprüft: declinedCount/respondentCount > 0.5

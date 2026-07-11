@@ -65,11 +65,11 @@
                                                  FontSize="16"
                                                  TextColor="#0F172A"/>
 
-                                          <!-- Veranstalter und Ort in einer Zeile: seit Gastgeber und Ort beim
+                                          <!-- Gastgeber und Ort in einer Zeile: seit Gastgeber und Ort beim
                                                Anlegen gekoppelt sind (Ort = eigener Ort des Gastgebers, siehe
                                                EventViewModel.AddGameNightAsync), wäre eine separate
-                                               "Ausrichter: ..."-Zeile redundant zur "Ort: ..."-Zeile. -->
-                                          <Label Text="{Binding LocationName, StringFormat='Veranstalter/Ort: {0}'}"
+                                               "Gastgeber: ..."-Zeile redundant zur "Ort: ..."-Zeile. -->
+                                          <Label Text="{Binding LocationName, StringFormat='Gastgeber/Ort: {0}'}"
                                                  FontSize="14"
                                                  TextColor="#1E3A8A"
                                                  FontAttributes="Bold"
@@ -109,7 +109,7 @@
                                                "planned") - siehe GameNight.CanRespondToAttendance. -->
                                           <HorizontalStackLayout Spacing="10"
                                                                   IsVisible="{Binding CanRespondToAttendance}">
-                                                 <Button Text="Zusagen"
+                                                 <Button Text="Bin dabei"
                                                          Clicked="OnAcceptClicked"
                                                          BackgroundColor="#2E7D32"
                                                          TextColor="White"
@@ -117,7 +117,7 @@
                                                          Padding="14,6"
                                                          FontSize="13"/>
 
-                                                 <Button Text="Absagen"
+                                                 <Button Text="Leider nicht"
                                                          Clicked="OnDeclineClicked"
                                                          BackgroundColor="#C62828"
                                                          TextColor="White"

@@ -199,9 +199,10 @@ public class GameNight : BaseSyncEntity
     public bool CanRespondToAttendance { get; set; }
 
     /// <summary>
-    /// Anzeigetext für den Anteil der Gruppenmitglieder (ohne Gastgeber), die bereits
-    /// zugesagt haben, z. B. "67% zugesagt (2/3)". Null, wenn es außer dem Gastgeber
-    /// keine weiteren aktiven Gruppenmitglieder gibt (dann lässt sich kein Anteil bilden).
+    /// Anzeigetext für den Anteil ALLER aktiven Gruppenmitglieder (inklusive Gastgeber,
+    /// der automatisch als "zugesagt" zählt), die bereits zugesagt haben, z. B.
+    /// "100% zugesagt (3/3)". Null, wenn es keine aktiven Gruppenmitglieder gibt (dann
+    /// lässt sich kein Anteil bilden).
     /// </summary>
     [Ignore]
     public string? AttendanceSummaryText { get; set; }
@@ -225,6 +226,25 @@ public class GameNight : BaseSyncEntity
     /// </summary>
     [Ignore]
     public bool CanBeEditedByCurrentPlayer => IsHostedByCurrentPlayer && !IsCancelled;
+
+    /// <summary>
+    /// True, wenn der aktuelle Spieler diesen Termin über den "Termin absagen"-Button
+    /// komplett canceln darf: nur der Gastgeber selbst, und nur solange der Termin noch
+    /// "planned" ist (ein bereits abgesagter oder bereits stattgefundener/"completed"
+    /// Termin lässt sich nicht nochmal absagen).
+    /// </summary>
+    [Ignore]
+    public bool CanCancelEventByHost =>
+        IsHostedByCurrentPlayer && Status == BoardGamerConstants.GameNightStatus.Planned;
+
+    /// <summary>
+    /// True, wenn der "Vorschläge"-Button (Spielvorschläge/Abstimmen, siehe
+    /// EventViewModel.OpenSuggestionsAsync) für diesen Termin angezeigt werden soll -
+    /// bei einem bereits abgesagten Termin ergibt eine weitere Abstimmung über die
+    /// Spiele keinen Sinn mehr, deshalb hier ausgeblendet.
+    /// </summary>
+    [Ignore]
+    public bool CanOpenSuggestions => !IsCancelled;
 
     // ---------------------------------------------------------------------
     // Die folgenden vier Properties gehören zum Spielvorschläge/Abstimmen-Feature

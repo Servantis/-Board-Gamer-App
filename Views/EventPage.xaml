@@ -131,9 +131,15 @@
                                                                       <TapGestureRecognizer Tapped="OnEditEventClicked"/>
                                                                </Frame.GestureRecognizers>
 
-                                                               <Grid ColumnDefinitions="*,Auto">
+                                                               <!-- Zwei Grid-Zeilen: Zeile 0 die eigentliche Terminanzeige samt
+                                                                    "Bearbeiten"-Badge oben rechts, Zeile 1 nur für Zusagen/Absagen
+                                                                    (Spalte 0) und den "Vorschläge"-Button (Spalte 1) - weil beide
+                                                                    in DERSELBEN Grid-Zeile liegen, stehen sie immer auf gleicher
+                                                                    Höhe nebeneinander, unabhängig davon, wie viele der optionalen
+                                                                    Zeilen (Spiel, Notiz, ...) darüber gerade sichtbar sind. -->
+                                                               <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto" RowSpacing="10">
 
-                                                                      <VerticalStackLayout Grid.Column="0" Spacing="6">
+                                                                      <VerticalStackLayout Grid.Column="0" Grid.Row="0" Spacing="6">
 
                                                                              <!-- "Abgesagt"-Badge, nur bei Status "cancelled" sichtbar. -->
                                                                              <Label Text="Abgesagt"
@@ -156,15 +162,15 @@
                                                                                     FontSize="16"
                                                                                     TextColor="#0F172A"/>
 
-                                                                             <!-- Spiel, Notiz und Veranstalter/Ort sind alle optional (siehe GameNight.cs),
+                                                                             <!-- Spiel, Notiz und Gastgeber/Ort sind alle optional (siehe GameNight.cs),
                                                                                   deshalb blendet der StringToBoolConverter jede Zeile automatisch aus,
                                                                                   wenn der jeweilige Wert null/leer ist - statt z. B. "Spiel: " leer anzuzeigen. -->
 
-                                                                             <!-- Veranstalter und Ort in einer Zeile: seit Gastgeber und Ort beim
+                                                                             <!-- Gastgeber und Ort in einer Zeile: seit Gastgeber und Ort beim
                                                                                   Anlegen gekoppelt sind (Ort = eigener Ort des Gastgebers, siehe
                                                                                   EventViewModel.AddGameNightAsync), wäre eine separate
-                                                                                  "Veranstalter: ..."-Zeile redundant zur "Ort: ..."-Zeile. -->
-                                                                             <Label Text="{Binding LocationName, StringFormat='Veranstalter/Ort: {0}'}"
+                                                                                  "Gastgeber: ..."-Zeile redundant zur "Ort: ..."-Zeile. -->
+                                                                             <Label Text="{Binding LocationName, StringFormat='Gastgeber/Ort: {0}'}"
                                                                                     FontSize="14"
                                                                                     TextColor="#1E3A8A"
                                                                                     FontAttributes="Bold"
@@ -188,11 +194,6 @@
                                                                             FontAttributes="Bold"
                                                                             TextColor="#8B5E3C" />
                                                                             </Border>
-                                                                            <Label Text="{Binding HostName, StringFormat='Ausrichter: {0}'}"
-                                                                             FontSize="14"
-                                                                            TextColor="#1E3A8A"
-                                                                            FontAttributes="Bold"
-                                                                            IsVisible="{Binding HostName, Converter={StaticResource StringToBoolConverter}}"/>
                                             <!-- Notiz -->
                                                                              <Label Text="{Binding Notes, StringFormat='Notiz: {0}'}"
                                                                                     FontSize="14"
@@ -215,86 +216,118 @@
                                                                                     TextColor="#334155"
                                                                                     IsVisible="{Binding MyAttendanceStatusText, Converter={StaticResource StringToBoolConverter}}"/>
 
-                                                                             <!-- Zusagen/Absagen: nur für Nicht-Gastgeber bei noch
-                                                                                  geplanten Terminen sichtbar (siehe
-                                                                                  GameNight.CanRespondToAttendance). Der Gastgeber selbst
-                                                                                  bearbeitet den Termin stattdessen über das
-                                                                                  "Bearbeiten"-Badge/den Karten-Tap. -->
-                                                                             <HorizontalStackLayout Spacing="10"
-                                                                                                     IsVisible="{Binding CanRespondToAttendance}">
-                                                                                    <Button Text="Zusagen"
-                                                                                            Clicked="OnAcceptClicked"
-                                                                                            BackgroundColor="#2E7D32"
-                                                                                            TextColor="White"
-                                                                                            CornerRadius="8"
-                                                                                            Padding="14,6"
-                                                                                            FontSize="13"/>
-
-                                                                                    <Button Text="Absagen"
-                                                                                            Clicked="OnDeclineClicked"
-                                                                                            BackgroundColor="#C62828"
-                                                                                            TextColor="White"
-                                                                                            CornerRadius="8"
-                                                                                            Padding="14,6"
-                                                                                            FontSize="13"/>
-                                                                             </HorizontalStackLayout>
-
                                                                       </VerticalStackLayout>
 
-                                                                        <!-- "Vorschläge"-Button (Kollegen-Feature Spielvorschläge/Abstimmen)
-                                                                             und "Bearbeiten"-Badge übereinander in einer Spalte.
-                                                                             "Bearbeiten" ist nur sichtbar, wenn der aktuelle Spieler diesen
-                                                                             Termin auch bearbeiten darf (siehe
-                                                                             GameNight.CanBeEditedByCurrentPlayer - nur der Gastgeber, nicht
-                                                                             bei abgesagten Terminen). Optisch identisch zum
-                                                                             "Bewerten"-Badge auf PreviousEventsPage.xaml.
+                                                                      <!-- "Gastgeber"-Badge fest oben rechts in der Terminkarte (VerticalOptions="Start"
+                                                                           statt "Center", damit er IMMER an der Karten-Oberkante klebt, egal wie
+                                                                           viele der optionalen Zeilen links gerade sichtbar sind, statt in der Mitte
+                                                                           der (unterschiedlich hohen) Terminanzeige zu "schweben"). Nur sichtbar,
+                                                                           wenn der aktuelle Spieler diesen Termin auch bearbeiten darf (siehe
+                                                                           GameNight.CanBeEditedByCurrentPlayer - nur der Gastgeber, nicht bei
+                                                                           abgesagten Terminen) - markiert also gleichzeitig "das ist dein Termin"
+                                                                           UND "hier tippen zum Bearbeiten". Optisch bewusst in der Marken-Akzentfarbe
+                                                                           gehalten (statt dem neutralen Beige wie das "Bewerten"-Badge auf
+                                                                           PreviousEventsPage.xaml), damit er als Gastgeber sofort ins Auge fällt.
 
-                                                                             InputTransparent="True" auf Frame UND Label ist hier wichtig:
-                                                                             ein Frame mit eigener BackgroundColor "fängt" Touch-Events sonst
-                                                                             selbst ab, statt sie an das TapGestureRecognizer des äußeren
-                                                                             Frames (weiter oben, "OnEditEventClicked") weiterzugeben. Mit
-                                                                             InputTransparent="True" wird dieser Bereich für Touches
-                                                                             "durchsichtig" - der Tap landet dann beim äußeren Frame, egal
-                                                                             WO auf der Karte man tippt (auch direkt auf das Badge). -->
-                                                                        <VerticalStackLayout
-                                                                            Grid.Column="1"
-                                                                            Spacing="8"
-                                                                            VerticalOptions="Center"
-                                                                            HorizontalOptions="End">
+                                                                           InputTransparent="True" auf Frame UND Label ist hier wichtig:
+                                                                           ein Frame mit eigener BackgroundColor "fängt" Touch-Events sonst
+                                                                           selbst ab, statt sie an das TapGestureRecognizer des äußeren
+                                                                           Frames (weiter oben, "OnEditEventClicked") weiterzugeben. Mit
+                                                                           InputTransparent="True" wird dieser Bereich für Touches
+                                                                           "durchsichtig" - der Tap landet dann beim äußeren Frame, egal
+                                                                           WO auf der Karte man tippt (auch direkt auf das Badge). -->
+                                                                      <Frame Grid.Column="1"
+                                                                             Grid.Row="0"
+                                                                             Padding="10,5"
+                                                                             CornerRadius="12"
+                                                                             BackgroundColor="#8B5E3C"
+                                                                             VerticalOptions="Start"
+                                                                             HorizontalOptions="End"
+                                                                             HasShadow="True"
+                                                                             InputTransparent="True"
+                                                                             IsVisible="{Binding CanBeEditedByCurrentPlayer}">
+                                                                             <Label Text="Gastgeber"
+                                                                                    FontSize="12"
+                                                                                    FontAttributes="Bold"
+                                                                                    TextColor="White"
+                                                                                    HorizontalOptions="Center"
+                                                                                    VerticalOptions="Center"
+                                                                                    InputTransparent="True"/>
+                                                                      </Frame>
 
-                                                                        <Button
-                                                                            Text="Vorschläge"
-                                                                            FontSize="12"
-                                                                            FontAttributes="Bold"
-                                                                            Padding="10,4"
-                                                                            HeightRequest="34"
-                                                                            BackgroundColor="#8B5E3C"
-                                                                            TextColor="White"
-                                                                            CornerRadius="12"
-                                                                            Command="{Binding Source={RelativeSource AncestorType={x:Type local:EventPage}}, Path=BindingContext.OpenSuggestionsCommand}"
-                                                                            CommandParameter="{Binding}" />
+                                                                      <!-- Zusagen/Absagen: nur für Nicht-Gastgeber bei noch
+                                                                           geplanten Terminen sichtbar (siehe
+                                                                           GameNight.CanRespondToAttendance). Der Gastgeber selbst
+                                                                           bearbeitet den Termin stattdessen über das
+                                                                           "Bearbeiten"-Badge/den Karten-Tap. Steht in derselben
+                                                                           Grid-Zeile wie der "Vorschläge"-Button rechts daneben,
+                                                                           damit beide auf gleicher Höhe stehen. -->
+                                                                      <HorizontalStackLayout Grid.Column="0"
+                                                                                             Grid.Row="1"
+                                                                                             Spacing="10"
+                                                                                             VerticalOptions="Center"
+                                                                                             IsVisible="{Binding CanRespondToAttendance}">
+                                                                             <Button Text="Bin dabei"
+                                                                                     Clicked="OnAcceptClicked"
+                                                                                     BackgroundColor="#2E7D32"
+                                                                                     TextColor="White"
+                                                                                     CornerRadius="8"
+                                                                                     Padding="14,6"
+                                                                                     FontSize="13"/>
 
-                                                                        <Frame
-                                                                            Padding="10,4"
-                                                                            CornerRadius="12"
-                                                                            BackgroundColor="#EDE6DD"
-                                                                            VerticalOptions="Center"
-                                                                            HorizontalOptions="End"
-                                                                            HasShadow="False"
-                                                                            InputTransparent="True"
-                                                                            IsVisible="{Binding CanBeEditedByCurrentPlayer}">
+                                                                             <Button Text="Leider nicht"
+                                                                                     Clicked="OnDeclineClicked"
+                                                                                     BackgroundColor="#C62828"
+                                                                                     TextColor="White"
+                                                                                     CornerRadius="8"
+                                                                                     Padding="14,6"
+                                                                                     FontSize="13"/>
+                                                                      </HorizontalStackLayout>
 
-                                                                            <Label
-                                                                                Text="Bearbeiten"
-                                                                                FontSize="12"
-                                                                                FontAttributes="Bold"
-                                                                                TextColor="#7C6A58"
-                                                                                HorizontalOptions="Center"
-                                                                                VerticalOptions="Center"
-                                                                                InputTransparent="True" />
-                                                                        </Frame>
+                                                                      <!-- "Termin absagen": nur für den Gastgeber selbst sichtbar,
+                                                                           solange der Termin noch "planned" ist (siehe
+                                                                           GameNight.CanCancelEventByHost). Steht in derselben Grid-Zelle
+                                                                           wie die Zusagen/Absagen-Buttons oben, weil die beiden sich
+                                                                           gegenseitig ausschließen (man ist entweder Gastgeber oder
+                                                                           normales Gruppenmitglied, nie beides gleichzeitig). Command
+                                                                           zeigt vorher eine Sicherheitsabfrage, siehe
+                                                                           EventViewModel.CancelEventAsync. -->
+                                                                      <Button Grid.Column="0"
+                                                                              Grid.Row="1"
+                                                                              Text="Termin absagen"
+                                                                              BackgroundColor="#C62828"
+                                                                              TextColor="White"
+                                                                              CornerRadius="8"
+                                                                              Padding="14,6"
+                                                                              FontSize="13"
+                                                                              VerticalOptions="Center"
+                                                                              HorizontalOptions="Start"
+                                                                              IsVisible="{Binding CanCancelEventByHost}"
+                                                                              Command="{Binding Source={RelativeSource AncestorType={x:Type local:EventPage}}, Path=BindingContext.CancelEventCommand}"
+                                                                              CommandParameter="{Binding}"/>
 
-                                                                       </VerticalStackLayout>
+                                                                      <!-- "Vorschläge"-Button (Kollegen-Feature Spielvorschläge/Abstimmen) -
+                                                                           liegt in derselben Grid-Zeile wie die Zusagen/Absagen-Buttons
+                                                                           links daneben (Grid.Row="1"), damit beide auf gleicher Höhe
+                                                                           stehen, statt wie vorher zentriert über die ganze Kartenhöhe.
+                                                                           Bei bereits abgesagten Terminen (siehe GameNight.IsCancelled)
+                                                                           ausgeblendet, weil eine Abstimmung über die Spiele dann keinen
+                                                                           Sinn mehr ergibt. -->
+                                                                      <Button Grid.Column="1"
+                                                                              Grid.Row="1"
+                                                                              Text="Vorschläge"
+                                                                              FontSize="12"
+                                                                              FontAttributes="Bold"
+                                                                              Padding="10,4"
+                                                                              HeightRequest="34"
+                                                                              BackgroundColor="#8B5E3C"
+                                                                              TextColor="White"
+                                                                              CornerRadius="12"
+                                                                              VerticalOptions="Center"
+                                                                              HorizontalOptions="End"
+                                                                              IsVisible="{Binding CanOpenSuggestions}"
+                                                                              Command="{Binding Source={RelativeSource AncestorType={x:Type local:EventPage}}, Path=BindingContext.OpenSuggestionsCommand}"
+                                                                              CommandParameter="{Binding}" />
 
                                                                 </Grid>
 
