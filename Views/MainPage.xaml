@@ -35,7 +35,7 @@
                                     BackgroundColor="#FFF3D6"
                                     Stroke="#8B5E3C"
                                     StrokeThickness="2"
-                                    IsVisible="{Binding HasUpcomingEvents}"
+                                    IsVisible="{Binding Source={RelativeSource AncestorType={x:Type local:MainPage}}, Path=BindingContext.HasUpcomingEvents}"
                                     BindingContext="{Binding NextUpcomingGameNight}">
 
                                    <!-- Tippen auf den Termin springt zur EventPage (Terminverwaltung) -
@@ -104,10 +104,118 @@
                                                  TextColor="#0F172A"
                                                  IsVisible="{Binding AttendanceSummaryText, Converter={StaticResource StringToBoolConverter}}"/>
 
-                                          <!-- Zusagen/Absagen: nur sichtbar, wenn der aktuelle Spieler
-                                               überhaupt antworten darf (nicht Gastgeber, Termin noch
-                                               "planned") - siehe GameNight.CanRespondToAttendance. -->
-                                          <HorizontalStackLayout Spacing="10"
+                                          <!-- Keine Zusagen/Absagen-Buttons mehr auf dieser Karte: hier
+                                               stehen nur noch Termine, an denen der Nutzer ohnehin schon
+                                               teilnimmt (Gastgeber oder bereits zugesagt, siehe
+                                               EventViewModel.NextUpcomingGameNight) - eine Antwort ist
+                                               für die selten Fälle mit noch offener Zusage die
+                                               "Noch offen"-Karte darunter zuständig. Der Text hier zeigt
+                                               nur noch informativ die eigene, bereits abgegebene
+                                               Zusage an (der Gastgeber sieht hier nichts, weil
+                                               MyAttendanceStatusText für ihn immer null bleibt). -->
+                                          <Label Text="{Binding MyAttendanceStatusText}"
+                                                 FontSize="13"
+                                                 FontAttributes="Italic"
+                                                 TextColor="#334155"
+                                                 IsVisible="{Binding MyAttendanceStatusText, Converter={StaticResource StringToBoolConverter}}"/>
+                                   </VerticalStackLayout>
+
+                            </Border>
+
+                            <!-- Zweite Vorschau-Karte: der nächste Termin, zu dem der Nutzer als
+                                 (potentieller) Teilnehmer noch GAR NICHT geantwortet hat (siehe
+                                 EventViewModel.NextUnansweredGameNight). Erinnert gezielt an eine
+                                 offene Antwort, auch wenn diese nicht zum allerersten Termin oben
+                                 gehört. Die Karte ist bewusst genauso aufgebaut wie die
+                                 Terminkarten auf EventPage.xaml, damit der Nutzer hier gleich
+                                 zusagen/absagen und auch Spiele vorschlagen kann, ohne extra zur
+                                 Terminverwaltung wechseln zu müssen. -->
+                            <Label Text="Noch offen: Deine Antwort"
+                                   Style="{StaticResource Headline}"
+                                   FontSize="18"
+                                   IsVisible="{Binding HasUnansweredEvent}"
+                                   SemanticProperties.HeadingLevel="Level1"/>
+
+                            <Border StrokeShape="RoundRectangle 12"
+                                    Padding="15"
+                                    Margin="0,0,0,15"
+                                    BackgroundColor="White"
+                                    Stroke="#8B5E3C"
+                                    StrokeThickness="2"
+                                    IsVisible="{Binding Source={RelativeSource AncestorType={x:Type local:MainPage}}, Path=BindingContext.HasUnansweredEvent}"
+                                    BindingContext="{Binding NextUnansweredGameNight}">
+
+                                   <Border.GestureRecognizers>
+                                          <TapGestureRecognizer Tapped="OnEventPreviewClicked"/>
+                                   </Border.GestureRecognizers>
+
+                                   <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto" RowSpacing="10">
+
+                                          <VerticalStackLayout Grid.Column="0" Grid.Row="0" Spacing="6">
+
+                                                 <Label Text="{Binding GroupName, StringFormat='{0}'}"
+                                                        FontSize="12"
+                                                        FontAttributes="Bold"
+                                                        TextColor="#8B5E3C"
+                                                        IsVisible="{Binding GroupName, Converter={StaticResource StringToBoolConverter}}"/>
+
+                                                 <Label Text="{Binding ScheduledAt, Converter={StaticResource IsoToDisplayDateConverter}}"
+                                                        FontAttributes="Bold"
+                                                        FontSize="16"
+                                                        TextColor="#0F172A"/>
+
+                                                 <Label Text="{Binding LocationName, StringFormat='Gastgeber/Ort: {0}'}"
+                                                        FontSize="14"
+                                                        TextColor="#1E3A8A"
+                                                        FontAttributes="Bold"
+                                                        IsVisible="{Binding LocationName, Converter={StaticResource StringToBoolConverter}}"/>
+
+                                                 <Label Text="{Binding GameName, StringFormat='Spiel: {0}'}"
+                                                        FontSize="14"
+                                                        TextColor="#334155"
+                                                        IsVisible="{Binding GameName, Converter={StaticResource StringToBoolConverter}}"/>
+
+                                                 <Border BackgroundColor="#FFF3D8"
+                                                         Stroke="#B87945"
+                                                         StrokeThickness="1"
+                                                         Padding="8,5"
+                                                         Margin="0,4,0,0"
+                                                         StrokeShape="RoundRectangle 10"
+                                                         IsVisible="{Binding HasTopVotedGame}">
+
+                                                        <Label Text="{Binding TopVotedGameDisplayText}"
+                                                               FontSize="13"
+                                                               FontAttributes="Bold"
+                                                               TextColor="#8B5E3C" />
+                                                 </Border>
+
+                                                 <Label Text="{Binding Notes, StringFormat='Notiz: {0}'}"
+                                                        FontSize="14"
+                                                        TextColor="#334155"
+                                                        IsVisible="{Binding Notes, Converter={StaticResource StringToBoolConverter}}"/>
+
+                                                 <Label Text="{Binding AttendanceSummaryText}"
+                                                        FontSize="13"
+                                                        TextColor="#0F172A"
+                                                        IsVisible="{Binding AttendanceSummaryText, Converter={StaticResource StringToBoolConverter}}"/>
+
+                                                 <Label Text="{Binding MyAttendanceStatusText}"
+                                                        FontSize="13"
+                                                        FontAttributes="Italic"
+                                                        TextColor="#334155"
+                                                        IsVisible="{Binding MyAttendanceStatusText, Converter={StaticResource StringToBoolConverter}}"/>
+
+                                          </VerticalStackLayout>
+
+                                          <!-- Kein Gastgeber-Badge und kein "Termin absagen"-Button auf dieser
+                                               Karte: EventViewModel.NextUnansweredGameNight schließt Termine, bei
+                                               denen der Nutzer selbst Gastgeber ist, jetzt explizit aus - hier
+                                               stehen ausschließlich Termine, bei denen der Nutzer als Gast
+                                               zusagen/absagen kann. -->
+                                          <HorizontalStackLayout Grid.Column="0"
+                                                                  Grid.Row="1"
+                                                                  Spacing="10"
+                                                                  VerticalOptions="Center"
                                                                   IsVisible="{Binding CanRespondToAttendance}">
                                                  <Button Text="Bin dabei"
                                                          Clicked="OnAcceptClicked"
@@ -126,19 +234,27 @@
                                                          FontSize="13"/>
                                           </HorizontalStackLayout>
 
-                                          <!-- Zeigt die eigene, bereits abgegebene Antwort an (falls
-                                               vorhanden) - unabhängig davon, ob die Buttons oben noch
-                                               sichtbar sind (der Gastgeber sieht hier nichts, weil
-                                               MyAttendanceStatusText für ihn immer null bleibt). -->
-                                          <Label Text="{Binding MyAttendanceStatusText}"
-                                                 FontSize="13"
-                                                 FontAttributes="Italic"
-                                                 TextColor="#334155"
-                                                 IsVisible="{Binding MyAttendanceStatusText, Converter={StaticResource StringToBoolConverter}}"/>
-                                   </VerticalStackLayout>
+                                          <!-- "Vorschläge"-Button (Spielvorschläge/Abstimmen) - so kann der
+                                               Nutzer direkt von hier aus mitwählen, ohne extra zur
+                                               Terminverwaltung zu wechseln. -->
+                                          <Button Grid.Column="1"
+                                                  Grid.Row="1"
+                                                  Text="Vorschläge"
+                                                  FontSize="12"
+                                                  FontAttributes="Bold"
+                                                  Padding="10,4"
+                                                  HeightRequest="34"
+                                                  BackgroundColor="#8B5E3C"
+                                                  TextColor="White"
+                                                  CornerRadius="12"
+                                                  VerticalOptions="Center"
+                                                  HorizontalOptions="End"
+                                                  IsVisible="{Binding CanOpenSuggestions}"
+                                                  Command="{Binding Source={RelativeSource AncestorType={x:Type local:MainPage}}, Path=BindingContext.OpenSuggestionsCommand}"
+                                                  CommandParameter="{Binding}" />
 
+                                   </Grid>
                             </Border>
-
 
                      </VerticalStackLayout>
               </ScrollView>
