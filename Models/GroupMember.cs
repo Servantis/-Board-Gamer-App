@@ -33,4 +33,12 @@ public class GroupMember : BaseSyncEntity
 
     [Column("rotation_order")]
     public int? RotationOrder { get; set; }
+
+    [NotNull]
+    [Column("hosted_flag")]
+    public bool HostedFlag { get; set; } = false;
+
+    [NotNull]
+    [Column("is_next_host")]
+    public bool IsNextHost { get; set; } = false;
 }

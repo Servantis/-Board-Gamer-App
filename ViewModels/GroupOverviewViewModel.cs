@@ -15,7 +15,7 @@ public partial class GroupOverviewViewModel : ObservableObject
     private readonly DatabaseService _databaseService;
     private readonly CurrentPlayerService _currentPlayerService;
 
-    public ObservableCollection<GamingGroup> AssignedGroups { get; } = new();
+    public ObservableCollection<GamingGroupListItem> AssignedGroups { get; } = new();
 
     [ObservableProperty]
     private bool isBusy;
@@ -78,7 +78,7 @@ public partial class GroupOverviewViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private async Task DeleteOrLeaveGroupAsync(GamingGroup group)
+    private async Task DeleteOrLeaveGroupAsync(GamingGroupListItem group)
     {
         if (group == null)
             return;
@@ -138,7 +138,7 @@ public partial class GroupOverviewViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private async Task OpenGroupAsync(GamingGroup group)
+    private async Task OpenGroupAsync(GamingGroupListItem group)
     {
         if (group == null)
             return;
@@ -147,7 +147,7 @@ public partial class GroupOverviewViewModel : ObservableObject
             $"{nameof(GroupPage)}?groupId={group.Id}");
     }
 
-    private bool IsGroupOwner(GamingGroup group)
+    private bool IsGroupOwner(GamingGroupListItem group)
     {
         return group.CreatedByPlayerId ==
                _currentPlayerService.PlayerId;

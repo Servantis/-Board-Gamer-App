@@ -1,30 +1,44 @@
 ﻿using BoardGamerApp.Models;
 using BoardGamerApp.Services.Interfaces;
+using System.Diagnostics;
 
 namespace BoardGamerApp.Services.Implementations
 {
     public class HostSelectionService : IHostSelectionService
-    {/*
+    {
         private readonly Random _random = new Random();
 
-        public GroupMember SelectNextHost(List<GroupMember> members)
+        public GroupMember SelectNextHost(List<GroupMember> members,
+                                            string? lastHostPlayerId,
+                                            bool cycleCompleted)
         {
+            /*
+            Debug.WriteLine(
+                $"[SELECT] LastHostPlayerId => " +
+                $"{lastHostPlayerId}");
+            */
             if (members == null || members.Count == 0)
                 return null;
 
-            var lastHost = members
-                .OrderByDescending(m => m.LastHostedDate)
-                .FirstOrDefault();
-
-            var allHosted = members.All(m => m.HostedFlag);
-
+            // Mitgliederliste
             List<GroupMember> candidates;
 
-            if (allHosted && lastHost != null)
+            // Verhindere, dass der letzte Host nach Reset direkt neu gewählt wird
+
+            if (cycleCompleted &&
+                !string.IsNullOrWhiteSpace(lastHostPlayerId))
             {
                 candidates = members
-                    .Where(m => m != lastHost)
+                    .Where(m => m.PlayerId != lastHostPlayerId)
                     .ToList();
+                /*
+                Debug.WriteLine(
+                    "[SELECT] Neuer Zyklus erkannt.");
+
+                Debug.WriteLine(
+                    $"[SELECT] Letzter Host ausgeschlossen => " +
+                    $"{lastHostPlayerId}");
+                */
             }
             else
             {
@@ -33,13 +47,22 @@ namespace BoardGamerApp.Services.Implementations
                     .ToList();
             }
 
+
+            foreach (var candidate in candidates)
+            {
+                /*
+                Debug.WriteLine(
+                    $"[SELECT] Kandidat => " +
+                    $"{candidate.PlayerId}");
+                */
+            }
+
+
             if (!candidates.Any())
                 return null;
 
+            // lege zufällig den nächsten Host fest
             var selected = candidates[_random.Next(candidates.Count)];
-
-            System.Diagnostics.Debug.WriteLine(
-                $"Selected: {selected.DisplayName}");
 
             foreach (var member in members)
             {
@@ -47,8 +70,9 @@ namespace BoardGamerApp.Services.Implementations
             }
 
             selected.IsNextHost = true;
+           // Debug.WriteLine($"[HOST] Neuer Host: {selected.PlayerId}");
 
             return selected;
-        }*/
+        }
     }
 }

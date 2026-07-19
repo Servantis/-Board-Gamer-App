@@ -21,42 +21,29 @@ public class GroupMemberListItem
     public int? RotationOrder { get; set; }
 
     public string GroupName { get; set; } = string.Empty;
+    
+    [NotNull]
+    [Column("hosted_flag")]
+    public bool HostedFlag { get; set; } = false;
+
+    [NotNull]
+    [Column("is_next_host")]
+    public bool IsNextHost { get; set; } = false;
 
     // UI-Kompatibilität für deine bestehende View
     public string DisplayName => PlayerName;
 
     public string? Email => PlayerEmail;
 
-    public string Initials
-    {
-        get
-        {
-            if (string.IsNullOrWhiteSpace(PlayerName))
-            {
-                return "?";
-            }
+    // Nur den ersten Buchstaben des Vornamens anzeigen
+    [Ignore]
+    public string Initials =>
+       string.IsNullOrWhiteSpace(PlayerName)
+           ? "?"
+           : PlayerName.Trim()[0]
+               .ToString()
+               .ToUpperInvariant();
 
-            var parts = PlayerName
-                .Trim()
-                .Split(' ', StringSplitOptions.RemoveEmptyEntries);
-
-            if (parts.Length == 1)
-            {
-                return parts[0][0].ToString().ToUpperInvariant();
-            }
-
-            return $"{parts[0][0]}{parts[^1][0]}".ToUpperInvariant();
-        }
-    }
-
-    // Gibt es in der neuen DB aktuell nicht direkt.
-    // Bleibt erstmal false, damit der alte Badge nicht angezeigt wird.
-    public bool HostedFlag { get; set; }
-
-    // Wird im ViewModel anhand der Rotation gesetzt.
-    public bool IsNextHost { get; set; }
-
-    // bool für Löschbutton ander Gruppen-Mitglieder: admins/owner -> angezeigen, member -> keine Button
     [Ignore]
     public bool CanRemove { get; set; }
 }

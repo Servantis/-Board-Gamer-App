@@ -3,10 +3,13 @@ namespace BoardGamerApp.ViewModels;
 using BoardGamerApp.Models;
 using BoardGamerApp.Repositories;
 using BoardGamerApp.Services;
+using BoardGamerApp.Services.Interfaces;
 using BoardGamerApp.Views;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
+using System.Text.RegularExpressions;
 
 /// <summary>
 /// ViewModel für die Terminverwaltung (Views/EventPage.xaml, Views/NewEventPopup.xaml,
@@ -41,6 +44,7 @@ public partial class EventViewModel : ObservableObject
     private readonly IGroupMemberRepository _groupMemberRepository;
     private readonly DatabaseService _databaseService;
     private readonly CurrentPlayerService _currentPlayerService;
+    private readonly IHostScheduleService _hostScheduleService;
 
     /// <summary>Alle geladenen Termine (vergangene und zukünftige), sortiert nach Datum.</summary>
     public ObservableCollection<GameNight> GameNights { get; } = new();
@@ -123,7 +127,8 @@ public partial class EventViewModel : ObservableObject
         IGroupMemberRepository groupMemberRepository,
         IGameSuggestionRepository gameSuggestionRepository,
         DatabaseService databaseService,
-        CurrentPlayerService currentPlayerService)
+        CurrentPlayerService currentPlayerService,
+        IHostScheduleService hostScheduleService)
     {
         _gameNightRepository = gameNightRepository;
         _boardGameRepository = boardGameRepository;
@@ -131,6 +136,7 @@ public partial class EventViewModel : ObservableObject
         _gameSuggestionRepository = gameSuggestionRepository;
         _databaseService = databaseService;
         _currentPlayerService = currentPlayerService;
+        _hostScheduleService = hostScheduleService;
     }
 
     /// <summary>
@@ -617,15 +623,41 @@ public partial class EventViewModel : ObservableObject
     /// </summary>
     private async Task ApplyCompletedStatusIfDueAsync(GameNight night)
     {
+       // Debug.WriteLine("[EVENT] Automatischer Trigger");
+        /*
+        Debug.WriteLine(
+      $"[EVENT] Prüfe GameNight " +
+      $"{night.Id} | " +
+      $"Date={night.ScheduledAt} | " +
+      $"Status={night.Status}");
+        */
+
         if (night.Status != BoardGamerConstants.GameNightStatus.Planned)
             return;
 
         if (ParseDate(night.ScheduledAt).Date >= DateTime.Now.Date)
+        {
+           // Debug.WriteLine( "[EVENT] Termin liegt noch in der Zukunft");
+
             return;
+        }
+
+
+        //Debug.WriteLine( $"[EVENT] Setze COMPLETED => {night.Id}");
 
         night.Status = BoardGamerConstants.GameNightStatus.Completed;
 
         await _gameNightRepository.UpdateAsync(night);
+        // Debug.WriteLine( $"[EVENT] COMPLETED gespeichert => {night.Id}");
+
+        // Debug.WriteLine( $"[EVENT] Starte Hostwechsel für Gruppe {night.GroupId}");
+
+        await _hostScheduleService.EnsureNextHostExistsAsync(night.GroupId);
+
+        await _hostScheduleService.ProcessHostChangeAsync(night.GroupId);
+
+   
+
     }
 
     /// <summary>

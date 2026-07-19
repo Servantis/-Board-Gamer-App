@@ -15,6 +15,8 @@ public interface IGroupMemberRepository
 
     Task<List<GroupMemberListItem>> GetMembersByGroupIdAsync(string groupId);
 
+    Task<List<GroupMember>> GetGroupMembersByGroupIdAsync(string groupId);
+
     Task<GroupMember?> GetMemberByIdAsync(string memberId);
 
     Task AddMemberAsync(
@@ -24,10 +26,6 @@ public interface IGroupMemberRepository
         int? rotationOrder = null);
 
     Task UpdateMemberAsync(GroupMember member);
-
-    Task UpdateMemberStatusAsync(string memberId, string status);
-
-    Task UpdateRotationOrderAsync(string memberId, int? rotationOrder);
 
     Task SoftDeleteGroupMemberAsync(string groupId, string playerId);
 }

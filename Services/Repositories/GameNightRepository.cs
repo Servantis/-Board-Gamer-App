@@ -2,6 +2,7 @@ using System.Text.Json;
 using BoardGamerApp.Models;
 using BoardGamerApp.Services;
 using SQLite;
+using System.Diagnostics;
 
 namespace BoardGamerApp.Repositories;
 
@@ -166,6 +167,77 @@ public class GameNightRepository
             throw new InvalidOperationException("Der Termin benötigt ein Datum/Uhrzeit.");
     }
 
+    // Liefert den nächsten geplanten Termin einer Spielgruppe zurück (Status = "planned", sortiert nach Datum, nur der erste).
+    public async Task<GameNight?> GetNextPlannedGameNightAsync(string groupId)
+    {
+        var db = await _database.GetConnectionAsync();
+
+        const string sql = """
+        SELECT *
+        FROM game_nights
+        WHERE group_id = ?
+          AND status = 'planned'
+          AND deleted_at IS NULL
+        ORDER BY date_time
+        LIMIT 1;
+        """;
+
+        var result = await db.QueryAsync<GameNight>(sql, groupId);
+
+        return result.FirstOrDefault();
+    }
+
+    // Setzt den Host-Spieler für einen Termin.
+    public async Task AssignHostAsync(
+    string gameNightId,
+    string playerId)
+    {
+        var db = await _database.GetConnectionAsync();
+
+        var now = DateTimeHelper.UtcNowIsoString();
+
+        // Debug.WriteLine($"[HOST] Host {playerId} wurde GameNight {gameNightId} zugewiesen.");
+
+        const string sql = """
+        UPDATE game_nights
+        SET
+            host_player_id = ?,
+            updated_at = ?,
+            version = version + 1
+        WHERE id = ?
+          AND deleted_at IS NULL;
+        """;
+
+/*
+        Debug.WriteLine(
+            $"[GAME NIGHT] Schreibe Host in GameNight => " +
+            $"GameNightId={gameNightId} | " +
+            $"PlayerId={playerId}");
+*/
+        await db.ExecuteAsync(
+            sql,
+            playerId,
+            now,
+            gameNightId);
+
+
+        var verify = await db.QueryAsync<GameNight>(
+            """
+    SELECT *
+    FROM game_nights
+    WHERE id = ?
+    """,
+            gameNightId);
+
+        var savedNight = verify.FirstOrDefault();
+/*
+        Debug.WriteLine(
+            $"[GAME NIGHT VERIFY] => " +
+            $"Night={savedNight?.Id} | " +
+            $"HostPlayerId={savedNight?.HostPlayerId}");
+*/
+    }
+
     /// <summary>
     /// Schreibt einen Eintrag in die sync_outbox-Tabelle. Das ist quasi ein
     /// "Änderungsprotokoll": jede Insert/Update/Delete-Operation wird hier als
@@ -212,4 +284,86 @@ public class GameNightRepository
 
         return JsonSerializer.Serialize(payload);
     }
+
+    // Liefert nur Mitglieder, die im aktuellen Zyklus bereits Gasteber waren.
+    // Zudem wird das Datum der vergangenen Termine mitgegeben
+    public async Task<List<LastHostItem>>
+    GetLastHostsAsync(string groupId)
+    {
+        var db = await _database.GetConnectionAsync();
+
+        const string sql = """
+    SELECT
+        gm.player_id AS PlayerId,
+        p.name AS PlayerName,
+        (
+            SELECT MAX(gn.date_time)
+            FROM game_nights gn
+            WHERE gn.host_player_id = gm.player_id
+              AND gn.group_id = gm.group_id
+              AND gn.status = 'completed'
+              AND gn.deleted_at IS NULL
+        ) AS HostedDate
+
+    FROM group_members gm
+
+    INNER JOIN players p
+        ON p.id = gm.player_id
+
+    WHERE gm.group_id = ?
+      AND gm.hosted_flag = 1
+      AND gm.deleted_at IS NULL
+
+    ORDER BY HostedDate DESC;
+    """;
+
+        //Test
+        var rows = await db.QueryAsync<GameNight>(
+            """
+    SELECT *
+    FROM game_nights
+    WHERE host_player_id = ?
+    ORDER BY date_time DESC
+    """,
+            "player-tom-001");
+
+        foreach (var row in rows)
+        {
+            /*
+            Debug.WriteLine(
+                $"GAME NIGHT => " +
+                $"Date={row.ScheduledAt} | " +
+                $"Status={row.Status}");
+            */
+        }
+
+        return await db.QueryAsync<LastHostItem>(
+            sql,
+            groupId);
+    }
+
+    // / Liefert die PlayerId des letzten abgeschlossenen Hosts einer Spielgruppe zurück.
+    public async Task<string?> GetLastCompletedHostPlayerIdAsync(
+        string groupId)
+    {
+        var db = await _database.GetConnectionAsync();
+
+        const string sql = """
+    SELECT host_player_id
+    FROM game_nights
+    WHERE group_id = ?
+      AND status = 'completed'
+      AND deleted_at IS NULL
+      AND host_player_id IS NOT NULL
+    ORDER BY date_time DESC
+    LIMIT 1;
+    """;
+
+        var result = await db.ExecuteScalarAsync<string>(
+            sql,
+            groupId);
+
+        return result;
+    }
+
 }

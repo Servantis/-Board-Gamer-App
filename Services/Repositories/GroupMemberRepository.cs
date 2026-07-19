@@ -1,5 +1,6 @@
 ﻿using BoardGamerApp.Models;
 using BoardGamerApp.Services;
+using System.Diagnostics;
 
 namespace BoardGamerApp.Repositories;
 
@@ -96,7 +97,9 @@ public class GroupMemberRepository : IGroupMemberRepository
                 gm.role AS Role,
                 gm.status AS Status,
                 gm.rotation_order AS RotationOrder,
-                gg.name AS GroupName
+                gg.name AS GroupName,
+                gm.hosted_flag AS hosted_flag,
+                gm.is_next_host AS is_next_host
             FROM group_members gm
             INNER JOIN players p ON p.id = gm.player_id
             INNER JOIN gaming_groups gg ON gg.id = gm.group_id
@@ -112,7 +115,39 @@ public class GroupMemberRepository : IGroupMemberRepository
                 p.name;
             """;
 
-        return await database.QueryAsync<GroupMemberListItem>(sql, groupId);
+        var raw = await database.QueryAsync<GroupMember>(
+                    """
+            SELECT *
+            FROM group_members
+            WHERE group_id = ?
+              AND deleted_at IS NULL
+            """,
+                groupId);
+
+        foreach (var r in raw)
+        {
+            Debug.WriteLine(
+                $"RAW DB => " +
+                $"{r.PlayerId} " +
+                $"Hosted={r.HostedFlag} " +
+                $"Next={r.IsNextHost}");
+        }
+
+        var result = await database.QueryAsync<GroupMemberListItem>(sql, groupId);
+
+        foreach (var m in result)
+        {
+            /*
+            Debug.WriteLine(
+                    $"REPOSITORY => " +
+                    $"{m.PlayerName} " +
+                    $"Hosted={m.HostedFlag} " +
+                    $"Next={m.IsNextHost}");
+            */
+        }
+
+        return result;
+
     }
 
     public async Task<GroupMember?> GetMemberByIdAsync(string memberId)
@@ -220,46 +255,31 @@ public class GroupMemberRepository : IGroupMemberRepository
     {
         var database = await _databaseService.GetConnectionAsync();
 
+/*
+        Debug.WriteLine(
+            $"UPDATE {member.PlayerId} " +
+            $"Hosted={member.HostedFlag} " +
+            $"Next={member.IsNextHost}");
+*/
         member.UpdatedAt = DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ss.fffZ");
         member.Version += 1;
 
         await database.UpdateAsync(member);
-    }
 
-    public async Task UpdateMemberStatusAsync(string memberId, string status)
-    {
-        var database = await _databaseService.GetConnectionAsync();
+        var verify = await database.QueryAsync<GroupMember>(
+            @"SELECT *
+      FROM group_members
+      WHERE id = ?",
+            member.Id);
 
-        var now = DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ss.fffZ");
-
-        const string sql = """
-            UPDATE group_members
-            SET status = ?,
-                updated_at = ?,
-                version = version + 1
-            WHERE id = ?
-              AND deleted_at IS NULL;
-            """;
-
-        await database.ExecuteAsync(sql, status, now, memberId);
-    }
-
-    public async Task UpdateRotationOrderAsync(string memberId, int? rotationOrder)
-    {
-        var database = await _databaseService.GetConnectionAsync();
-
-        var now = DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ss.fffZ");
-
-        const string sql = """
-            UPDATE group_members
-            SET rotation_order = ?,
-                updated_at = ?,
-                version = version + 1
-            WHERE id = ?
-              AND deleted_at IS NULL;
-            """;
-
-        await database.ExecuteAsync(sql, rotationOrder, now, memberId);
+        var saved = verify.First();
+        /*
+        Debug.WriteLine(
+            $"DB VERIFY => " +
+            $"Player={saved.PlayerId} " +
+            $"Hosted={saved.HostedFlag} " +
+            $"Next={saved.IsNextHost}");
+        */
     }
 
     public async Task SoftDeleteGroupMemberAsync(
@@ -288,5 +308,21 @@ public class GroupMemberRepository : IGroupMemberRepository
             now,
             groupId,
             playerId);
+    }
+
+    public async Task<List<GroupMember>> GetGroupMembersByGroupIdAsync(string groupId)
+    {
+        var database = await _databaseService.GetConnectionAsync();
+
+        const string sql = """
+        SELECT *
+        FROM group_members
+        WHERE group_id = ?
+          AND deleted_at IS NULL
+          AND status = 'active'
+        ORDER BY updated_at;
+        """;
+
+        return await database.QueryAsync<GroupMember>(sql, groupId);
     }
 }

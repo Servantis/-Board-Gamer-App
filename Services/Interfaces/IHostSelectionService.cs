@@ -7,6 +7,8 @@ namespace BoardGamerApp.Services.Interfaces
 {
     public interface IHostSelectionService
     {
-      //  GroupMember SelectNextHost(List<GroupMember> members);
+        GroupMember SelectNextHost(List<GroupMember> members, 
+                                                    string? lastHostPlayerI,
+                                                    bool cycleCompleted);
     }
 }

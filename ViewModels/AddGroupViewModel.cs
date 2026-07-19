@@ -92,6 +92,23 @@ public partial class AddGroupViewModel : ObservableObject
                 "owner"
             );
 
+            // lade den owner 
+            var members =
+                await _groupMemberRepository
+                    .GetGroupMembersByGroupIdAsync(group.Id);
+
+            var owner = members.FirstOrDefault(
+                m => m.Role == "owner");
+
+            // setze ihn als nächsten host
+            if (owner != null)
+            {
+                owner.IsNextHost = true;
+
+                await _groupMemberRepository
+                    .UpdateMemberAsync(owner);
+            }
+
             await Shell.Current.GoToAsync("..");
         }
         catch (Exception ex)
