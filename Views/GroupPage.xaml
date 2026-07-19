@@ -189,7 +189,7 @@
                                              VerticalOptions="Center"
                                              HorizontalOptions="Fill">
 
-                                            <Label Text="{Binding DisplayName}"
+                                            <Label Text="{Binding PlayerName}"
                                            FontAttributes="Bold"
                                            FontSize="16"
                                            TextColor="#3B2E25"/>
@@ -204,7 +204,9 @@
                                            HorizontalOptions="End"
                                            HasShadow="False">
 
-                                            <Label Text="{Binding LastHostedDate, StringFormat='zuletzt: {0:dd.MM.yy}'}"
+                                            <Label 
+                                               Text="{Binding HostedDateDisplay,
+                                                      StringFormat=' {0}'}"
                                                FontSize="12"
                                                FontAttributes="Bold"
                                                TextColor="#7C6A58"/>

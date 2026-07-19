@@ -50,7 +50,7 @@
                         EmptyView="Noch keine Gruppen vorhanden.">
 
                 <CollectionView.ItemTemplate>
-                    <DataTemplate x:DataType="models:GamingGroup">
+                    <DataTemplate x:DataType="models:GamingGroupListItem">
 
                         <Border StrokeThickness="0"
                             BackgroundColor="#FFFFFF"
@@ -116,7 +116,9 @@
                                 <Label Grid.Row="2"
                             Grid.Column="0"
                             Grid.ColumnSpan="2"
-                            Text="{Binding CreatedByPlayerId}"
+                            Text="{Binding CreatedByPlayerName,
+                                   StringFormat='Erstellt von: {0}'}"
+
                             FontSize="14"
                             TextColor="#334155" />
                             </Grid>

@@ -25,23 +25,34 @@ public class GroupOverviewRepository
     }
 
     // Liefert alle Gruppen eines bestimmten Spielers.
-    public async Task<List<GamingGroup>> GetGroupsByPlayerIdAsync(string playerId)
+    public async Task<List<GamingGroupListItem>> GetGroupsByPlayerIdAsync(
+        string playerId)
     {
         var database = await _databaseService.GetConnectionAsync();
 
-        const string sql = @"
-            SELECT gg.*
+
+        const string sql = """
+            SELECT
+                gg.id AS Id,
+                gg.name AS Name,
+                gg.description AS Description,
+                gg.created_by_player_id AS CreatedByPlayerId,
+                p.name AS CreatedByPlayerName
             FROM gaming_groups gg
             INNER JOIN group_members gm
                 ON gm.group_id = gg.id
+            INNER JOIN players p
+                ON p.id = gg.created_by_player_id
             WHERE gm.player_id = ?
-            AND gm.deleted_at IS NULL
-            AND gg.deleted_at IS NULL
-            ORDER BY gg.name;";
+              AND gm.deleted_at IS NULL
+              AND gg.deleted_at IS NULL
+            ORDER BY gg.name;
+            """;
 
-        return await database.QueryAsync<GamingGroup>(sql, playerId);
+        return await database.QueryAsync<GamingGroupListItem>(
+            sql,
+            playerId);
     }
-
 
     // Liefert eine Gruppe anhand ihrer Id.
     public async Task<GamingGroup?> GetGroupAsync(string groupId)

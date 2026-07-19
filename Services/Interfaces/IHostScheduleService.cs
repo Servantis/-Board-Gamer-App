@@ -7,6 +7,7 @@ namespace BoardGamerApp.Services.Interfaces
 {
     public interface IHostScheduleService
     {
-       //void ProcessHostChange(List<GroupMember> members);
+        Task ProcessHostChangeAsync(string groupId);
+        Task EnsureNextHostExistsAsync(string groupId);
     }
 }

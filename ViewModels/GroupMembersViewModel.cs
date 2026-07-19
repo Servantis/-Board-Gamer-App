@@ -9,6 +9,9 @@ using System.Collections.ObjectModel;
 using System.Windows.Input;
 using BoardGamerApp.Messages;
 using CommunityToolkit.Mvvm.Messaging;
+using BoardGamerApp.Services.Interfaces;
+using BoardGamerApp.Services.Implementations;
+using System.Diagnostics;
 
 namespace BoardGamerApp.ViewModels;
 
@@ -17,6 +20,8 @@ public partial class GroupMembersViewModel : ObservableObject
 {
     private readonly IGroupMemberRepository _groupMemberRepository;
     private readonly CurrentPlayerService _currentPlayerService;
+    private readonly GameNightRepository _gameNightRepository;
+    private readonly IHostScheduleService _hostScheduleService;
 
     private bool _isBusy;
     private string _statusText = "Gruppenmitglieder werden geladen...";
@@ -34,12 +39,20 @@ public partial class GroupMembersViewModel : ObservableObject
         {
             if (SetProperty(ref _groupId, value))
             {
+
+             //   Debug.WriteLine($"GROUP ID ERHALTEN: {value}");
+
                 _ = LoadGroupAsync();
                 _ = LoadMembersAsync();
+                _ = LoadLastHostsAsync();
             }
         }
     }
 
+    // ObservableCollection für die letzten Gastgeber
+    public ObservableCollection<LastHostItem> LastHosts { get; } = new();
+
+    // ObservableCollection für die Mitglieder der Gruppe
     public ObservableCollection<GroupMemberListItem> Members { get; } = new();
 
     public ICommand RefreshCommand { get; }
@@ -64,9 +77,9 @@ public partial class GroupMembersViewModel : ObservableObject
     public IEnumerable<GroupMemberListItem> RotationMembers =>
         Members
             .Where(member => member.Status == "active")
-            .OrderBy(member => member.RotationOrder ?? int.MaxValue)
-            .ThenBy(member => member.PlayerName);
-    public GroupMembersViewModel(IGroupMemberRepository groupMemberRepository, CurrentPlayerService currentPlayerService)
+            .OrderBy(member => member.PlayerName);
+   
+    public GroupMembersViewModel(IGroupMemberRepository groupMemberRepository, CurrentPlayerService currentPlayerService, GameNightRepository gameNightRepository, IHostScheduleService hostScheduleService)
     {
         _groupMemberRepository = groupMemberRepository;
 
@@ -76,6 +89,8 @@ public partial class GroupMembersViewModel : ObservableObject
         ManageMembersCommand = new AsyncRelayCommand(OpenMemberManagementAsync);
         OpenAddPlayerPageCommand = new AsyncRelayCommand(OpenAddPlayerPageAsync);
         _currentPlayerService = currentPlayerService;
+        _gameNightRepository = gameNightRepository;
+        _hostScheduleService = hostScheduleService;
 
         RemoveMemberCommand =
         new AsyncRelayCommand<GroupMemberListItem>(
@@ -85,7 +100,8 @@ public partial class GroupMembersViewModel : ObservableObject
             this,
             async (recipient, message) =>
             {
-                System.Diagnostics.Debug.WriteLine("MESSAGE RECEIVED");
+               // System.Diagnostics.Debug.WriteLine("MESSAGE RECEIVED");
+
                 if (message.Value == GroupId)
                 {
                     await LoadMembersAsync();
@@ -114,9 +130,7 @@ public partial class GroupMembersViewModel : ObservableObject
                 members = await _groupMemberRepository.GetMembersAsync();
             }
 
-            System.Diagnostics.Debug.WriteLine($"LoadMembers: {members.Count}");
-
-            MarkNextHost(members);
+            //System.Diagnostics.Debug.WriteLine($"LoadMembers: {members.Count}");
 
             Members.Clear();
 
@@ -130,6 +144,7 @@ public partial class GroupMembersViewModel : ObservableObject
 
                 Members.Add(member);
             }
+            //Debug.WriteLine($"Members ObservableCollection: {Members.Count}");
 
             StatusText = Members.Count == 0
                 ? "Keine Gruppenmitglieder gefunden."
@@ -165,26 +180,6 @@ public partial class GroupMembersViewModel : ObservableObject
         }
     }
 
-    private static void MarkNextHost(List<GroupMemberListItem> members)
-    {
-        foreach (var member in members)
-        {
-            member.IsNextHost = false;
-            member.HostedFlag = false;
-        }
-
-        var nextHost = members
-            .Where(member => member.Status == "active")
-            .OrderBy(member => member.RotationOrder ?? int.MaxValue)
-            .ThenBy(member => member.PlayerName)
-            .FirstOrDefault();
-
-        if (nextHost is not null)
-        {
-            nextHost.IsNextHost = true;
-        }
-    }
-
     private async Task SelectNextHostAsync()
     {
         var nextHost = RotationMembers.FirstOrDefault();
@@ -208,7 +203,7 @@ public partial class GroupMembersViewModel : ObservableObject
     private async Task SimulateTriggerAsync()
     {
         var nextHost = RotationMembers.FirstOrDefault();
-
+       // Debug.WriteLine("[TEST] Manueller Trigger");
         if (nextHost is null)
         {
             await Shell.Current.DisplayAlertAsync(
@@ -219,10 +214,11 @@ public partial class GroupMembersViewModel : ObservableObject
             return;
         }
 
-        await Shell.Current.DisplayAlertAsync(
-            "Simulation",
-            $"Simulation: '{nextHost.PlayerName}' wäre aktuell der nächste Gastgeber. Die echte Gastgeber-Historie wird später über Termine bzw. Events abgebildet.",
-            "OK");
+        await _hostScheduleService.EnsureNextHostExistsAsync(GroupId);
+        await _hostScheduleService.ProcessHostChangeAsync(GroupId);
+
+        await LoadMembersAsync();
+        await LoadLastHostsAsync();
     }
 
     private async Task OpenMemberManagementAsync()
@@ -302,5 +298,22 @@ public partial class GroupMembersViewModel : ObservableObject
     public void Cleanup()
     {
         WeakReferenceMessenger.Default.UnregisterAll(this);
+    }
+
+    // Lade die letzten Gastgeber für die aktuelle Gruppe
+    private async Task LoadLastHostsAsync()
+    {
+        var hosts =
+            await _gameNightRepository
+                .GetLastHostsAsync(GroupId);
+
+        LastHosts.Clear();
+
+        foreach (var host in hosts)
+        {
+            LastHosts.Add(host);
+        }
+
+        //Debug.WriteLine( $"LastHosts geladen: {LastHosts.Count}");
     }
 }
