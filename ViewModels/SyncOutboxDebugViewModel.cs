@@ -10,7 +10,7 @@ namespace BoardGamerApp.ViewModels;
 public partial class SyncOutboxDebugViewModel : ObservableObject
 {
     private readonly DatabaseService _databaseService;
-
+    private readonly AppSyncService _appSyncService;
     public ObservableCollection<SyncOutboxEntry> Entries { get; } = new();
 
     [ObservableProperty]
@@ -18,6 +18,18 @@ public partial class SyncOutboxDebugViewModel : ObservableObject
 
     [ObservableProperty]
     private int entryCount;
+
+
+    [ObservableProperty]
+    private string lastSyncMessage = string.Empty;
+
+    public SyncOutboxDebugViewModel(
+        DatabaseService databaseService,
+        AppSyncService appSyncService)
+    {
+        _databaseService = databaseService;
+        _appSyncService = appSyncService;
+    }
 
     public SyncOutboxDebugViewModel(DatabaseService databaseService)
     {
@@ -106,4 +118,109 @@ public partial class SyncOutboxDebugViewModel : ObservableObject
             message,
             "OK");
     }
+
+    [RelayCommand]
+    private async Task PushPendingOutboxAsync()
+    {
+        if (IsBusy)
+            return;
+
+        try
+        {
+            IsBusy = true;
+
+            var result = await _appSyncService.PushPendingOutboxAsync();
+
+            lastSyncMessage = result.Message;
+        }
+        catch (Exception ex)
+        {
+            lastSyncMessage = $"Sync fehlgeschlagen: {ex.Message}";
+
+            await Shell.Current.DisplayAlertAsync(
+                "Sync fehlgeschlagen",
+                ex.Message,
+                "OK");
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+
+        await LoadAsync();
+    }
+
+    [RelayCommand]
+    private async Task PushInitialSnapshotAsync()
+    {
+        if (IsBusy)
+            return;
+
+        try
+        {
+            IsBusy = true;
+
+            var result = await _appSyncService.PushInitialSnapshotAsync();
+
+            LastSyncMessage = result.Message;
+
+            await Shell.Current.DisplayAlertAsync(
+                "Initialdaten-Sync",
+                result.Message,
+                "OK");
+        }
+        catch (Exception ex)
+        {
+            LastSyncMessage = $"Initialdaten-Sync fehlgeschlagen: {ex.Message}";
+
+            await Shell.Current.DisplayAlertAsync(
+                "Initialdaten-Sync fehlgeschlagen",
+                ex.Message,
+                "OK");
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+
+        await LoadAsync();
+    }
+
+    [RelayCommand]
+    private async Task PullServerChangesAsync()
+    {
+        if (IsBusy)
+            return;
+
+        try
+        {
+            IsBusy = true;
+
+            var result = await _appSyncService.PullServerChangesAsync();
+
+            LastSyncMessage = result.Message;
+
+            await Shell.Current.DisplayAlertAsync(
+                "Serverdaten ziehen",
+                result.Message,
+                "OK");
+        }
+        catch (Exception ex)
+        {
+            LastSyncMessage = $"Pull fehlgeschlagen: {ex.Message}";
+
+            await Shell.Current.DisplayAlertAsync(
+                "Pull fehlgeschlagen",
+                ex.Message,
+                "OK");
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+
+        await LoadAsync();
+    }
+
+
 }

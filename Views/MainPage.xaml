@@ -4,6 +4,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:local="clr-namespace:BoardGamerApp.Views"
              x:Class="BoardGamerApp.Views.MainPage"
+             x:Name="EventPageRoot"
              BackgroundColor="#F8F5F0">
 
        <Grid RowDefinitions="Auto,*,80">
@@ -118,7 +119,16 @@
                                                  FontAttributes="Italic"
                                                  TextColor="#334155"
                                                  IsVisible="{Binding MyAttendanceStatusText, Converter={StaticResource StringToBoolConverter}}"/>
-                                   </VerticalStackLayout>
+                        <!-- Button z. B. auf der Spieleabend-Detailseite oder auf der Home-Seite einfügen. -->
+                                            <Button Text="Ich verspäte mich"
+                                            Command="{Binding BindingContext.SendDelayMessageCommand, Source={x:Reference EventPageRoot}}"
+                                            CommandParameter="{Binding .}"
+                                            BackgroundColor="#5B2BEA"
+                                            TextColor="White"
+                                            CornerRadius="14"
+                                            HeightRequest="42" />
+
+                    </VerticalStackLayout>
 
                             </Border>
 
