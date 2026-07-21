@@ -1,5 +1,6 @@
 using BoardGamerApp.Models;
 using BoardGamerApp.Services;
+using BoardGamerApp.ViewModels;
 using System.Diagnostics;
 
 namespace BoardGamerApp.Repositories;
@@ -370,5 +371,108 @@ public class GroupMemberRepository : IGroupMemberRepository
         """;
 
         return await database.QueryAsync<GroupMember>(sql, groupId);
+    }
+
+    // Einladung zu einer Gruppe 
+    public async Task InviteMemberAsync(
+    string groupId,
+    string playerId,
+    string role = "member")
+    {
+        var database = await _databaseService.GetConnectionAsync();
+
+        var now = DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ss.fffZ");
+
+        var existingMember =
+            (await database.QueryAsync<GroupMember>(
+                """
+            SELECT *
+            FROM group_members
+            WHERE group_id = ?
+              AND player_id = ?
+            LIMIT 1;
+            """,
+                groupId,
+                playerId))
+            .FirstOrDefault();
+
+        if (existingMember != null)
+        {
+            if (existingMember.Status == "active")
+            {
+                throw new InvalidOperationException(
+                    "Der Spieler ist bereits Mitglied dieser Gruppe.");
+            }
+
+            if (existingMember.Status == "invited")
+            {
+                throw new InvalidOperationException(
+                    "Für diesen Spieler existiert bereits eine offene Einladung.");
+            }
+
+            await database.ExecuteAsync(
+                """
+            UPDATE group_members
+            SET
+                status = 'invited',
+                deleted_at = NULL,
+                updated_at = ?,
+                version = version + 1
+            WHERE id = ?;
+            """,
+                now,
+                existingMember.Id);
+
+            return;
+        }
+
+        var memberId = Guid.NewGuid().ToString();
+
+        await database.ExecuteAsync(
+            """
+        INSERT INTO group_members (
+            id,
+            group_id,
+            player_id,
+            role,
+            status,
+            created_at,
+            updated_at,
+            version
+        )
+        VALUES (?, ?, ?, ?, 'invited', ?, ?, 1);
+        """,
+            memberId,
+            groupId,
+            playerId,
+            role,
+            now,
+            now);
+    }
+
+    // Lade die offenen Einladungen für einen Spieler (Status = "invited")
+    public async Task<List<GroupInvitationItem>>
+    GetPendingInvitationsAsync(string playerId)
+    {
+        var database = await _databaseService.GetConnectionAsync();
+
+        const string sql = """
+        SELECT
+            gm.id AS MemberId,
+            gm.group_id AS GroupId,
+            gg.name AS GroupName,
+            gm.created_at AS CreatedAt
+        FROM group_members gm
+        INNER JOIN gaming_groups gg
+            ON gg.id = gm.group_id
+        WHERE gm.player_id = ?
+          AND gm.status = 'invited'
+          AND gm.deleted_at IS NULL
+        ORDER BY gm.created_at DESC;
+        """;
+
+        return await database.QueryAsync<GroupInvitationItem>(
+            sql,
+            playerId);
     }
 }

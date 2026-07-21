@@ -12,8 +12,89 @@
               <ScrollView Grid.Row="1">
                      <VerticalStackLayout Padding="30,30,30,0"
                                           Spacing="25">
+                <!-- Gruppeneinladungen -->
 
-                            <!-- Vorschau des nächsten Termins auf der Startseite. MainPage bekommt
+                <Label Text="Gruppeneinladungen"
+       Style="{StaticResource Headline}"
+       FontSize="18"
+       IsVisible="{Binding HasPendingInvitations}" />
+
+                <CollectionView
+    ItemsSource="{Binding PendingInvitations}"
+    IsVisible="{Binding HasPendingInvitations}"
+    SelectionMode="None">
+
+                    <CollectionView.ItemTemplate>
+
+                        <DataTemplate>
+
+                            <Border
+                StrokeShape="RoundRectangle 12"
+                Padding="15"
+                Margin="0,0,0,15"
+                BackgroundColor="#FFF3D6"
+                Stroke="#8B5E3C"
+                StrokeThickness="2">
+
+                                <VerticalStackLayout
+                    Spacing="8">
+
+                                    <Label
+                        Text="📨 Gruppeneinladung"
+                        FontSize="12"
+                        FontAttributes="Bold"
+                        TextColor="#8B5E3C"/>
+
+                                    <Label
+                        Text="{Binding GroupName}"
+                        FontSize="18"
+                        FontAttributes="Bold"
+                        TextColor="#0F172A"/>
+
+                                    <Label
+                        Text="{Binding InviterName, StringFormat='Eingeladen von: {0}'}"
+                        FontSize="14"
+                        TextColor="#334155" />
+
+                                    <Label
+                        Text="{Binding CreatedAt, Converter={StaticResource IsoToDisplayDateConverter}, StringFormat='Einladung vom {0}'}"
+                        FontSize="13"
+                        TextColor="#64748B"/>
+
+                                    <HorizontalStackLayout
+                        Spacing="10">
+
+                                        <Button
+                            Text="Annehmen"
+                            BackgroundColor="#2E7D32"
+                            TextColor="White"
+                            CornerRadius="8"
+                            Padding="14,6"
+                            Command="{Binding Source={RelativeSource AncestorType={x:Type local:MainPage}}, Path=BindingContext.AcceptInvitationCommand}"
+                            CommandParameter="{Binding}" />
+
+                                        <Button
+                            Text="Ablehnen"
+                            BackgroundColor="#C62828"
+                            TextColor="White"
+                            CornerRadius="8"
+                            Padding="14,6"
+                            Command="{Binding Source={RelativeSource AncestorType={x:Type local:MainPage}}, Path=BindingContext.DeclineInvitationCommand}"
+                            CommandParameter="{Binding}" />
+
+                                    </HorizontalStackLayout>
+
+                                </VerticalStackLayout>
+
+                            </Border>
+
+                        </DataTemplate>
+
+                    </CollectionView.ItemTemplate>
+
+                </CollectionView>
+                
+                <!-- Vorschau des nächsten Termins auf der Startseite. MainPage bekommt
                                  (genau wie EventPage) ein EventViewModel per Dependency Injection -
                                  da es als "Transient" registriert ist (siehe MauiProgram.cs), ist
                                  das aber ein EIGENES Objekt, nicht dieselbe Instanz wie auf
@@ -296,7 +377,7 @@
                                    HorizontalOptions="Center"/>
                      </VerticalStackLayout>
 
-                     <!-- Plus Button -->
+                     <!-- Nachrichten Button -->
                      <Frame Grid.Column="1"
                             WidthRequest="60"
                             HeightRequest="60"
@@ -336,6 +417,6 @@
                                    HorizontalOptions="Center"/>
                      </VerticalStackLayout>
               </Grid>
-
+        
        </Grid>
 </ContentPage>

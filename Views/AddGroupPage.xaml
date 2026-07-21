@@ -5,13 +5,15 @@
     xmlns:viewModels="clr-namespace:BoardGamerApp.ViewModels"
     x:Class="BoardGamerApp.Views.AddGroupPage"
     x:DataType="viewModels:AddGroupViewModel"
-    Title="Neue Gruppe">
+    Title="Neue Gruppe"
+    BackgroundColor="#F8F5F0">
 
     <ScrollView>
 
         <VerticalStackLayout
             Padding="30"
-            Spacing="20">
+            Spacing="20"
+            >
 
             <Label
                 Text="Neue Gruppe erstellen"
@@ -27,19 +29,20 @@
                 AutoSize="TextChanges"
                 HeightRequest="120"
                 Text="{Binding Description}" />
-
+            
             <Grid
                 ColumnDefinitions="*,*"
                 ColumnSpacing="15">
-
                 <Button
                     Grid.Column="0"
                     Text="Abbrechen"
+                    BackgroundColor="#8B5E3C"
                     Command="{Binding CancelCommand}" />
 
                 <Button
                     Grid.Column="1"
                     Text="Speichern"
+                    BackgroundColor="#8B5E3C"
                     Command="{Binding SaveCommand}" />
 
             </Grid>

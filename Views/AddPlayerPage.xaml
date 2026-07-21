@@ -116,11 +116,13 @@
                 <Button
                     Grid.Column="0"
                     Text="Abbrechen"
+                    BackgroundColor="#8B5E3C"
                     Command="{Binding CancelCommand}" />
 
                 <Button
                     Grid.Column="1"
                     Text="Hinzufügen"
+                    BackgroundColor="#8B5E3C"
                     Command="{Binding SaveCommand}" />
 
             </Grid>

@@ -147,9 +147,10 @@ public partial class AddPlayerViewModel : ObservableObject
         {
             IsBusy = true;
 
-            await _groupMemberRepository.AddMemberAsync(
+            await _groupMemberRepository.InviteMemberAsync(
                 GroupId,
                 SelectedPlayer.Id);
+
 
             // Message bei Änderung der Gruppenmitglieder senden, damit andere ViewModels reagieren können
             WeakReferenceMessenger.Default.Send(

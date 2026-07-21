@@ -28,4 +28,8 @@ public interface IGroupMemberRepository
     Task UpdateMemberAsync(GroupMember member);
 
     Task SoftDeleteGroupMemberAsync(string groupId, string playerId);
-}
+    Task InviteMemberAsync(
+    string groupId,
+    string playerId,
+    string role = "member");
+    }
