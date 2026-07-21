@@ -1,39 +1,36 @@
-using BoardGamerApp.Repositories;
-
 namespace BoardGamerApp.Services;
 
 public class GroupDelayMessageService
 {
-    private readonly GroupMessageRepository _groupMessageRepository;
-    private readonly GroupEmailService _groupEmailService;
+    private readonly MessageApiClient _messageApiClient;
 
-    public GroupDelayMessageService(
-        GroupMessageRepository groupMessageRepository,
-        GroupEmailService groupEmailService)
+    public GroupDelayMessageService(MessageApiClient messageApiClient)
     {
-        _groupMessageRepository = groupMessageRepository;
-        _groupEmailService = groupEmailService;
+        _messageApiClient = messageApiClient;
     }
 
-    public async Task ComposeDelayMessageToGroupAsync(
+    public async Task SendDelayMessageToGroupAsync(
         string groupId,
         string currentPlayerId,
-        string currentPlayerName,
-        int delayMinutes,
-        string? customMessage = null)
+        int delayMinutes)
     {
-        var recipients = await _groupMessageRepository.GetActiveGroupRecipientsAsync(
-            groupId,
-            currentPlayerId);
+        if (string.IsNullOrWhiteSpace(groupId))
+            throw new InvalidOperationException("Es wurde keine Gruppe gefunden.");
 
-        var emailAddresses = recipients
-            .Select(recipient => recipient.Email)
-            .ToList();
+        if (string.IsNullOrWhiteSpace(currentPlayerId))
+            throw new InvalidOperationException("Es wurde kein aktueller Spieler gefunden.");
 
-        await _groupEmailService.ComposeDelayMessageAsync(
-            emailAddresses,
-            currentPlayerName,
-            delayMinutes,
-            customMessage);
+        var response = await _messageApiClient.SendDelayMessageAsync(
+            new DelayMessageRequest
+            {
+                GroupId = groupId,
+                SenderPlayerId = currentPlayerId,
+                DelayMinutes = delayMinutes
+            });
+
+        await Shell.Current.DisplayAlertAsync(
+            "Nachricht gesendet",
+            $"Die Verspätungsnachricht wurde an {response.RecipientCount} Spieler:innen gesendet.",
+            "OK");
     }
 }

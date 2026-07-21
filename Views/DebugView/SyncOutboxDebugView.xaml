@@ -23,6 +23,25 @@
            FontSize="14"
            TextColor="#6B6258" />
 
+            <Label Text="{Binding ApiKeyStatusText}"
+            FontSize="13"
+            TextColor="#6B6258" />
+
+            <Button Text="API-Key einrichten"
+            Command="{Binding SetApiKeyCommand}"
+            BackgroundColor="#2D7A4E"
+            TextColor="White"
+            CornerRadius="14"
+            HeightRequest="46" />
+
+            <Button Text="API-Key löschen"
+            Command="{Binding ClearApiKeyCommand}"
+            IsVisible="{Binding HasStoredApiKey}"
+            BackgroundColor="#B3261E"
+            TextColor="White"
+            CornerRadius="14"
+            HeightRequest="46" />
+
             <Button Text="Initialdaten pushen"
             Command="{Binding PushInitialSnapshotCommand}"
             BackgroundColor="#7A4E2D"

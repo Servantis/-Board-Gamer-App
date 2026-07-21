@@ -1058,11 +1058,10 @@ public partial class EventViewModel : ObservableObject
 
         try
         {
-            await _groupDelayMessageService.ComposeDelayMessageToGroupAsync(
-                night.GroupId,
-                currentPlayerId,
-                currentPlayerName ?? "Ich",
-                delayMinutes);
+            await _groupDelayMessageService.SendDelayMessageToGroupAsync(
+            night.GroupId,
+            currentPlayerId,
+            delayMinutes);
         }
         catch (Exception ex)
         {

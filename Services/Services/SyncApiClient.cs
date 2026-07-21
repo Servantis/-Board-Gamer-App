@@ -7,7 +7,7 @@ namespace BoardGamerApp.Services;
 public class SyncApiClient
 {
     private readonly HttpClient _httpClient;
-    private readonly SyncApiOptions _options;
+    private readonly ApiCredentialService _apiCredentialService;
 
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
@@ -15,23 +15,22 @@ public class SyncApiClient
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
     };
 
-    public SyncApiClient(HttpClient httpClient, SyncApiOptions options)
+    public SyncApiClient(HttpClient httpClient, ApiCredentialService apiCredentialService)
     {
         _httpClient = httpClient;
-        _options = options;
+        _apiCredentialService = apiCredentialService;
     }
     //Push
     public async Task<SyncPushResponse> PushAsync(SyncPushRequest request)
     {
-        if (string.IsNullOrWhiteSpace(_options.ApiKey))
-            throw new InvalidOperationException("Es wurde kein API-Key für die Sync-API konfiguriert.");
+        var apiKey = await _apiCredentialService.GetRequiredApiKeyAsync();
 
         using var httpRequest = new HttpRequestMessage(
             HttpMethod.Post,
             "api/sync/push"
         );
 
-        httpRequest.Headers.TryAddWithoutValidation("X-Api-Key", _options.ApiKey);
+        httpRequest.Headers.TryAddWithoutValidation("X-Api-Key", apiKey);
 
         httpRequest.Content = JsonContent.Create(
             request,
@@ -62,7 +61,7 @@ public class SyncApiClient
     //Pull
     public async Task<SyncPullResponse> PullAsync(string? since)
     {
-        var apiKey = _options.ApiKey?.Trim();
+        var apiKey = await _apiCredentialService.GetRequiredApiKeyAsync();
 
         if (string.IsNullOrWhiteSpace(apiKey))
             throw new InvalidOperationException("Es wurde kein API-Key für die Sync-API konfiguriert.");

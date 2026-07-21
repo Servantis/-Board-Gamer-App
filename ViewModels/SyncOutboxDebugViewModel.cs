@@ -11,7 +11,9 @@ public partial class SyncOutboxDebugViewModel : ObservableObject
 {
     private readonly DatabaseService _databaseService;
     private readonly AppSyncService _appSyncService;
+    private readonly ApiCredentialService _apiCredentialService;
     public ObservableCollection<SyncOutboxEntry> Entries { get; } = new();
+
 
     [ObservableProperty]
     private bool isBusy;
@@ -23,12 +25,21 @@ public partial class SyncOutboxDebugViewModel : ObservableObject
     [ObservableProperty]
     private string lastSyncMessage = string.Empty;
 
+    [ObservableProperty]
+    private string apiKeyStatusText = "API-Key: nicht geprüft";
+
+    [ObservableProperty]
+    private bool hasStoredApiKey;
+
+
     public SyncOutboxDebugViewModel(
-        DatabaseService databaseService,
-        AppSyncService appSyncService)
+    DatabaseService databaseService,
+    AppSyncService appSyncService,
+    ApiCredentialService apiCredentialService)
     {
         _databaseService = databaseService;
         _appSyncService = appSyncService;
+        _apiCredentialService = apiCredentialService;
     }
 
     public SyncOutboxDebugViewModel(DatabaseService databaseService)
@@ -222,5 +233,74 @@ public partial class SyncOutboxDebugViewModel : ObservableObject
         await LoadAsync();
     }
 
+    private async Task RefreshApiKeyStatusAsync()
+    {
+        var apiKey = await _apiCredentialService.GetApiKeyAsync();
+
+        hasStoredApiKey = !string.IsNullOrWhiteSpace(apiKey);
+
+        apiKeyStatusText = hasStoredApiKey
+            ? $"API-Key gespeichert. Länge: {apiKey!.Length}"
+            : "Kein API-Key gespeichert.";
+    }
+
+    [RelayCommand]
+    private async Task SetApiKeyAsync()
+    {
+        var apiKey = await Shell.Current.DisplayPromptAsync(
+            "API-Key einrichten",
+            "Bitte gib den API-Key für die BoardGamer-API ein.",
+            "Speichern",
+            "Abbrechen",
+            placeholder: "X-Api-Key",
+            maxLength: 300,
+            keyboard: Keyboard.Text);
+
+        if (apiKey is null)
+            return;
+
+        apiKey = apiKey.Trim();
+
+        if (string.IsNullOrWhiteSpace(apiKey))
+        {
+            await Shell.Current.DisplayAlertAsync(
+                "API-Key fehlt",
+                "Der API-Key darf nicht leer sein.",
+                "OK");
+
+            return;
+        }
+
+        await _apiCredentialService.SaveApiKeyAsync(apiKey);
+
+        await RefreshApiKeyStatusAsync();
+
+        await Shell.Current.DisplayAlertAsync(
+            "API-Key gespeichert",
+            "Der API-Key wurde sicher auf diesem Gerät gespeichert.",
+            "OK");
+    }
+
+    [RelayCommand]
+    private async Task ClearApiKeyAsync()
+    {
+        var confirmed = await Shell.Current.DisplayAlertAsync(
+            "API-Key löschen",
+            "Möchtest du den gespeicherten API-Key von diesem Gerät entfernen?",
+            "Löschen",
+            "Abbrechen");
+
+        if (!confirmed)
+            return;
+
+        _apiCredentialService.ClearApiKey();
+
+        await RefreshApiKeyStatusAsync();
+
+        await Shell.Current.DisplayAlertAsync(
+            "API-Key gelöscht",
+            "Der API-Key wurde von diesem Gerät entfernt.",
+            "OK");
+    }
 
 }

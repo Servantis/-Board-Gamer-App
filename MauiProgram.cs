@@ -83,16 +83,17 @@ public static class MauiProgram
                 
                 builder.Services.AddTransient<MainPage>();
 
+
+                //Email Benachrichtigungen
                 builder.Services.AddSingleton<GroupMessageRepository>();
-                builder.Services.AddSingleton<GroupEmailService>();
+                builder.Services.AddSingleton<MessageApiClient>();
                 builder.Services.AddSingleton<GroupDelayMessageService>();
 
         // Für den Sync-Service
         builder.Services.AddSingleton<SyncOutboxService>();
                 builder.Services.AddSingleton(new SyncApiOptions
                 {
-                    BaseUrl = "https://servantis.pythonanywhere.com/",
-                    ApiKey = "wJmLmNaJDXL3FJuJVEixh8YG"
+                    BaseUrl = "https://servantis.pythonanywhere.com/"
                 });
 
                 builder.Services.AddSingleton<HttpClient>(serviceProvider =>
@@ -104,7 +105,7 @@ public static class MauiProgram
                         BaseAddress = new Uri(options.BaseUrl)
                     };
                 });
-
+                builder.Services.AddSingleton<ApiCredentialService>();
                 builder.Services.AddSingleton<DeviceIdentityService>();
                 builder.Services.AddSingleton<SyncApiClient>();
                 builder.Services.AddSingleton<AppSyncService>();
