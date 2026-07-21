@@ -17,7 +17,7 @@
                    FontAttributes="Bold"
                    TextColor="#2F2A25" />
 
-            <Label Text="Füge ein Brettspiel zu deiner Sammlung hinzu."
+            <Label Text="Füge ein Brettspiel zu deiner Sammlung hinzu und teile es mit einer Gruppe."
                    FontSize="14"
                    TextColor="#6B6258" />
 
@@ -31,6 +31,21 @@
                        Placeholder="z. B. Catan"
                        BackgroundColor="White"
                        TextColor="#2F2A25" />
+            </VerticalStackLayout>
+
+            <!-- Gruppe -->
+            <VerticalStackLayout Spacing="6">
+                <Label Text="Mit Gruppe teilen"
+                       FontAttributes="Bold"
+                       TextColor="#2F2A25" />
+
+                <Picker Title="Gruppe auswählen"
+                        ItemsSource="{Binding Groups}"
+                        SelectedItem="{Binding SelectedGroup}"
+                        ItemDisplayBinding="{Binding Name}"
+                        BackgroundColor="White"
+                        TextColor="#2F2A25"
+                        TitleColor="#7C6A58" />
             </VerticalStackLayout>
 
             <!-- Spieleranzahl -->

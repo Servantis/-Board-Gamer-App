@@ -1,4 +1,4 @@
-﻿using BoardGamerApp.Models;
+using BoardGamerApp.Models;
 using BoardGamerApp.Repositories;
 using BoardGamerApp.Services;
 using BoardGamerApp.Views;
@@ -11,19 +11,44 @@ namespace BoardGamerApp.ViewModels;
 public partial class GameLibraryViewModel : ObservableObject
 {
     private readonly BoardGameRepository _boardGameRepository;
-    private readonly DatabaseService _databaseService;
+    private readonly GroupOverviewRepository _groupOverviewRepository;
+    private readonly CurrentPlayerService _currentPlayerService;
 
     public ObservableCollection<BoardGame> Games { get; } = new();
+
+    public ObservableCollection<GamingGroupListItem> Groups { get; } = new();
 
     [ObservableProperty]
     private bool isBusy;
 
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasError))]
+    private string? errorMessage;
+
+    private GamingGroupListItem? selectedGroup;
+
+    public GamingGroupListItem? SelectedGroup
+    {
+        get => selectedGroup;
+        set
+        {
+            if (SetProperty(ref selectedGroup, value) && value is not null)
+            {
+                _ = LoadGamesCommand.ExecuteAsync(null);
+            }
+        }
+    }
+
+    public bool HasError => !string.IsNullOrWhiteSpace(errorMessage);
+
     public GameLibraryViewModel(
         BoardGameRepository boardGameRepository,
-        DatabaseService databaseService)
+        GroupOverviewRepository groupOverviewRepository,
+        CurrentPlayerService currentPlayerService)
     {
         _boardGameRepository = boardGameRepository;
-        _databaseService = databaseService;
+        _groupOverviewRepository = groupOverviewRepository;
+        _currentPlayerService = currentPlayerService;
     }
 
     [RelayCommand]
@@ -35,10 +60,22 @@ public partial class GameLibraryViewModel : ObservableObject
         try
         {
             IsBusy = true;
+            errorMessage = null;
+
+            if (Groups.Count == 0)
+            {
+                await LoadGroupsAsync();
+            }
 
             Games.Clear();
 
-            var games = await _boardGameRepository.GetAllAsync();
+            if (SelectedGroup is null)
+            {
+                errorMessage = "Keine aktive Gruppe gefunden. Bitte lege zuerst eine Gruppe an oder tritt einer Gruppe bei.";
+                return;
+            }
+
+            var games = await _boardGameRepository.GetByGroupAsync(SelectedGroup.Id);
 
             foreach (var game in games)
             {
@@ -47,6 +84,8 @@ public partial class GameLibraryViewModel : ObservableObject
         }
         catch (Exception ex)
         {
+            errorMessage = $"Die Spiele konnten nicht geladen werden. {ex.Message}";
+
             await Shell.Current.DisplayAlertAsync(
                 "Fehler",
                 $"Die Spiele konnten nicht geladen werden.\n{ex.Message}",
@@ -61,9 +100,19 @@ public partial class GameLibraryViewModel : ObservableObject
     [RelayCommand]
     private async Task AddGameAsync()
     {
-        await Shell.Current.GoToAsync(nameof(AddGameView));
+        if (SelectedGroup is null)
+        {
+            await Shell.Current.DisplayAlertAsync(
+                "Keine Gruppe ausgewählt",
+                "Bitte wähle zuerst eine Gruppe aus.",
+                "OK");
+
+            return;
+        }
+
+        await Shell.Current.GoToAsync(
+            $"{nameof(AddGameView)}?groupId={Uri.EscapeDataString(SelectedGroup.Id)}");
     }
-    
 
     [RelayCommand]
     private async Task DeleteGameAsync(BoardGame? game)
@@ -82,12 +131,16 @@ public partial class GameLibraryViewModel : ObservableObject
 
         try
         {
+            errorMessage = null;
+
             await _boardGameRepository.SoftDeleteAsync(game);
 
             Games.Remove(game);
         }
         catch (Exception ex)
         {
+            errorMessage = $"Das Spiel konnte nicht gelöscht werden. {ex.Message}";
+
             await Shell.Current.DisplayAlertAsync(
                 "Fehler",
                 $"Das Spiel konnte nicht gelöscht werden.\n{ex.Message}",
@@ -95,9 +148,26 @@ public partial class GameLibraryViewModel : ObservableObject
         }
     }
 
-    private async Task<GamingGroup?> GetDefaultGroupAsync()
+    private async Task LoadGroupsAsync()
     {
-        var groups = await _databaseService.GetNotDeletedAsync<GamingGroup>();
-        return groups.FirstOrDefault();
+        Groups.Clear();
+
+        var currentPlayerId = _currentPlayerService.PlayerId;
+
+        if (string.IsNullOrWhiteSpace(currentPlayerId))
+        {
+            errorMessage = "Es ist kein aktiver Spieler geladen.";
+            return;
+        }
+
+        var groups = await _groupOverviewRepository.GetGroupsByPlayerIdAsync(currentPlayerId);
+
+        foreach (var group in groups)
+        {
+            Groups.Add(group);
+        }
+
+        SelectedGroup ??= Groups.FirstOrDefault();
     }
+
 }
