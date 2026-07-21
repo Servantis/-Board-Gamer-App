@@ -1,14 +1,19 @@
-﻿using BoardGamerApp.Services;
+using BoardGamerApp.Models;
+using BoardGamerApp.Services;
 
 namespace BoardGamerApp.Repositories;
 
 public class PlayerDeviceRepository : IPlayerDeviceRepository
 {
     private readonly DatabaseService _databaseService;
+    private readonly SyncOutboxService _syncOutboxService;
 
-    public PlayerDeviceRepository(DatabaseService databaseService)
+    public PlayerDeviceRepository(
+        DatabaseService databaseService,
+        SyncOutboxService syncOutboxService)
     {
         _databaseService = databaseService;
+        _syncOutboxService = syncOutboxService;
     }
 
     public async Task LinkInstallationToPlayerAsync(
@@ -54,6 +59,19 @@ public class PlayerDeviceRepository : IPlayerDeviceRepository
                 now,
                 installationId);
 
+            var existingDeviceId = await GetDeviceIdByInstallationIdAsync(
+                database,
+                installationId);
+
+            if (!string.IsNullOrWhiteSpace(existingDeviceId))
+            {
+                await _syncOutboxService.AddFromDatabaseAsync(
+                    database,
+                    "player_devices",
+                    existingDeviceId,
+                    BoardGamerConstants.SyncOperations.Update);
+            }
+
             return;
         }
 
@@ -73,9 +91,11 @@ public class PlayerDeviceRepository : IPlayerDeviceRepository
             VALUES (?, ?, ?, ?, ?, 1, ?, ?, ?, 1);
             """;
 
+        var deviceId = Guid.NewGuid().ToString();
+
         await database.ExecuteAsync(
             insertSql,
-            Guid.NewGuid().ToString(),
+            deviceId,
             playerId,
             installationId,
             deviceName,
@@ -83,6 +103,12 @@ public class PlayerDeviceRepository : IPlayerDeviceRepository
             now,
             now,
             now);
+
+        await _syncOutboxService.AddFromDatabaseAsync(
+            database,
+            "player_devices",
+            deviceId,
+            BoardGamerConstants.SyncOperations.Insert);
     }
 
     public async Task UpdateLastSeenAsync(string installationId)
@@ -100,6 +126,19 @@ public class PlayerDeviceRepository : IPlayerDeviceRepository
             """;
 
         await database.ExecuteAsync(sql, now, now, installationId);
+
+        var deviceId = await GetDeviceIdByInstallationIdAsync(
+            database,
+            installationId);
+
+        if (!string.IsNullOrWhiteSpace(deviceId))
+        {
+            await _syncOutboxService.AddFromDatabaseAsync(
+                database,
+                "player_devices",
+                deviceId,
+                BoardGamerConstants.SyncOperations.Update);
+        }
     }
 
     public async Task UnlinkInstallationAsync(string installationId)
@@ -119,6 +158,34 @@ public class PlayerDeviceRepository : IPlayerDeviceRepository
         """;
 
         await database.ExecuteAsync(sql, now, now, installationId);
+
+        var deviceId = await GetDeviceIdByInstallationIdAsync(
+            database,
+            installationId);
+
+        if (!string.IsNullOrWhiteSpace(deviceId))
+        {
+            await _syncOutboxService.AddFromDatabaseAsync(
+                database,
+                "player_devices",
+                deviceId,
+                BoardGamerConstants.SyncOperations.Delete);
+        }
     }
 
+    private static async Task<string?> GetDeviceIdByInstallationIdAsync(
+        SQLite.SQLiteAsyncConnection database,
+        string installationId)
+    {
+        const string sql = """
+        SELECT id
+        FROM player_devices
+        WHERE installation_id = ?
+        LIMIT 1;
+        """;
+
+        return await database.ExecuteScalarAsync<string>(
+            sql,
+            installationId);
+    }
 }

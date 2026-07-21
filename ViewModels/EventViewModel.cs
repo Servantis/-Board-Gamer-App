@@ -45,6 +45,8 @@ public partial class EventViewModel : ObservableObject
     private readonly DatabaseService _databaseService;
     private readonly CurrentPlayerService _currentPlayerService;
     private readonly IHostScheduleService _hostScheduleService;
+    private readonly GroupDelayMessageService _groupDelayMessageService;
+
 
     /// <summary>Alle geladenen Termine (vergangene und zukünftige), sortiert nach Datum.</summary>
     public ObservableCollection<GameNight> GameNights { get; } = new();
@@ -166,7 +168,8 @@ public partial class EventViewModel : ObservableObject
         IGameSuggestionRepository gameSuggestionRepository,
         DatabaseService databaseService,
         CurrentPlayerService currentPlayerService,
-        IHostScheduleService hostScheduleService)
+        IHostScheduleService hostScheduleService,
+        GroupDelayMessageService groupDelayMessageService)
     {
         _gameNightRepository = gameNightRepository;
         _boardGameRepository = boardGameRepository;
@@ -175,6 +178,7 @@ public partial class EventViewModel : ObservableObject
         _databaseService = databaseService;
         _currentPlayerService = currentPlayerService;
         _hostScheduleService = hostScheduleService;
+        _groupDelayMessageService = groupDelayMessageService;
     }
 
     /// <summary>
@@ -1004,5 +1008,68 @@ public partial class EventViewModel : ObservableObject
         }
     }
 
+    [RelayCommand]
+    private async Task SendDelayMessageAsync(GameNight? night)
+    {
+        if (night is null)
+        {
+            await Shell.Current.DisplayAlertAsync(
+                "Fehler",
+                "Es wurde kein Termin übergeben.",
+                "OK");
+
+            return;
+        }
+
+        var currentPlayerId = _currentPlayerService.PlayerId;
+        var currentPlayerName = _currentPlayerService.PlayerName;
+
+        if (string.IsNullOrWhiteSpace(currentPlayerId))
+        {
+            await Shell.Current.DisplayAlertAsync(
+                "Nicht angemeldet",
+                "Es ist aktuell kein Spieler angemeldet. Die Nachricht kann nicht vorbereitet werden.",
+                "OK");
+
+            return;
+        }
+
+        var selectedDelay = await Shell.Current.DisplayActionSheetAsync(
+            "Verspätung melden",
+            "Abbrechen",
+            null,
+            "5 Minuten",
+            "10 Minuten",
+            "15 Minuten",
+            "30 Minuten");
+
+        if (string.IsNullOrWhiteSpace(selectedDelay) ||
+            selectedDelay == "Abbrechen")
+        {
+            return;
+        }
+
+        var match = Regex.Match(selectedDelay, @"\d+");
+
+        if (!match.Success)
+            return;
+
+        var delayMinutes = int.Parse(match.Value);
+
+        try
+        {
+            await _groupDelayMessageService.SendDelayMessageToGroupAsync(
+            night.GroupId,
+            currentPlayerId,
+            delayMinutes);
+        }
+        catch (Exception ex)
+        {
+            await Shell.Current.DisplayAlertAsync(
+                "Nachricht konnte nicht vorbereitet werden",
+                ex.Message,
+                "OK");
+        }
+    }
 
 }

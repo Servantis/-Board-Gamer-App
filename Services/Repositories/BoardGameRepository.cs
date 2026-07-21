@@ -1,4 +1,4 @@
-﻿using System.Text.Json;
+using System.Text.Json;
 using BoardGamerApp.Models;
 using BoardGamerApp.Services;
 using SQLite;
@@ -8,10 +8,14 @@ namespace BoardGamerApp.Repositories;
 public class BoardGameRepository
 {
     private readonly DatabaseService _databaseService;
+    private readonly SyncOutboxService _syncOutboxService;
 
-    public BoardGameRepository(DatabaseService databaseService)
+    public BoardGameRepository(
+        DatabaseService databaseService,
+        SyncOutboxService syncOutboxService)
     {
         _databaseService = databaseService;
+        _syncOutboxService = syncOutboxService;
     }
 
     public async Task<List<BoardGame>> GetAllAsync()
@@ -70,8 +74,9 @@ public class BoardGameRepository
 
         await database.InsertAsync(game);
 
-        await AddToSyncOutboxAsync(
+        await _syncOutboxService.AddEntityAsync(
             database,
+            "games",
             game,
             BoardGamerConstants.SyncOperations.Insert
         );
@@ -88,8 +93,9 @@ public class BoardGameRepository
 
         await database.UpdateAsync(game);
 
-        await AddToSyncOutboxAsync(
+        await _syncOutboxService.AddEntityAsync(
             database,
+            "games",
             game,
             BoardGamerConstants.SyncOperations.Update
         );
@@ -107,8 +113,9 @@ public class BoardGameRepository
 
         await database.UpdateAsync(game);
 
-        await AddToSyncOutboxAsync(
+        await _syncOutboxService.AddEntityAsync(
             database,
+            "games",
             game,
             BoardGamerConstants.SyncOperations.Delete
         );
@@ -151,46 +158,4 @@ public class BoardGameRepository
             throw new InvalidOperationException("Die Spieldauer muss größer als 0 sein.");
     }
 
-
-    //Auslagern in DatabaseService oder SyncService
-    private static async Task AddToSyncOutboxAsync(
-        SQLiteAsyncConnection database,
-        BoardGame game,
-        string operation)
-    {
-        var outboxEntry = new SyncOutboxEntry
-        {
-            Id = Guid.NewGuid().ToString(),
-            EntityName = "games",
-            EntityId = game.Id,
-            Operation = operation,
-            PayloadJson = BuildPayloadJson(game),
-            CreatedAt = DateTimeHelper.UtcNowIsoString(),
-            RetryCount = 0,
-            LastError = null
-        };
-
-        await database.InsertAsync(outboxEntry);
-    }
-
-    private static string BuildPayloadJson(BoardGame game)
-    {
-        var payload = new Dictionary<string, object?>
-        {
-            ["id"] = game.Id,
-            ["group_id"] = game.GroupId,
-            ["title"] = game.Title,
-            ["min_players"] = game.MinPlayers,
-            ["max_players"] = game.MaxPlayers,
-            ["duration_minutes"] = game.DurationMinutes,
-            ["game_genre"] = game.GameGenre,
-            ["owner_player_id"] = game.OwnerPlayerId,
-            ["created_at"] = game.CreatedAt,
-            ["updated_at"] = game.UpdatedAt,
-            ["deleted_at"] = game.DeletedAt,
-            ["version"] = game.Version
-        };
-
-        return JsonSerializer.Serialize(payload);
-    }
 }

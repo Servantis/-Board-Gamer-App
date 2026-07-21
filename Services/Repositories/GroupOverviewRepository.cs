@@ -1,15 +1,20 @@
-﻿using BoardGamerApp.Models;
+using BoardGamerApp.Models;
+using BoardGamerApp.Services;
 using SQLite;
 
-namespace BoardGamerApp.Services.Repositories;
+namespace BoardGamerApp.Repositories;
 
 public class GroupOverviewRepository
 {
     private readonly DatabaseService _databaseService;
+    private readonly SyncOutboxService _syncOutboxService;
 
-    public GroupOverviewRepository(DatabaseService databaseService)
+    public GroupOverviewRepository(
+        DatabaseService databaseService,
+        SyncOutboxService syncOutboxService)
     {
         _databaseService = databaseService;
+        _syncOutboxService = syncOutboxService;
     }
 
     // Liefert alle aktiven Gruppen.
@@ -75,6 +80,12 @@ public class GroupOverviewRepository
         group.Version = 1;
 
         await database.InsertAsync(group);
+
+        await _syncOutboxService.AddEntityAsync(
+            database,
+            "gaming_groups",
+            group,
+            BoardGamerConstants.SyncOperations.Insert);
     }
 
 
@@ -87,6 +98,12 @@ public class GroupOverviewRepository
         group.Version++;
 
         await database.UpdateAsync(group);
+
+        await _syncOutboxService.AddEntityAsync(
+            database,
+            "gaming_groups",
+            group,
+            BoardGamerConstants.SyncOperations.Update);
     }
 
     // Soft Delete einer Gruppe.
@@ -104,6 +121,12 @@ public class GroupOverviewRepository
         group.Version++;
 
         await database.UpdateAsync(group);
+
+        await _syncOutboxService.AddEntityAsync(
+            database,
+            "gaming_groups",
+            group,
+            BoardGamerConstants.SyncOperations.Delete);
     }
 
     // Gruppe verlassen, wenn Mitglied, aber kein Gruppenersteller
@@ -114,17 +137,43 @@ public class GroupOverviewRepository
         const string sql = """
         UPDATE group_members
         SET deleted_at = ?,
+            updated_at = ?,
             version = version + 1
         WHERE group_id = ?
           AND player_id = ?
           AND deleted_at IS NULL;
         """;
 
+        var now = DateTimeHelper.UtcNowIsoString();
+
         await database.ExecuteAsync(
             sql,
-            DateTime.UtcNow,
+            now,
+            now,
             groupId,
             playerId);
+
+        const string memberIdSql = """
+        SELECT id
+        FROM group_members
+        WHERE group_id = ?
+          AND player_id = ?
+        LIMIT 1;
+        """;
+
+        var memberId = await database.ExecuteScalarAsync<string>(
+            memberIdSql,
+            groupId,
+            playerId);
+
+        if (!string.IsNullOrWhiteSpace(memberId))
+        {
+            await _syncOutboxService.AddFromDatabaseAsync(
+                database,
+                "group_members",
+                memberId,
+                BoardGamerConstants.SyncOperations.Delete);
+        }
     }
 
     // Prüft, ob bereits eine Gruppe mit gleichem Namen existiert.

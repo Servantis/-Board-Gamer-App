@@ -1,4 +1,4 @@
-﻿using BoardGamerApp.Models;
+using BoardGamerApp.Models;
 using BoardGamerApp.Services;
 using System.Diagnostics;
 
@@ -7,10 +7,14 @@ namespace BoardGamerApp.Repositories;
 public class GroupMemberRepository : IGroupMemberRepository
 {
     private readonly DatabaseService _databaseService;
+    private readonly SyncOutboxService _syncOutboxService;
 
-    public GroupMemberRepository(DatabaseService databaseService)
+    public GroupMemberRepository(
+        DatabaseService databaseService,
+        SyncOutboxService syncOutboxService)
     {
         _databaseService = databaseService;
+        _syncOutboxService = syncOutboxService;
     }
 
     public async Task<GamingGroup?> GetDefaultGroupAsync()
@@ -221,6 +225,12 @@ public class GroupMemberRepository : IGroupMemberRepository
                 now,
                 existingMember.Id);
 
+            await _syncOutboxService.AddFromDatabaseAsync(
+                database,
+                "group_members",
+                existingMember.Id,
+                BoardGamerConstants.SyncOperations.Update);
+
             return;
         }
 
@@ -240,15 +250,23 @@ public class GroupMemberRepository : IGroupMemberRepository
         VALUES (?, ?, ?, ?, 'active', ?, ?, ?, 1);
         """;
 
+        var memberId = Guid.NewGuid().ToString();
+
         await database.ExecuteAsync(
             insertSql,
-            Guid.NewGuid().ToString(),
+            memberId,
             groupId,
             playerId,
             role,
             rotationOrder,
             now,
             now);
+
+        await _syncOutboxService.AddFromDatabaseAsync(
+            database,
+            "group_members",
+            memberId,
+            BoardGamerConstants.SyncOperations.Insert);
     }
 
     public async Task UpdateMemberAsync(GroupMember member)
@@ -265,6 +283,12 @@ public class GroupMemberRepository : IGroupMemberRepository
         member.Version += 1;
 
         await database.UpdateAsync(member);
+
+        await _syncOutboxService.AddFromDatabaseAsync(
+            database,
+            "group_members",
+            member.Id,
+            BoardGamerConstants.SyncOperations.Update);
 
         var verify = await database.QueryAsync<GroupMember>(
             @"SELECT *
@@ -308,6 +332,28 @@ public class GroupMemberRepository : IGroupMemberRepository
             now,
             groupId,
             playerId);
+
+        const string memberIdSql = """
+        SELECT id
+        FROM group_members
+        WHERE group_id = ?
+          AND player_id = ?
+        LIMIT 1;
+        """;
+
+        var memberId = await database.ExecuteScalarAsync<string>(
+            memberIdSql,
+            groupId,
+            playerId);
+
+        if (!string.IsNullOrWhiteSpace(memberId))
+        {
+            await _syncOutboxService.AddFromDatabaseAsync(
+                database,
+                "group_members",
+                memberId,
+                BoardGamerConstants.SyncOperations.Delete);
+        }
     }
 
     public async Task<List<GroupMember>> GetGroupMembersByGroupIdAsync(string groupId)

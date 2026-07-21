@@ -1,4 +1,4 @@
-﻿using BoardGamerApp.Models;
+using BoardGamerApp.Models;
 using BoardGamerApp.Services;
 
 namespace BoardGamerApp.Repositories;
@@ -6,10 +6,14 @@ namespace BoardGamerApp.Repositories;
 public class GameSuggestionRepository : IGameSuggestionRepository
 {
     private readonly DatabaseService _databaseService;
+    private readonly SyncOutboxService _syncOutboxService;
 
-    public GameSuggestionRepository(DatabaseService databaseService)
+    public GameSuggestionRepository(
+        DatabaseService databaseService,
+        SyncOutboxService syncOutboxService)
     {
         _databaseService = databaseService;
+        _syncOutboxService = syncOutboxService;
     }
 
     public async Task<List<GameSuggestionListItem>> GetSuggestionsForGameNightAsync(
@@ -121,6 +125,12 @@ public class GameSuggestionRepository : IGameSuggestionRepository
                 now,
                 existingId);
 
+            await _syncOutboxService.AddFromDatabaseAsync(
+                database,
+                "game_suggestions",
+                existingId,
+                BoardGamerConstants.SyncOperations.Update);
+
             return;
         }
 
@@ -138,15 +148,23 @@ public class GameSuggestionRepository : IGameSuggestionRepository
             VALUES (?, ?, ?, ?, ?, ?, ?, 1);
             """;
 
+        var suggestionId = Guid.NewGuid().ToString();
+
         await database.ExecuteAsync(
             insertSql,
-            Guid.NewGuid().ToString(),
+            suggestionId,
             gameNightId,
             gameId,
             suggestedByPlayerId,
             string.IsNullOrWhiteSpace(comment) ? null : comment.Trim(),
             now,
             now);
+
+        await _syncOutboxService.AddFromDatabaseAsync(
+            database,
+            "game_suggestions",
+            suggestionId,
+            BoardGamerConstants.SyncOperations.Insert);
     }
 
     public async Task ToggleVoteAsync(
@@ -190,13 +208,21 @@ public class GameSuggestionRepository : IGameSuggestionRepository
             VALUES (?, ?, ?, 1, ?, ?, 1);
             """;
 
+        var voteId = Guid.NewGuid().ToString();
+
         await database.ExecuteAsync(
             insertSql,
-            Guid.NewGuid().ToString(),
+            voteId,
             suggestionId,
             playerId,
             now,
             now);
+
+        await _syncOutboxService.AddFromDatabaseAsync(
+            database,
+            "game_votes",
+            voteId,
+            BoardGamerConstants.SyncOperations.Insert);
 
         return;
     }
@@ -218,6 +244,12 @@ public class GameSuggestionRepository : IGameSuggestionRepository
             now,
             existingVote.Id);
 
+        await _syncOutboxService.AddFromDatabaseAsync(
+            database,
+            "game_votes",
+            existingVote.Id,
+            BoardGamerConstants.SyncOperations.Update);
+
         return;
     }
 
@@ -235,6 +267,12 @@ public class GameSuggestionRepository : IGameSuggestionRepository
         now,
         now,
         existingVote.Id);
+
+    await _syncOutboxService.AddFromDatabaseAsync(
+        database,
+        "game_votes",
+        existingVote.Id,
+        BoardGamerConstants.SyncOperations.Delete);
 }
 
     public async Task SoftDeleteSuggestionAsync(string suggestionId)
@@ -257,6 +295,12 @@ public class GameSuggestionRepository : IGameSuggestionRepository
             now,
             now,
             suggestionId);
+
+        await _syncOutboxService.AddFromDatabaseAsync(
+            database,
+            "game_suggestions",
+            suggestionId,
+            BoardGamerConstants.SyncOperations.Delete);
     }
 
     private class GameVoteExistingRow
