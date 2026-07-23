@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Net.Mail;
 using System.Windows.Input;
 using BoardGamerApp.Repositories;
 using BoardGamerApp.Services;
@@ -7,7 +8,7 @@ using CommunityToolkit.Mvvm.Input;
 
 namespace BoardGamerApp.ViewModels;
 
-public class PlayerProfileViewModel : ObservableObject
+public class PlayerProfileViewModel : ObservableObject, IQueryAttributable
 {
     private readonly CurrentPlayerService _currentPlayerService;
     private readonly IPlayerRepository _playerRepository;
@@ -17,7 +18,13 @@ public class PlayerProfileViewModel : ObservableObject
     private string _playerId = string.Empty;
     private string _playerName = string.Empty;
     private string? _email;
+    private string _emailError = string.Empty;
+    private bool _isLoadingProfile;
+    private bool _hasEditedEmail;
+    private bool _hasTriedSave;
     private bool _isBusy;
+    private bool _isCreateMode;
+    private bool _returnToLoading;
 
     public string PlayerId
     {
@@ -40,8 +47,35 @@ public class PlayerProfileViewModel : ObservableObject
     public string? Email
     {
         get => _email;
-        set => SetProperty(ref _email, value);
+        set
+        {
+            if (SetProperty(ref _email, value))
+            {
+                if (_isLoadingProfile)
+                {
+                    EmailError = string.Empty;
+                    return;
+                }
+
+                _hasEditedEmail = true;
+                ValidateEmailInput(value, showError: true);
+            }
+        }
     }
+
+    public string EmailError
+    {
+        get => _emailError;
+        private set
+        {
+            if (SetProperty(ref _emailError, value))
+            {
+                OnPropertyChanged(nameof(HasEmailError));
+            }
+        }
+    }
+
+    public bool HasEmailError => !string.IsNullOrWhiteSpace(EmailError);
 
     public bool IsBusy
     {
@@ -49,7 +83,43 @@ public class PlayerProfileViewModel : ObservableObject
         set => SetProperty(ref _isBusy, value);
     }
 
-    public bool IsDebugVisible => Debugger.IsAttached;
+    private static bool IsDebugMode
+    {
+        get
+        {
+#if DEBUG
+            return true;
+#else
+            return Debugger.IsAttached;
+#endif
+        }
+    }
+
+    public bool IsDebugVisible => IsDebugMode;
+
+    public bool IsCreateMode
+    {
+        get => _isCreateMode;
+        private set
+        {
+            if (SetProperty(ref _isCreateMode, value))
+            {
+                OnPropertyChanged(nameof(PageTitle));
+                OnPropertyChanged(nameof(SaveButtonText));
+                OnPropertyChanged(nameof(CanResetAssignment));
+            }
+        }
+    }
+
+    public bool CanResetAssignment => IsDebugVisible && !IsCreateMode;
+
+    public string PageTitle => IsCreateMode
+        ? "Neuen Spieler anlegen"
+        : "Spielerprofil";
+
+    public string SaveButtonText => IsCreateMode
+        ? "Spieler anlegen"
+        : "Speichern";
 
     public string Initials
     {
@@ -95,20 +165,85 @@ public class PlayerProfileViewModel : ObservableObject
         LoadFromCurrentPlayer();
     }
 
+    public void ApplyQueryAttributes(IDictionary<string, object> query)
+    {
+        var mode = query.TryGetValue("mode", out var modeValue)
+            ? modeValue?.ToString()
+            : null;
+
+        _returnToLoading = query.TryGetValue("returnToLoading", out var returnToLoadingValue)
+            && bool.TryParse(returnToLoadingValue?.ToString(), out var returnToLoading)
+            && returnToLoading;
+
+        if (string.Equals(mode, "create", StringComparison.OrdinalIgnoreCase))
+        {
+            EnableCreateMode();
+        }
+    }
+
+    private void EnableCreateMode()
+    {
+        if (!IsDebugMode)
+        {
+            return;
+        }
+
+        _isLoadingProfile = true;
+
+        try
+        {
+            IsCreateMode = true;
+            PlayerId = string.Empty;
+            PlayerName = string.Empty;
+            Email = string.Empty;
+            EmailError = string.Empty;
+            _hasEditedEmail = false;
+            _hasTriedSave = false;
+        }
+        finally
+        {
+            _isLoadingProfile = false;
+        }
+    }
+
     private void LoadFromCurrentPlayer()
     {
-        PlayerId = _currentPlayerService.PlayerId ?? string.Empty;
-        PlayerName = _currentPlayerService.PlayerName ?? string.Empty;
-        Email = _currentPlayerService.Email;
+        _isLoadingProfile = true;
+
+        try
+        {
+            PlayerId = _currentPlayerService.PlayerId ?? string.Empty;
+            PlayerName = _currentPlayerService.PlayerName ?? string.Empty;
+            Email = _currentPlayerService.Email?.Trim();
+
+            _hasEditedEmail = false;
+            _hasTriedSave = false;
+            EmailError = string.Empty;
+        }
+        finally
+        {
+            _isLoadingProfile = false;
+        }
     }
 
     private async Task SaveAsync()
     {
-        if (string.IsNullOrWhiteSpace(PlayerId))
+        if (IsCreateMode)
         {
-            await Shell.Current.DisplayAlert(
-                "Fehler",
-                "Es ist kein aktiver Spieler geladen.",
+            await CreateAndAssignPlayerAsync();
+            return;
+        }
+
+        await UpdateExistingPlayerAsync();
+    }
+
+    private async Task CreateAndAssignPlayerAsync()
+    {
+        if (!IsDebugMode)
+        {
+            await Shell.Current.DisplayAlertAsync(
+                "Nicht erlaubt",
+                "Neue Spieler können aktuell nur im Debug-Modus angelegt werden.",
                 "OK");
 
             return;
@@ -116,9 +251,23 @@ public class PlayerProfileViewModel : ObservableObject
 
         if (string.IsNullOrWhiteSpace(PlayerName))
         {
-            await Shell.Current.DisplayAlert(
+            await Shell.Current.DisplayAlertAsync(
                 "Fehler",
                 "Der Name darf nicht leer sein.",
+                "OK");
+
+            return;
+        }
+
+        _hasTriedSave = true;
+
+        if (!TryNormalizeEmail(Email, out var cleanEmail, out var validationError))
+        {
+            EmailError = validationError ?? "Bitte gib eine gültige E-Mail-Adresse ein.";
+
+            await Shell.Current.DisplayAlertAsync(
+                "Ungültige E-Mail-Adresse",
+                EmailError,
                 "OK");
 
             return;
@@ -129,9 +278,96 @@ public class PlayerProfileViewModel : ObservableObject
             IsBusy = true;
 
             var cleanName = PlayerName.Trim();
-            var cleanEmail = string.IsNullOrWhiteSpace(Email)
-                ? null
-                : Email.Trim();
+
+            var player = await _playerRepository.CreatePlayerAsync(
+     cleanName,
+     cleanEmail);
+
+            var installationId = await _installationService.GetOrCreateInstallationIdAsync();
+
+            var deviceName = Microsoft.Maui.Devices.DeviceInfo.Current.Name;
+            var platform = Microsoft.Maui.Devices.DeviceInfo.Current.Platform.ToString();
+
+            await _playerDeviceRepository.LinkInstallationToPlayerAsync(
+                player.Id,
+                installationId,
+                deviceName,
+                platform);
+
+            _currentPlayerService.SetPlayer(
+                player.Id,
+                player.Name,
+                player.Email);
+
+            PlayerId = player.Id;
+            PlayerName = player.Name;
+            Email = player.Email;
+            IsCreateMode = false;
+            _hasEditedEmail = false;
+            _hasTriedSave = false;
+            EmailError = string.Empty;
+
+            await Shell.Current.DisplayAlertAsync(
+                "Spieler angelegt",
+                "Der Spieler wurde angelegt und diesem Gerät zugeordnet.",
+                "OK");
+
+            await Shell.Current.GoToAsync("//home");
+        }
+        catch (Exception ex)
+        {
+            await Shell.Current.DisplayAlertAsync(
+                "Fehler",
+                $"Spieler konnte nicht angelegt werden: {ex.Message}",
+                "OK");
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+    private async Task UpdateExistingPlayerAsync()
+    {
+        if (string.IsNullOrWhiteSpace(PlayerId))
+        {
+            await Shell.Current.DisplayAlertAsync(
+                "Fehler",
+                "Es ist kein aktiver Spieler geladen.",
+                "OK");
+
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(PlayerName))
+        {
+            await Shell.Current.DisplayAlertAsync(
+                "Fehler",
+                "Der Name darf nicht leer sein.",
+                "OK");
+
+            return;
+        }
+
+        _hasTriedSave = true;
+
+        if (!TryNormalizeEmail(Email, out var cleanEmail, out var validationError))
+        {
+            EmailError = validationError ?? "Bitte gib eine gültige E-Mail-Adresse ein.";
+
+            await Shell.Current.DisplayAlertAsync(
+                "Ungültige E-Mail-Adresse",
+                EmailError,
+                "OK");
+
+            return;
+        }
+
+        try
+        {
+            IsBusy = true;
+
+            var cleanName = PlayerName.Trim();
 
             await _playerRepository.UpdatePlayerProfileAsync(
                 PlayerId,
@@ -142,6 +378,11 @@ public class PlayerProfileViewModel : ObservableObject
                 PlayerId,
                 cleanName,
                 cleanEmail);
+
+            Email = cleanEmail;
+            _hasEditedEmail = false;
+            _hasTriedSave = false;
+            EmailError = string.Empty;
 
             await Shell.Current.DisplayAlertAsync(
                 "Gespeichert",
@@ -161,14 +402,129 @@ public class PlayerProfileViewModel : ObservableObject
         }
     }
 
+    private void ValidateEmailInput(string? value, bool showError)
+    {
+        if (TryNormalizeEmail(value, out _, out var validationError))
+        {
+            EmailError = string.Empty;
+            return;
+        }
+
+        if (showError || _hasEditedEmail || _hasTriedSave)
+        {
+            EmailError = validationError ?? "Bitte gib eine gültige E-Mail-Adresse ein.";
+            return;
+        }
+
+        EmailError = string.Empty;
+    }
+
+    private static bool TryNormalizeEmail(
+        string? value,
+        out string? normalizedEmail,
+        out string? validationError)
+    {
+        normalizedEmail = null;
+        validationError = null;
+
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            // E-Mail ist optional.
+            return true;
+        }
+
+        var email = value.Trim();
+
+        if (email.Contains(',') || email.Contains(';'))
+        {
+            validationError = "Bitte gib nur eine einzelne E-Mail-Adresse ein.";
+            return false;
+        }
+
+        if (email.Contains('<') || email.Contains('>'))
+        {
+            validationError = "Bitte gib nur die reine E-Mail-Adresse ein, zum Beispiel name@example.de.";
+            return false;
+        }
+
+        if (email.Any(char.IsWhiteSpace))
+        {
+            validationError = "Die E-Mail-Adresse darf keine Leerzeichen enthalten.";
+            return false;
+        }
+
+        MailAddress mailAddress;
+
+        try
+        {
+            mailAddress = new MailAddress(email);
+        }
+        catch
+        {
+            validationError = "Die E-Mail-Adresse hat kein gültiges Format.";
+            return false;
+        }
+
+        if (!string.Equals(mailAddress.Address, email, StringComparison.OrdinalIgnoreCase))
+        {
+            validationError = "Bitte gib nur die reine E-Mail-Adresse ein, zum Beispiel name@example.de.";
+            return false;
+        }
+
+        var atIndex = email.LastIndexOf('@');
+
+        if (atIndex <= 0 || atIndex == email.Length - 1)
+        {
+            validationError = "Die E-Mail-Adresse muss ein @-Zeichen und eine Domain enthalten.";
+            return false;
+        }
+
+        var domain = email[(atIndex + 1)..];
+
+        if (!domain.Contains('.'))
+        {
+            validationError = "Die Domain der E-Mail-Adresse muss einen Punkt enthalten, zum Beispiel example.de.";
+            return false;
+        }
+
+        if (domain.StartsWith('.') || domain.EndsWith('.') || domain.Contains(".."))
+        {
+            validationError = "Die Domain der E-Mail-Adresse ist ungültig.";
+            return false;
+        }
+
+        var domainParts = domain.Split('.');
+
+        if (domainParts.Any(part => string.IsNullOrWhiteSpace(part)))
+        {
+            validationError = "Die Domain der E-Mail-Adresse ist ungültig.";
+            return false;
+        }
+
+        normalizedEmail = mailAddress.Address.Trim().ToLowerInvariant();
+        return true;
+    }
+
     private async Task CloseAsync()
     {
-        await Shell.Current.Navigation.PopModalAsync();
+        if (IsCreateMode && _returnToLoading)
+        {
+            await Shell.Current.GoToAsync("//loading");
+            return;
+        }
+
+        if (Shell.Current.Navigation.ModalStack.Count > 0)
+        {
+            await Shell.Current.Navigation.PopModalAsync();
+            return;
+        }
+
+        await Shell.Current.GoToAsync("..");
     }
 
     private async Task ResetAssignmentAsync()
     {
-        if (!Debugger.IsAttached)
+        if (!IsDebugMode || IsCreateMode)
         {
             return;
         }
@@ -195,7 +551,10 @@ public class PlayerProfileViewModel : ObservableObject
             _installationService.ResetInstallationId();
             _currentPlayerService.Clear();
 
-            await Shell.Current.Navigation.PopModalAsync();
+            if (Shell.Current.Navigation.ModalStack.Count > 0)
+            {
+                await Shell.Current.Navigation.PopModalAsync();
+            }
 
             await Shell.Current.GoToAsync("//loading");
         }

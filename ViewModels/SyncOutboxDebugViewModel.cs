@@ -10,14 +10,37 @@ namespace BoardGamerApp.ViewModels;
 public partial class SyncOutboxDebugViewModel : ObservableObject
 {
     private readonly DatabaseService _databaseService;
-
+    private readonly AppSyncService _appSyncService;
+    private readonly ApiCredentialService _apiCredentialService;
     public ObservableCollection<SyncOutboxEntry> Entries { get; } = new();
+
 
     [ObservableProperty]
     private bool isBusy;
 
     [ObservableProperty]
     private int entryCount;
+
+
+    [ObservableProperty]
+    private string lastSyncMessage = string.Empty;
+
+    [ObservableProperty]
+    private string apiKeyStatusText = "API-Key: nicht geprüft";
+
+    [ObservableProperty]
+    private bool hasStoredApiKey;
+
+
+    public SyncOutboxDebugViewModel(
+    DatabaseService databaseService,
+    AppSyncService appSyncService,
+    ApiCredentialService apiCredentialService)
+    {
+        _databaseService = databaseService;
+        _appSyncService = appSyncService;
+        _apiCredentialService = apiCredentialService;
+    }
 
     public SyncOutboxDebugViewModel(DatabaseService databaseService)
     {
@@ -106,4 +129,178 @@ public partial class SyncOutboxDebugViewModel : ObservableObject
             message,
             "OK");
     }
+
+    [RelayCommand]
+    private async Task PushPendingOutboxAsync()
+    {
+        if (IsBusy)
+            return;
+
+        try
+        {
+            IsBusy = true;
+
+            var result = await _appSyncService.PushPendingOutboxAsync();
+
+            lastSyncMessage = result.Message;
+        }
+        catch (Exception ex)
+        {
+            lastSyncMessage = $"Sync fehlgeschlagen: {ex.Message}";
+
+            await Shell.Current.DisplayAlertAsync(
+                "Sync fehlgeschlagen",
+                ex.Message,
+                "OK");
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+
+        await LoadAsync();
+    }
+
+    [RelayCommand]
+    private async Task PushInitialSnapshotAsync()
+    {
+        if (IsBusy)
+            return;
+
+        try
+        {
+            IsBusy = true;
+
+            var result = await _appSyncService.PushInitialSnapshotAsync();
+
+            LastSyncMessage = result.Message;
+
+            await Shell.Current.DisplayAlertAsync(
+                "Initialdaten-Sync",
+                result.Message,
+                "OK");
+        }
+        catch (Exception ex)
+        {
+            LastSyncMessage = $"Initialdaten-Sync fehlgeschlagen: {ex.Message}";
+
+            await Shell.Current.DisplayAlertAsync(
+                "Initialdaten-Sync fehlgeschlagen",
+                ex.Message,
+                "OK");
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+
+        await LoadAsync();
+    }
+
+    [RelayCommand]
+    private async Task PullServerChangesAsync()
+    {
+        if (IsBusy)
+            return;
+
+        try
+        {
+            IsBusy = true;
+
+            var result = await _appSyncService.PullServerChangesAsync();
+
+            LastSyncMessage = result.Message;
+
+            await Shell.Current.DisplayAlertAsync(
+                "Serverdaten ziehen",
+                result.Message,
+                "OK");
+        }
+        catch (Exception ex)
+        {
+            LastSyncMessage = $"Pull fehlgeschlagen: {ex.Message}";
+
+            await Shell.Current.DisplayAlertAsync(
+                "Pull fehlgeschlagen",
+                ex.Message,
+                "OK");
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+
+        await LoadAsync();
+    }
+
+    private async Task RefreshApiKeyStatusAsync()
+    {
+        var apiKey = await _apiCredentialService.GetApiKeyAsync();
+
+        hasStoredApiKey = !string.IsNullOrWhiteSpace(apiKey);
+
+        apiKeyStatusText = hasStoredApiKey
+            ? $"API-Key gespeichert. Länge: {apiKey!.Length}"
+            : "Kein API-Key gespeichert.";
+    }
+
+    [RelayCommand]
+    private async Task SetApiKeyAsync()
+    {
+        var apiKey = await Shell.Current.DisplayPromptAsync(
+            "API-Key einrichten",
+            "Bitte gib den API-Key für die BoardGamer-API ein.",
+            "Speichern",
+            "Abbrechen",
+            placeholder: "X-Api-Key",
+            maxLength: 300,
+            keyboard: Keyboard.Text);
+
+        if (apiKey is null)
+            return;
+
+        apiKey = apiKey.Trim();
+
+        if (string.IsNullOrWhiteSpace(apiKey))
+        {
+            await Shell.Current.DisplayAlertAsync(
+                "API-Key fehlt",
+                "Der API-Key darf nicht leer sein.",
+                "OK");
+
+            return;
+        }
+
+        await _apiCredentialService.SaveApiKeyAsync(apiKey);
+
+        await RefreshApiKeyStatusAsync();
+
+        await Shell.Current.DisplayAlertAsync(
+            "API-Key gespeichert",
+            "Der API-Key wurde sicher auf diesem Gerät gespeichert.",
+            "OK");
+    }
+
+    [RelayCommand]
+    private async Task ClearApiKeyAsync()
+    {
+        var confirmed = await Shell.Current.DisplayAlertAsync(
+            "API-Key löschen",
+            "Möchtest du den gespeicherten API-Key von diesem Gerät entfernen?",
+            "Löschen",
+            "Abbrechen");
+
+        if (!confirmed)
+            return;
+
+        _apiCredentialService.ClearApiKey();
+
+        await RefreshApiKeyStatusAsync();
+
+        await Shell.Current.DisplayAlertAsync(
+            "API-Key gelöscht",
+            "Der API-Key wurde von diesem Gerät entfernt.",
+            "OK");
+    }
+
 }

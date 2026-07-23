@@ -26,10 +26,14 @@ namespace BoardGamerApp.Repositories;
 public class GameNightRepository
 {
     private readonly DatabaseService _database;
+    private readonly SyncOutboxService _syncOutboxService;
 
-    public GameNightRepository(DatabaseService database)
+    public GameNightRepository(
+        DatabaseService database,
+        SyncOutboxService syncOutboxService)
     {
         _database = database;
+        _syncOutboxService = syncOutboxService;
     }
 
     /// <summary>
@@ -106,7 +110,11 @@ public class GameNightRepository
         // Warteschlange für Änderungen, die später mit einem Server abgeglichen
         // werden sollen. Für die reine Offline-Nutzung der App ist das nicht
         // zwingend nötig, gehört aber zum Sync-Konzept dieses Projekts dazu.
-        await AddToSyncOutboxAsync(db, night, BoardGamerConstants.SyncOperations.Insert);
+        await _syncOutboxService.AddEntityAsync(
+            db,
+            "game_nights",
+            night,
+            BoardGamerConstants.SyncOperations.Insert);
     }
 
     /// <summary>Aktualisiert einen bestehenden Termin (erhöht automatisch die Version).</summary>
@@ -121,7 +129,11 @@ public class GameNightRepository
 
         await db.UpdateAsync(night);
 
-        await AddToSyncOutboxAsync(db, night, BoardGamerConstants.SyncOperations.Update);
+        await _syncOutboxService.AddEntityAsync(
+            db,
+            "game_nights",
+            night,
+            BoardGamerConstants.SyncOperations.Update);
     }
 
     /// <summary>
@@ -149,7 +161,11 @@ public class GameNightRepository
 
         await db.UpdateAsync(night);
 
-        await AddToSyncOutboxAsync(db, night, BoardGamerConstants.SyncOperations.Delete);
+        await _syncOutboxService.AddEntityAsync(
+            db,
+            "game_nights",
+            night,
+            BoardGamerConstants.SyncOperations.Delete);
     }
 
     /// <summary>
@@ -236,53 +252,15 @@ public class GameNightRepository
             $"Night={savedNight?.Id} | " +
             $"HostPlayerId={savedNight?.HostPlayerId}");
 */
-    }
 
-    /// <summary>
-    /// Schreibt einen Eintrag in die sync_outbox-Tabelle. Das ist quasi ein
-    /// "Änderungsprotokoll": jede Insert/Update/Delete-Operation wird hier als
-    /// JSON zwischengespeichert, damit ein (aktuell noch nicht gebauter) Sync-Dienst
-    /// diese Änderungen später an einen Server schicken könnte.
-    /// </summary>
-    private static async Task AddToSyncOutboxAsync(
-        SQLiteAsyncConnection database,
-        GameNight night,
-        string operation)
-    {
-        var outboxEntry = new SyncOutboxEntry
+        if (savedNight is not null)
         {
-            Id = Guid.NewGuid().ToString(),
-            EntityName = "game_nights",
-            EntityId = night.Id,
-            Operation = operation,
-            PayloadJson = BuildPayloadJson(night),
-            CreatedAt = DateTimeHelper.UtcNowIsoString(),
-            RetryCount = 0,
-            LastError = null
-        };
-
-        await database.InsertAsync(outboxEntry);
-    }
-
-    /// <summary>Baut den JSON-Snapshot des Termins, der in der Sync Outbox gespeichert wird.</summary>
-    private static string BuildPayloadJson(GameNight night)
-    {
-        var payload = new Dictionary<string, object?>
-        {
-            ["id"] = night.Id,
-            ["group_id"] = night.GroupId,
-            ["date_time"] = night.ScheduledAt,
-            ["location_id"] = night.LocationId,
-            ["host_player_id"] = night.HostPlayerId,
-            ["status"] = night.Status,
-            ["notes"] = night.Notes,
-            ["created_at"] = night.CreatedAt,
-            ["updated_at"] = night.UpdatedAt,
-            ["deleted_at"] = night.DeletedAt,
-            ["version"] = night.Version
-        };
-
-        return JsonSerializer.Serialize(payload);
+            await _syncOutboxService.AddEntityAsync(
+                db,
+                "game_nights",
+                savedNight,
+                BoardGamerConstants.SyncOperations.Update);
+        }
     }
 
     // Liefert nur Mitglieder, die im aktuellen Zyklus bereits Gasteber waren.

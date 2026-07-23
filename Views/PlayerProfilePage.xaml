@@ -87,7 +87,10 @@
                            Keyboard="Email"
                            BackgroundColor="White"
                            TextColor="#2B2B2B" />
-
+                    <Label Text="{Binding EmailError}"
+                            TextColor="Red"
+                            FontSize="12"
+                            IsVisible="{Binding HasEmailError}" />
                 </VerticalStackLayout>
 
                 <!-- Spieler-ID klein anzeigen -->

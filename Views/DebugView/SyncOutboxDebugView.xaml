@@ -13,15 +13,59 @@
           Padding="20"
           RowSpacing="16">
 
-        <VerticalStackLayout Spacing="4">
+        <VerticalStackLayout Spacing="10">
             <Label Text="Sync Outbox"
-                   FontSize="26"
-                   FontAttributes="Bold"
-                   TextColor="#2F2A25" />
+           FontSize="26"
+           FontAttributes="Bold"
+           TextColor="#2F2A25" />
 
             <Label Text="{Binding EntryCount, StringFormat='Offene Einträge: {0}'}"
-                   FontSize="14"
-                   TextColor="#6B6258" />
+           FontSize="14"
+           TextColor="#6B6258" />
+
+            <Label Text="{Binding ApiKeyStatusText}"
+            FontSize="13"
+            TextColor="#6B6258" />
+
+            <Button Text="API-Key einrichten"
+            Command="{Binding SetApiKeyCommand}"
+            BackgroundColor="#2D7A4E"
+            TextColor="White"
+            CornerRadius="14"
+            HeightRequest="46" />
+
+            <Button Text="API-Key löschen"
+            Command="{Binding ClearApiKeyCommand}"
+            IsVisible="{Binding HasStoredApiKey}"
+            BackgroundColor="#B3261E"
+            TextColor="White"
+            CornerRadius="14"
+            HeightRequest="46" />
+
+            <Button Text="Initialdaten pushen"
+            Command="{Binding PushInitialSnapshotCommand}"
+            BackgroundColor="#7A4E2D"
+            TextColor="White"
+            CornerRadius="14"
+            HeightRequest="46" />
+
+            <Button Text="Outbox pushen"
+            Command="{Binding PushPendingOutboxCommand}"
+            BackgroundColor="#5B2BEA"
+            TextColor="White"
+            CornerRadius="14"
+            HeightRequest="46" />
+
+            <Button Text="Serverdaten ziehen"
+            Command="{Binding PullServerChangesCommand}"
+                BackgroundColor="#2D7A4E"
+                TextColor="White"
+                CornerRadius="14"
+                HeightRequest="46" />
+
+            <Label Text="{Binding LastSyncMessage}"
+           FontSize="13"
+           TextColor="#6B6258" />
         </VerticalStackLayout>
 
         <RefreshView Grid.Row="1"

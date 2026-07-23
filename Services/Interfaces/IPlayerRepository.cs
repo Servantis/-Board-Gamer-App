@@ -15,6 +15,8 @@ public interface IPlayerRepository
         string name,
         string? email);
 
+    Task<Player> CreatePlayerAsync(string name, string? email);
+
     Task<List<Player>> SearchAvailablePlayersAsync(
     string groupId,
     string searchText);

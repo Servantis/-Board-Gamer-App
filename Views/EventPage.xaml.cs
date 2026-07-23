@@ -3,6 +3,7 @@ namespace BoardGamerApp.Views;
 using CommunityToolkit.Maui.Views;
 using BoardGamerApp.Models;
 using BoardGamerApp.ViewModels;
+using CommunityToolkit.Maui.Extensions;
 
 /// <summary>
 /// Code-Behind zur Hauptseite der Terminverwaltung (EventPage.xaml).

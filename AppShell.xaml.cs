@@ -55,7 +55,9 @@ public partial class AppShell : Shell
         Routing.RegisterRoute(nameof(PreviousEventsPage), typeof(PreviousEventsPage));
         Routing.RegisterRoute(nameof(GameNightSuggestionsPage),typeof(GameNightSuggestionsPage));
 
-        // Spielerprofil wird als Modal über DI geöffnet.
+        // Spielerprofil
+        Routing.RegisterRoute(nameof(PlayerProfilePage), typeof(PlayerProfilePage));
+
         // Eine Shell-Route ist dafür nicht zwingend nötig.
         // Falls du später per GoToAsync navigieren willst, kannst du sie trotzdem registrieren:
         // Routing.RegisterRoute(nameof(PlayerProfilePage), typeof(PlayerProfilePage));

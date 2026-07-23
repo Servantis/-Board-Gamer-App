@@ -1,15 +1,20 @@
-﻿using BoardGamerApp.Models;
+using BoardGamerApp.Models;
 using BoardGamerApp.Repositories;
 using BoardGamerApp.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using System.Collections.ObjectModel;
 
 namespace BoardGamerApp.ViewModels;
 
+[QueryProperty(nameof(preselectedGroupId), "groupId")]
 public partial class AddGameViewModel : ObservableObject
 {
     private readonly BoardGameRepository _boardGameRepository;
-    private readonly DatabaseService _databaseService;
+    private readonly GroupOverviewRepository _groupOverviewRepository;
+    private readonly CurrentPlayerService _currentPlayerService;
+
+    public ObservableCollection<GamingGroupListItem> Groups { get; } = new();
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(PreviewTitle))]
@@ -33,6 +38,13 @@ public partial class AddGameViewModel : ObservableObject
     private string gameGenre = string.Empty;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(PreviewDetails))]
+    private GamingGroupListItem? selectedGroup;
+
+    [ObservableProperty]
+    private string? preselectedGroupId;
+
+    [ObservableProperty]
     private bool isBusy;
 
     public string PreviewTitle =>
@@ -50,16 +62,50 @@ public partial class AddGameViewModel : ObservableObject
                 ? "Kein Genre"
                 : GameGenre.Trim();
 
-            return $"{playerText} · {durationText} · {genreText}";
+            var groupText = selectedGroup is null
+                ? "Keine Gruppe ausgewählt"
+                : $"Gruppe: {selectedGroup.Name}";
+
+            return $"{playerText} · {durationText} · {genreText} · {groupText}";
         }
     }
 
     public AddGameViewModel(
         BoardGameRepository boardGameRepository,
-        DatabaseService databaseService)
+        GroupOverviewRepository groupOverviewRepository,
+        CurrentPlayerService currentPlayerService)
     {
         _boardGameRepository = boardGameRepository;
-        _databaseService = databaseService;
+        _groupOverviewRepository = groupOverviewRepository;
+        _currentPlayerService = currentPlayerService;
+    }
+
+    [RelayCommand]
+    public async Task LoadGroupsAsync()
+    {
+        if (Groups.Count > 0)
+            return;
+
+        var currentPlayerId = _currentPlayerService.PlayerId;
+
+        if (string.IsNullOrWhiteSpace(currentPlayerId))
+            return;
+
+        var groups = await _groupOverviewRepository.GetGroupsByPlayerIdAsync(currentPlayerId);
+
+        Groups.Clear();
+
+        foreach (var group in groups)
+        {
+            Groups.Add(group);
+        }
+
+        if (!string.IsNullOrWhiteSpace(preselectedGroupId))
+        {
+            selectedGroup = Groups.FirstOrDefault(group => group.Id == preselectedGroupId);
+        }
+
+        selectedGroup ??= Groups.FirstOrDefault();
     }
 
     [RelayCommand]
@@ -72,11 +118,26 @@ public partial class AddGameViewModel : ObservableObject
         {
             IsBusy = true;
 
+            if (Groups.Count == 0)
+            {
+                await LoadGroupsAsync();
+            }
+
             if (string.IsNullOrWhiteSpace(Title))
             {
                 await Shell.Current.DisplayAlertAsync(
                     "Eingabe fehlt",
                     "Bitte gib einen Namen für das Spiel ein.",
+                    "OK");
+
+                return;
+            }
+
+            if (selectedGroup is null)
+            {
+                await Shell.Current.DisplayAlertAsync(
+                    "Keine Gruppe ausgewählt",
+                    "Bitte wähle aus, mit welcher Gruppe das Spiel geteilt werden soll.",
                     "OK");
 
                 return;
@@ -128,27 +189,17 @@ public partial class AddGameViewModel : ObservableObject
                 return;
             }
 
-            var group = await GetDefaultGroupAsync();
-
-            if (group is null)
-            {
-                await Shell.Current.DisplayAlertAsync(
-                    "Keine Gruppe vorhanden",
-                    "Es wurde keine Spielgruppe gefunden. Bitte lege zuerst eine Gruppe an.",
-                    "OK");
-
-                return;
-            }
+            var currentPlayerId = _currentPlayerService.PlayerId;
 
             var newGame = new BoardGame
             {
-                GroupId = group.Id,
+                GroupId = selectedGroup.Id,
                 Title = Title.Trim(),
                 MinPlayers = minPlayersValue,
                 MaxPlayers = maxPlayersValue,
                 DurationMinutes = durationValue,
                 GameGenre = string.IsNullOrWhiteSpace(GameGenre) ? null : GameGenre.Trim(),
-                OwnerPlayerId = null
+                OwnerPlayerId = string.IsNullOrWhiteSpace(currentPlayerId) ? null : currentPlayerId
             };
 
             await _boardGameRepository.AddAsync(newGame);
@@ -172,12 +223,6 @@ public partial class AddGameViewModel : ObservableObject
     private async Task CancelAsync()
     {
         await Shell.Current.GoToAsync("..");
-    }
-
-    private async Task<GamingGroup?> GetDefaultGroupAsync()
-    {
-        var groups = await _databaseService.GetNotDeletedAsync<GamingGroup>();
-        return groups.FirstOrDefault();
     }
 
     private static int? ParseNullableInt(string value)

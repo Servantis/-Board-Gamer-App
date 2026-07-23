@@ -1,4 +1,4 @@
-﻿using BoardGamerApp.Models;
+using BoardGamerApp.Models;
 using BoardGamerApp.Services;
 
 namespace BoardGamerApp.Repositories;
@@ -6,10 +6,14 @@ namespace BoardGamerApp.Repositories;
 public class PlayerRepository : IPlayerRepository
 {
     private readonly DatabaseService _databaseService;
+    private readonly SyncOutboxService _syncOutboxService;
 
-    public PlayerRepository(DatabaseService databaseService)
+    public PlayerRepository(
+        DatabaseService databaseService,
+        SyncOutboxService syncOutboxService)
     {
         _databaseService = databaseService;
+        _syncOutboxService = syncOutboxService;
     }
 
     public async Task<List<Player>> GetActivePlayersAsync()
@@ -88,6 +92,12 @@ public class PlayerRepository : IPlayerRepository
             string.IsNullOrWhiteSpace(email) ? null : email.Trim(),
             now,
             playerId);
+
+        await _syncOutboxService.AddFromDatabaseAsync(
+            database,
+            "players",
+            playerId,
+            BoardGamerConstants.SyncOperations.Update);
     }
 
     // Suche nach Spielern, die nicht in der angegebenen Gruppe sind und deren Name oder E-Mail mit dem Suchtext übereinstimmt
@@ -125,5 +135,34 @@ public class PlayerRepository : IPlayerRepository
             search,
             groupId);
     }
+    public async Task<Player> CreatePlayerAsync(string name, string? email)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+            throw new InvalidOperationException("Der Name darf nicht leer sein.");
 
+        var database = await _databaseService.GetConnectionAsync();
+        var now = DateTimeHelper.UtcNowIsoString();
+
+        var player = new Player
+        {
+            Id = Guid.NewGuid().ToString(),
+            Name = name.Trim(),
+            Email = string.IsNullOrWhiteSpace(email) ? null : email.Trim(),
+            IsActive = 1,
+            CreatedAt = now,
+            UpdatedAt = now,
+            DeletedAt = null,
+            Version = 1
+        };
+
+        await database.InsertAsync(player);
+
+        await _syncOutboxService.AddEntityAsync(
+            database,
+            "players",
+            player,
+            BoardGamerConstants.SyncOperations.Insert);
+
+        return player;
+    }
 }

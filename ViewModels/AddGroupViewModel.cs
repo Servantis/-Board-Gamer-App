@@ -1,7 +1,6 @@
 using BoardGamerApp.Models;
 using BoardGamerApp.Services;
 using BoardGamerApp.Repositories;
-using BoardGamerApp.Services.Repositories;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 

@@ -3,7 +3,6 @@ using BoardGamerApp.Repositories;
 using BoardGamerApp.Services;
 using BoardGamerApp.Services.Implementations;
 using BoardGamerApp.Services.Interfaces;
-using BoardGamerApp.Services.Repositories;
 using BoardGamerApp.ViewModels;
 using BoardGamerApp.Views;
 using CommunityToolkit.Maui;
@@ -81,11 +80,39 @@ public static class MauiProgram
                 builder.Services.AddTransient<RatingViewModel>();
                 builder.Services.AddTransient<RatingPage>();
                 builder.Services.AddSingleton<GroupOverviewRepository>();
-
+                
                 builder.Services.AddTransient<MainPage>();
 
+
+                //Email Benachrichtigungen
+                builder.Services.AddSingleton<GroupMessageRepository>();
+                builder.Services.AddSingleton<MessageApiClient>();
+                builder.Services.AddSingleton<GroupDelayMessageService>();
+
+        // Für den Sync-Service
+        builder.Services.AddSingleton<SyncOutboxService>();
+                builder.Services.AddSingleton(new SyncApiOptions
+                {
+                    BaseUrl = "https://servantis.pythonanywhere.com/"
+                });
+
+                builder.Services.AddSingleton<HttpClient>(serviceProvider =>
+                {
+                    var options = serviceProvider.GetRequiredService<SyncApiOptions>();
+
+                    return new HttpClient
+                    {
+                        BaseAddress = new Uri(options.BaseUrl)
+                    };
+                });
+                builder.Services.AddSingleton<ApiCredentialService>();
+                builder.Services.AddSingleton<DeviceIdentityService>();
+                builder.Services.AddSingleton<SyncApiClient>();
+                builder.Services.AddSingleton<AppSyncService>();
+
+
 #if DEBUG
-                builder.Logging.AddDebug();
+        builder.Logging.AddDebug();
                 builder.Services.AddTransient<SyncOutboxDebugViewModel>();
                 builder.Services.AddTransient<SyncOutboxDebugView>();
 #endif
