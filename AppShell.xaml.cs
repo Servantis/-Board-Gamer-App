@@ -27,11 +27,32 @@ public partial class AppShell : Shell
 
         UpdatePlayerToolbarItem();
 
+        // Das Debug-FlyoutItem wird bewusst NICHT hier direkt (synchron, sofort nach
+        // InitializeComponent) sichtbar/unsichtbar geschaltet: Auf Android hat Shell ein
+        // bekanntes Problem damit, wenn die IsVisible-Eigenschaft eines FlyoutItems
+        // umgeschaltet wird, BEVOR das native Flyout-Menü (intern über RecyclerView/
+        // ViewPager2 gerendert) seinen ersten Layout-Durchlauf komplett abgeschlossen hat -
+        // das führt zu einem inkonsistenten Adapter-Zustand und kann später beim Antippen
+        // eines Menüpunkts zu einem Absturz/Einfrieren führen (RecyclerView/ViewPager2/
+        // AppBarLayout/DrawerLayout tief im Android-Stacktrace). Deshalb wird die Änderung
+        // hier auf "nach dem ersten Laden der Shell" verschoben (Loaded-Event + Dispatcher),
+        // damit das native Flyout-Menü zu diesem Zeitpunkt schon vollständig fertig
+        // aufgebaut ist.
+        Loaded += OnShellLoaded;
+    }
+
+    private void OnShellLoaded(object? sender, EventArgs e)
+    {
+        Loaded -= OnShellLoaded;
+
+        Dispatcher.Dispatch(() =>
+        {
 #if DEBUG
-        DebugFlyoutItem.IsVisible = Debugger.IsAttached;
+            DebugFlyoutItem.IsVisible = Debugger.IsAttached;
 #else
-        DebugFlyoutItem.IsVisible = false;
+            DebugFlyoutItem.IsVisible = false;
 #endif
+        });
     }
 
     private void RegisterRoutes()

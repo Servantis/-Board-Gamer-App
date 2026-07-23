@@ -22,7 +22,7 @@ namespace BoardGamerApp.Converters;
 public class IsoToDisplayDateConverter : IValueConverter
 {
     /// <summary>Wird beim Anzeigen aufgerufen: String aus der DB -> lesbarer Text für die UI.</summary>
-    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+    public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
     {
         if (value is string isoString && !string.IsNullOrWhiteSpace(isoString))
         {
@@ -54,7 +54,7 @@ public class IsoToDisplayDateConverter : IValueConverter
     /// Brauchen wir hier nicht, weil ScheduledAt nur angezeigt, nicht direkt über
     /// dieses Binding bearbeitet wird - deshalb wirft diese Methode bewusst eine Exception.
     /// </summary>
-    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+    public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
     {
         throw new NotImplementedException();
     }

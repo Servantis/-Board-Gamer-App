@@ -50,22 +50,23 @@ public partial class SyncOutboxDebugViewModel : ObservableObject
     [RelayCommand]
     public async Task LoadAsync()
     {
-#if DEBUG
-        if (!Debugger.IsAttached)
-        {
-            await Shell.Current.DisplayAlertAsync(
-                "Nicht verfügbar",
-                "Diese Seite ist nur verfügbar, wenn ein Debugger attached ist.",
-                "OK");
-
-            await Shell.Current.GoToAsync("..");
-            return;
-        }
-#else
+#if !DEBUG
+        // In Release-Builds ist dieses Debug-Menü ohnehin schon über AppShell (Flyout-Item
+        // unsichtbar) nicht erreichbar - dieser Rücksprung ist nur eine zusätzliche
+        // Absicherung, falls die Seite doch einmal direkt aufgerufen wird.
         await Shell.Current.GoToAsync("..");
         return;
 #endif
 
+        // Früher gab es hier zusätzlich eine Prüfung auf Debugger.IsAttached (mit Alert +
+        // sofortigem GoToAsync("..") zurück), falls kein Debugger hängt. Das führte aber
+        // dazu, dass die App beim Öffnen dieser Seite über das Flyout einfrieren konnte:
+        // kurz nach dem Start (z. B. bei "Run and Debug" in VS Code) kann Debugger.IsAttached
+        // noch kurz "false" liefern, obwohl ein Debugger dabei ist, sich gerade erst
+        // anzuhängen - dann wurde hier, noch während die Flyout-Schließanimation lief, eine
+        // ZWEITE Shell-Navigation ("...") ausgelöst, was auf Android zu einem UI-Deadlock
+        // führen konnte. Da AppShell das Flyout-Item ohnehin schon per Debugger.IsAttached
+        // aus- bzw. einblendet, war diese zweite, redundante Prüfung hier nicht nötig.
         if (IsBusy)
             return;
 

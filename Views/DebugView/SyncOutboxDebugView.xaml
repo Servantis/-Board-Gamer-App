@@ -66,16 +66,26 @@
             <Label Text="{Binding LastSyncMessage}"
            FontSize="13"
            TextColor="#6B6258" />
+
+            <Button Text="Aktualisieren"
+            Command="{Binding LoadCommand}"
+            BackgroundColor="#D8D0C6"
+            TextColor="#2F2A25"
+            CornerRadius="14"
+            HeightRequest="46" />
         </VerticalStackLayout>
 
-        <RefreshView Grid.Row="1"
-                     Command="{Binding LoadCommand}"
-                     IsRefreshing="{Binding IsBusy}">
+        <!-- Bewusst ohne RefreshView (Pull-to-Refresh): Die Kombination aus RefreshView
+             und CollectionView führt auf Android in Verbindung mit der Shell-Navigation
+             (Flyout -> diese Seite) zu einem Absturz während des ersten Measure-Durchlaufs
+             (bekanntes .NET-MAUI-Problem, siehe Stacktrace mit
+             ReorderableItemsView/MauiSwipeRefreshLayout). Die "Aktualisieren"-Schaltfläche
+             oben ruft denselben LoadCommand auf und ersetzt die Pull-to-Refresh-Geste. -->
+        <CollectionView Grid.Row="1"
+                        ItemsSource="{Binding Entries}"
+                        EmptyView="Keine offenen Sync-Outbox-Einträge vorhanden.">
 
-            <CollectionView ItemsSource="{Binding Entries}"
-                            EmptyView="Keine offenen Sync-Outbox-Einträge vorhanden.">
-
-                <CollectionView.ItemTemplate>
+            <CollectionView.ItemTemplate>
                     <DataTemplate x:DataType="models:SyncOutboxEntry">
 
                         <Border Margin="0,0,0,12"
@@ -115,7 +125,7 @@
                                 <Label Text="{Binding LastError}"
                                        FontSize="12"
                                        TextColor="Red"
-                                       IsVisible="{Binding LastError, Converter={StaticResource StringNotNullOrEmptyConverter}}" />
+                                       IsVisible="{Binding LastError, Converter={StaticResource StringToBoolConverter}}" />
 
                                 <Grid ColumnDefinitions="*,*"
                                       ColumnSpacing="10"
@@ -145,8 +155,6 @@
                     </DataTemplate>
                 </CollectionView.ItemTemplate>
             </CollectionView>
-
-        </RefreshView>
 
     </Grid>
 
