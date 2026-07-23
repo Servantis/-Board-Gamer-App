@@ -249,14 +249,12 @@ public partial class EventViewModel : ObservableObject
             GameNights.Clear();
             UpcomingGameNights.Clear();
 
-            foreach (var night in nights.OrderBy(n => ParseDate(n.ScheduledAt)))
+            // Baut für einen Termin die Anzeigenamen/Zusagen-Infos auf und trägt ihn in
+            // GameNights/UpcomingGameNights ein - als lokale Funktion ausgelagert, damit sie
+            // sowohl für die "normalen" Termine unten als auch für einen eventuell frisch
+            // automatisch angelegten Folgetermin (siehe weiter unten) benutzt werden kann.
+            async Task AddNightToCollectionsAsync(GameNight night)
             {
-                // Bevor der Termin angezeigt wird: prüfen, ob sein Kalendertag inzwischen
-                // in der Vergangenheit liegt, und in diesem Fall den Status automatisch
-                // (und dauerhaft in der DB!) auf "completed" setzen - siehe Methode weiter
-                // unten für die genaue Regel.
-                await ApplyCompletedStatusIfDueAsync(night);
-
                 ApplyDisplayNames(night, groupsById, locationsById, playersById, gamesById, suggestions, votes);
 
                 night.IsHostedByCurrentPlayer =
@@ -272,6 +270,36 @@ public partial class EventViewModel : ObservableObject
 
                 if (ParseDate(night.ScheduledAt) >= DateTime.Now)
                     UpcomingGameNights.Add(night);
+            }
+
+            foreach (var night in nights.OrderBy(n => ParseDate(n.ScheduledAt)))
+            {
+                // Bevor der Termin angezeigt wird: prüfen, ob sein Kalendertag inzwischen
+                // in der Vergangenheit liegt, und in diesem Fall den Status automatisch
+                // (und dauerhaft in der DB!) auf "completed" setzen - siehe Methode weiter
+                // unten für die genaue Regel.
+                await ApplyCompletedStatusIfDueAsync(night);
+
+                await AddNightToCollectionsAsync(night);
+            }
+
+            // ApplyCompletedStatusIfDueAsync() kann für einen der oben verarbeiteten Termine
+            // (über HostScheduleService.CreateFollowUpGameNightIfNeededAsync) einen komplett
+            // NEUEN Folgetermin in der Datenbank angelegt haben. Da "nights" oben aber schon
+            // VOR der Schleife geladen wurde, taucht dieser neue Termin darin noch nicht auf -
+            // ohne diesen zusätzlichen Schritt würde er erst beim nächsten Laden dieser Seite
+            // sichtbar werden (z. B. erst nach einem Wechsel auf die EventPage). Deshalb hier
+            // einmalig prüfen, ob inzwischen neue Termine dazugekommen sind, und diese direkt
+            // noch mit in die Anzeige aufnehmen.
+            var alreadyLoadedIds = GameNights.Select(n => n.Id).ToHashSet();
+
+            var newlyCreatedNights = (await _gameNightRepository.GetAllAsync())
+                .Where(n => myGroupIds.Contains(n.GroupId) && !alreadyLoadedIds.Contains(n.Id))
+                .OrderBy(n => ParseDate(n.ScheduledAt));
+
+            foreach (var night in newlyCreatedNights)
+            {
+                await AddNightToCollectionsAsync(night);
             }
 
             // Bestimmt, welcher der geladenen Termine der chronologisch nächste ist, und
@@ -702,7 +730,7 @@ public partial class EventViewModel : ObservableObject
     /// </summary>
     private async Task ApplyCompletedStatusIfDueAsync(GameNight night)
     {
-       // Debug.WriteLine("[EVENT] Automatischer Trigger");
+        // Debug.WriteLine("[EVENT] Automatischer Trigger");
         /*
         Debug.WriteLine(
       $"[EVENT] Prüfe GameNight " +
@@ -716,7 +744,7 @@ public partial class EventViewModel : ObservableObject
 
         if (ParseDate(night.ScheduledAt).Date >= DateTime.Now.Date)
         {
-           // Debug.WriteLine( "[EVENT] Termin liegt noch in der Zukunft");
+            // Debug.WriteLine( "[EVENT] Termin liegt noch in der Zukunft");
 
             return;
         }
@@ -735,8 +763,14 @@ public partial class EventViewModel : ObservableObject
 
         await _hostScheduleService.ProcessHostChangeAsync(night.GroupId);
 
-   
-
+        // Automatische Terminerstellung: gibt es für die Gruppe noch keinen künftigen
+        // geplanten Termin, wird jetzt automatisch einer angelegt 14 Tage nach diesem
+        // gerade abgeschlossenen Termin, mit dem neuen (von ProcessHostChangeAsync gerade
+        // bestimmten) Gastgeber. Existiert bereits ein künftiger Termin, passiert hier
+        // nichts (siehe HostScheduleService.CreateFollowUpGameNightIfNeededAsync) die
+        // manuelle Terminerstellung (NewEventPopup/AddGameNightAsync) bleibt davon
+        // komplett unberührt und funktioniert weiterhin genauso wie bisher.
+        await _hostScheduleService.CreateFollowUpGameNightIfNeededAsync(night.GroupId);
     }
 
     /// <summary>

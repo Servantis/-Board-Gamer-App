@@ -216,6 +216,7 @@ public partial class GroupMembersViewModel : ObservableObject
 
         await _hostScheduleService.EnsureNextHostExistsAsync(GroupId);
         await _hostScheduleService.ProcessHostChangeAsync(GroupId);
+        await _hostScheduleService.CreateFollowUpGameNightIfNeededAsync(GroupId);
 
         await LoadMembersAsync();
         await LoadLastHostsAsync();

@@ -264,7 +264,7 @@
               <Grid Grid.Row="2"
                     BackgroundColor="#F8F5F0"
                     Padding="20,10"
-                    ColumnDefinitions="*,Auto,*"
+                    ColumnDefinitions="*,*"
                     VerticalOptions="End">
 
                      <!-- Termine -->
@@ -286,29 +286,8 @@
                                    HorizontalOptions="Center"/>
                      </VerticalStackLayout>
 
-                     <!-- Plus Button -->
-                     <Frame Grid.Column="1"
-                            WidthRequest="60"
-                            HeightRequest="60"
-                            CornerRadius="30"
-                            BackgroundColor="#8B5E3C"
-                            HasShadow="True"
-                            VerticalOptions="Center"
-                            HorizontalOptions="Center">
-
-                            <Frame.GestureRecognizers>
-                                   <TapGestureRecognizer Tapped="OnMessageClicked"/>
-                            </Frame.GestureRecognizers>
-
-                            <Image Source="envelope_icon.png"
-                                   HeightRequest="28"
-                                   WidthRequest="28"
-                                   VerticalOptions="Center"
-                                   HorizontalOptions="Center"/>
-                     </Frame>
-
             <!-- Gruppe -->
-            <VerticalStackLayout Grid.Column="2"
+            <VerticalStackLayout Grid.Column="1"
                                  HorizontalOptions="Center"
                                  VerticalOptions="Center">
             <!-- OnClick Methode für Gruppenansicht -->
