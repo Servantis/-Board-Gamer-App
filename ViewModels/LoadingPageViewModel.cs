@@ -1,6 +1,7 @@
 ﻿using BoardGamerApp.Repositories;
 using BoardGamerApp.Services;
 using BoardGamerApp.Services.Interfaces;
+using BoardGamerApp.Views;
 using System.Diagnostics;
 
 namespace BoardGamerApp.ViewModels;
@@ -19,6 +20,18 @@ public class LoadingPageViewModel : BaseViewModel
     {
         get => _statusText;
         set => SetProperty(ref _statusText, value);
+    }
+
+    private static bool IsDebugMode
+    {
+        get
+        {
+#if DEBUG
+            return true;
+#else
+            return Debugger.IsAttached;
+#endif
+        }
     }
 
     public LoadingPageViewModel(
@@ -71,10 +84,9 @@ public class LoadingPageViewModel : BaseViewModel
                 return;
             }
 
-            if (Debugger.IsAttached)
+            if (IsDebugMode)
             {
-                StatusText = "Keine Zuordnung gefunden. Debug-Auswahl wird geöffnet...";
-                await Shell.Current.GoToAsync("//playerSelection");
+                await ShowDebugPlayerAssignmentOptionsAsync();
                 return;
             }
 
@@ -93,6 +105,39 @@ public class LoadingPageViewModel : BaseViewModel
         finally
         {
             IsBusy = false;
+        }
+    }
+
+    private async Task ShowDebugPlayerAssignmentOptionsAsync()
+    {
+        StatusText = "Keine Spielerzuordnung gefunden.";
+
+        var selectedAction = await Shell.Current.DisplayActionSheetAsync(
+            "Keine Spielerzuordnung gefunden",
+            "Abbrechen",
+            null,
+            "Vorhandenen Spieler auswählen",
+            "Neuen Spieler anlegen");
+
+        switch (selectedAction)
+        {
+            case "Vorhandenen Spieler auswählen":
+                StatusText = "Debug-Auswahl wird geöffnet...";
+                await Shell.Current.GoToAsync("//playerSelection");
+                return;
+
+            case "Neuen Spieler anlegen":
+                StatusText = "Spielerprofil wird geöffnet...";
+
+                // Voraussetzung: Die Route muss in AppShell.xaml.cs registriert sein:
+                // Routing.RegisterRoute(nameof(PlayerProfilePage), typeof(PlayerProfilePage));
+                await Shell.Current.GoToAsync(
+                    $"{nameof(PlayerProfilePage)}?mode=create&returnToLoading=true");
+                return;
+
+            default:
+                StatusText = "Keine Spielerzuordnung vorhanden.";
+                return;
         }
     }
 }

@@ -135,5 +135,34 @@ public class PlayerRepository : IPlayerRepository
             search,
             groupId);
     }
+    public async Task<Player> CreatePlayerAsync(string name, string? email)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+            throw new InvalidOperationException("Der Name darf nicht leer sein.");
 
+        var database = await _databaseService.GetConnectionAsync();
+        var now = DateTimeHelper.UtcNowIsoString();
+
+        var player = new Player
+        {
+            Id = Guid.NewGuid().ToString(),
+            Name = name.Trim(),
+            Email = string.IsNullOrWhiteSpace(email) ? null : email.Trim(),
+            IsActive = 1,
+            CreatedAt = now,
+            UpdatedAt = now,
+            DeletedAt = null,
+            Version = 1
+        };
+
+        await database.InsertAsync(player);
+
+        await _syncOutboxService.AddEntityAsync(
+            database,
+            "players",
+            player,
+            BoardGamerConstants.SyncOperations.Insert);
+
+        return player;
+    }
 }

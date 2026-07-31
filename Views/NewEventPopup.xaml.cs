@@ -321,6 +321,6 @@ public partial class NewEventPopup : Popup
         }
 
         if (success)
-            return;
+            Close();
     }
 }

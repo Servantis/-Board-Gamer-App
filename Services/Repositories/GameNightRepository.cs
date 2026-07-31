@@ -341,4 +341,29 @@ public class GameNightRepository
         return result;
     }
 
+    /// <summary>
+    /// Liefert den zuletzt abgeschlossenen ("completed") Termin einer Spielgruppe komplett
+    /// zurück (nicht nur die Host-Id wie GetLastCompletedHostPlayerIdAsync) - wird für die
+    /// automatische Terminerstellung gebraucht, um das Datum "+14 Tage" berechnen zu können
+    /// (siehe HostScheduleService.CreateFollowUpGameNightIfNeededAsync).
+    /// </summary>
+    public async Task<GameNight?> GetLastCompletedGameNightAsync(string groupId)
+    {
+        var db = await _database.GetConnectionAsync();
+
+        const string sql = """
+    SELECT *
+    FROM game_nights
+    WHERE group_id = ?
+      AND status = 'completed'
+      AND deleted_at IS NULL
+    ORDER BY date_time DESC
+    LIMIT 1;
+    """;
+
+        var result = await db.QueryAsync<GameNight>(sql, groupId);
+
+        return result.FirstOrDefault();
+    }
+
 }

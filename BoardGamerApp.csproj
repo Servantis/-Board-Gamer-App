@@ -70,7 +70,7 @@
 		<PackageReference Include="Microsoft.Data.Sqlite.Core" Version="10.0.10" />
 		<PackageReference Include="Microsoft.Maui.Controls" Version="10.0.80" />
 		<PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="10.0.10" />
-		<PackageReference Include="CommunityToolkit.Maui" Version="14.2.2" />
+		<PackageReference Include="CommunityToolkit.Maui" Version="9.0.0" />
 		<PackageReference Include="SourceGear.sqlite3" Version="3.53.3" />
 		<PackageReference Include="sqlite-net-pcl" Version="1.11.285" />
 		<PackageReference Include="SQLitePCLRaw.lib.e_sqlite3" Version="3.53.3" />
@@ -82,7 +82,6 @@
 		<MauiXaml Include="Views/MainPage.xaml" />
 		<MauiXaml Include="Views/GamesPage.xaml" />
 		<MauiXaml Include="Views/EventPage.xaml" />
-		<MauiXaml Include="Views/MessagePage.xaml" />
 		<MauiXaml Include="Views/RatingPage.xaml" />
 		<MauiXaml Include="Views/NewEventPopup.xaml" />
 		<MauiXaml Include="Views/PreviousEventsPage.xaml" />

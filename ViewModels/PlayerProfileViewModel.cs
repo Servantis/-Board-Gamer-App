@@ -8,7 +8,7 @@ using CommunityToolkit.Mvvm.Input;
 
 namespace BoardGamerApp.ViewModels;
 
-public class PlayerProfileViewModel : ObservableObject
+public class PlayerProfileViewModel : ObservableObject, IQueryAttributable
 {
     private readonly CurrentPlayerService _currentPlayerService;
     private readonly IPlayerRepository _playerRepository;
@@ -23,6 +23,8 @@ public class PlayerProfileViewModel : ObservableObject
     private bool _hasEditedEmail;
     private bool _hasTriedSave;
     private bool _isBusy;
+    private bool _isCreateMode;
+    private bool _returnToLoading;
 
     public string PlayerId
     {
@@ -81,7 +83,43 @@ public class PlayerProfileViewModel : ObservableObject
         set => SetProperty(ref _isBusy, value);
     }
 
-    public bool IsDebugVisible => Debugger.IsAttached;
+    private static bool IsDebugMode
+    {
+        get
+        {
+#if DEBUG
+            return true;
+#else
+            return Debugger.IsAttached;
+#endif
+        }
+    }
+
+    public bool IsDebugVisible => IsDebugMode;
+
+    public bool IsCreateMode
+    {
+        get => _isCreateMode;
+        private set
+        {
+            if (SetProperty(ref _isCreateMode, value))
+            {
+                OnPropertyChanged(nameof(PageTitle));
+                OnPropertyChanged(nameof(SaveButtonText));
+                OnPropertyChanged(nameof(CanResetAssignment));
+            }
+        }
+    }
+
+    public bool CanResetAssignment => IsDebugVisible && !IsCreateMode;
+
+    public string PageTitle => IsCreateMode
+        ? "Neuen Spieler anlegen"
+        : "Spielerprofil";
+
+    public string SaveButtonText => IsCreateMode
+        ? "Spieler anlegen"
+        : "Speichern";
 
     public string Initials
     {
@@ -127,6 +165,47 @@ public class PlayerProfileViewModel : ObservableObject
         LoadFromCurrentPlayer();
     }
 
+    public void ApplyQueryAttributes(IDictionary<string, object> query)
+    {
+        var mode = query.TryGetValue("mode", out var modeValue)
+            ? modeValue?.ToString()
+            : null;
+
+        _returnToLoading = query.TryGetValue("returnToLoading", out var returnToLoadingValue)
+            && bool.TryParse(returnToLoadingValue?.ToString(), out var returnToLoading)
+            && returnToLoading;
+
+        if (string.Equals(mode, "create", StringComparison.OrdinalIgnoreCase))
+        {
+            EnableCreateMode();
+        }
+    }
+
+    private void EnableCreateMode()
+    {
+        if (!IsDebugMode)
+        {
+            return;
+        }
+
+        _isLoadingProfile = true;
+
+        try
+        {
+            IsCreateMode = true;
+            PlayerId = string.Empty;
+            PlayerName = string.Empty;
+            Email = string.Empty;
+            EmailError = string.Empty;
+            _hasEditedEmail = false;
+            _hasTriedSave = false;
+        }
+        finally
+        {
+            _isLoadingProfile = false;
+        }
+    }
+
     private void LoadFromCurrentPlayer()
     {
         _isLoadingProfile = true;
@@ -148,6 +227,107 @@ public class PlayerProfileViewModel : ObservableObject
     }
 
     private async Task SaveAsync()
+    {
+        if (IsCreateMode)
+        {
+            await CreateAndAssignPlayerAsync();
+            return;
+        }
+
+        await UpdateExistingPlayerAsync();
+    }
+
+    private async Task CreateAndAssignPlayerAsync()
+    {
+        if (!IsDebugMode)
+        {
+            await Shell.Current.DisplayAlertAsync(
+                "Nicht erlaubt",
+                "Neue Spieler können aktuell nur im Debug-Modus angelegt werden.",
+                "OK");
+
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(PlayerName))
+        {
+            await Shell.Current.DisplayAlertAsync(
+                "Fehler",
+                "Der Name darf nicht leer sein.",
+                "OK");
+
+            return;
+        }
+
+        _hasTriedSave = true;
+
+        if (!TryNormalizeEmail(Email, out var cleanEmail, out var validationError))
+        {
+            EmailError = validationError ?? "Bitte gib eine gültige E-Mail-Adresse ein.";
+
+            await Shell.Current.DisplayAlertAsync(
+                "Ungültige E-Mail-Adresse",
+                EmailError,
+                "OK");
+
+            return;
+        }
+
+        try
+        {
+            IsBusy = true;
+
+            var cleanName = PlayerName.Trim();
+
+            var player = await _playerRepository.CreatePlayerAsync(
+     cleanName,
+     cleanEmail);
+
+            var installationId = await _installationService.GetOrCreateInstallationIdAsync();
+
+            var deviceName = Microsoft.Maui.Devices.DeviceInfo.Current.Name;
+            var platform = Microsoft.Maui.Devices.DeviceInfo.Current.Platform.ToString();
+
+            await _playerDeviceRepository.LinkInstallationToPlayerAsync(
+                player.Id,
+                installationId,
+                deviceName,
+                platform);
+
+            _currentPlayerService.SetPlayer(
+                player.Id,
+                player.Name,
+                player.Email);
+
+            PlayerId = player.Id;
+            PlayerName = player.Name;
+            Email = player.Email;
+            IsCreateMode = false;
+            _hasEditedEmail = false;
+            _hasTriedSave = false;
+            EmailError = string.Empty;
+
+            await Shell.Current.DisplayAlertAsync(
+                "Spieler angelegt",
+                "Der Spieler wurde angelegt und diesem Gerät zugeordnet.",
+                "OK");
+
+            await Shell.Current.GoToAsync("//home");
+        }
+        catch (Exception ex)
+        {
+            await Shell.Current.DisplayAlertAsync(
+                "Fehler",
+                $"Spieler konnte nicht angelegt werden: {ex.Message}",
+                "OK");
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+    private async Task UpdateExistingPlayerAsync()
     {
         if (string.IsNullOrWhiteSpace(PlayerId))
         {
@@ -327,12 +507,24 @@ public class PlayerProfileViewModel : ObservableObject
 
     private async Task CloseAsync()
     {
-        await Shell.Current.Navigation.PopModalAsync();
+        if (IsCreateMode && _returnToLoading)
+        {
+            await Shell.Current.GoToAsync("//loading");
+            return;
+        }
+
+        if (Shell.Current.Navigation.ModalStack.Count > 0)
+        {
+            await Shell.Current.Navigation.PopModalAsync();
+            return;
+        }
+
+        await Shell.Current.GoToAsync("..");
     }
 
     private async Task ResetAssignmentAsync()
     {
-        if (!Debugger.IsAttached)
+        if (!IsDebugMode || IsCreateMode)
         {
             return;
         }
@@ -359,7 +551,10 @@ public class PlayerProfileViewModel : ObservableObject
             _installationService.ResetInstallationId();
             _currentPlayerService.Clear();
 
-            await Shell.Current.Navigation.PopModalAsync();
+            if (Shell.Current.Navigation.ModalStack.Count > 0)
+            {
+                await Shell.Current.Navigation.PopModalAsync();
+            }
 
             await Shell.Current.GoToAsync("//loading");
         }
