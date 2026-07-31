@@ -202,15 +202,11 @@ public partial class MainViewModel : ObservableObject
     {
         UpcomingGameNights.Clear();
 
-        var nights =
-            await _eventViewModel.GetPreparedGameNightsAsync();
+        await _eventViewModel.LoadGameNightsAsync();
 
-        foreach (var night in nights)
+        foreach (var night in _eventViewModel.UpcomingGameNights)
         {
-            if (ParseDate(night.ScheduledAt) >= DateTime.Now)
-            {
-                UpcomingGameNights.Add(night);
-            }
+            UpcomingGameNights.Add(night);
         }
 
         NotifyDerivedProperties();

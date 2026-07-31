@@ -135,7 +135,7 @@ namespace BoardGamerApp.Services.Implementations
                 Debug.WriteLine(
                     $"[HOST] Neuer Host => " +
                     $"{selectedHost?.PlayerId}");
-                
+                */
                 if (selectedHost != null)
                 {
                     await _groupMemberRepository
