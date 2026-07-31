@@ -49,6 +49,7 @@ public class GroupOverviewRepository
             INNER JOIN players p
                 ON p.id = gg.created_by_player_id
             WHERE gm.player_id = ?
+              AND gm.status = 'active'
               AND gm.deleted_at IS NULL
               AND gg.deleted_at IS NULL
             ORDER BY gg.name;

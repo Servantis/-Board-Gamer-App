@@ -40,7 +40,7 @@ public partial class GroupMembersViewModel : ObservableObject
             if (SetProperty(ref _groupId, value))
             {
 
-             //   Debug.WriteLine($"GROUP ID ERHALTEN: {value}");
+                Debug.WriteLine($"GROUP ID ERHALTEN: {value}");
 
                 _ = LoadGroupAsync();
                 _ = LoadMembersAsync();
@@ -100,7 +100,7 @@ public partial class GroupMembersViewModel : ObservableObject
             this,
             async (recipient, message) =>
             {
-               // System.Diagnostics.Debug.WriteLine("MESSAGE RECEIVED");
+                System.Diagnostics.Debug.WriteLine("MESSAGE RECEIVED");
 
                 if (message.Value == GroupId)
                 {
@@ -130,7 +130,7 @@ public partial class GroupMembersViewModel : ObservableObject
                 members = await _groupMemberRepository.GetMembersAsync();
             }
 
-            //System.Diagnostics.Debug.WriteLine($"LoadMembers: {members.Count}");
+            System.Diagnostics.Debug.WriteLine($"LoadMembers: {members.Count}");
 
             Members.Clear();
 
@@ -144,7 +144,7 @@ public partial class GroupMembersViewModel : ObservableObject
 
                 Members.Add(member);
             }
-            //Debug.WriteLine($"Members ObservableCollection: {Members.Count}");
+            Debug.WriteLine($"Members ObservableCollection: {Members.Count}");
 
             StatusText = Members.Count == 0
                 ? "Keine Gruppenmitglieder gefunden."
@@ -203,7 +203,7 @@ public partial class GroupMembersViewModel : ObservableObject
     private async Task SimulateTriggerAsync()
     {
         var nextHost = RotationMembers.FirstOrDefault();
-       // Debug.WriteLine("[TEST] Manueller Trigger");
+        Debug.WriteLine("[TEST] Manueller Trigger");
         if (nextHost is null)
         {
             await Shell.Current.DisplayAlertAsync(
@@ -314,6 +314,6 @@ public partial class GroupMembersViewModel : ObservableObject
             LastHosts.Add(host);
         }
 
-        //Debug.WriteLine( $"LastHosts geladen: {LastHosts.Count}");
+        Debug.WriteLine( $"LastHosts geladen: {LastHosts.Count}");
     }
 }

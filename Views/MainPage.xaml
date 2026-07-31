@@ -15,72 +15,72 @@
                 <!-- Gruppeneinladungen -->
 
                 <Label Text="Gruppeneinladungen"
-       Style="{StaticResource Headline}"
-       FontSize="18"
-       IsVisible="{Binding HasPendingInvitations}" />
+                   Style="{StaticResource Headline}"
+                   FontSize="18"
+                   IsVisible="{Binding HasPendingInvitations}" />
 
                 <CollectionView
-    ItemsSource="{Binding PendingInvitations}"
-    IsVisible="{Binding HasPendingInvitations}"
-    SelectionMode="None">
+                    ItemsSource="{Binding PendingInvitations}"
+                    IsVisible="{Binding HasPendingInvitations}"
+                    SelectionMode="None">
 
                     <CollectionView.ItemTemplate>
 
                         <DataTemplate>
 
                             <Border
-                StrokeShape="RoundRectangle 12"
-                Padding="15"
-                Margin="0,0,0,15"
-                BackgroundColor="#FFF3D6"
-                Stroke="#8B5E3C"
-                StrokeThickness="2">
+                                StrokeShape="RoundRectangle 12"
+                                Padding="15"
+                                Margin="0,0,0,15"
+                                BackgroundColor="#FFF3D6"
+                                Stroke="#8B5E3C"
+                                StrokeThickness="2">
 
                                 <VerticalStackLayout
-                    Spacing="8">
+                                    Spacing="8">
 
                                     <Label
-                        Text="📨 Gruppeneinladung"
-                        FontSize="12"
-                        FontAttributes="Bold"
-                        TextColor="#8B5E3C"/>
+                                        Text="📨 Gruppeneinladung"
+                                        FontSize="12"
+                                        FontAttributes="Bold"
+                                        TextColor="#8B5E3C"/>
 
                                     <Label
-                        Text="{Binding GroupName}"
-                        FontSize="18"
-                        FontAttributes="Bold"
-                        TextColor="#0F172A"/>
+                                        Text="{Binding GroupName}"
+                                        FontSize="18"
+                                        FontAttributes="Bold"
+                                        TextColor="#0F172A"/>
 
                                     <Label
-                        Text="{Binding InviterName, StringFormat='Eingeladen von: {0}'}"
-                        FontSize="14"
-                        TextColor="#334155" />
+                                        Text="{Binding CreatorName, StringFormat='Gruppe erstellt von: {0}'}"
+                                        FontSize="14"
+                                        TextColor="#334155" />
 
                                     <Label
-                        Text="{Binding CreatedAt, Converter={StaticResource IsoToDisplayDateConverter}, StringFormat='Einladung vom {0}'}"
-                        FontSize="13"
-                        TextColor="#64748B"/>
+                                        Text="{Binding CreatedAt, Converter={StaticResource IsoToDisplayDateConverter}, StringFormat='Einladung vom {0}'}"
+                                        FontSize="13"
+                                        TextColor="#64748B"/>
 
                                     <HorizontalStackLayout
-                        Spacing="10">
+                                        Spacing="10">
 
                                         <Button
-                            Text="Annehmen"
-                            BackgroundColor="#2E7D32"
-                            TextColor="White"
-                            CornerRadius="8"
-                            Padding="14,6"
-                            Command="{Binding Source={RelativeSource AncestorType={x:Type local:MainPage}}, Path=BindingContext.AcceptInvitationCommand}"
-                            CommandParameter="{Binding}" />
+                                            Text="Annehmen"
+                                            BackgroundColor="#2E7D32"
+                                            TextColor="White"
+                                            CornerRadius="8"
+                                            Padding="14,6"
+                                            Command="{Binding Source={RelativeSource AncestorType={x:Type local:MainPage}}, Path=BindingContext.AcceptInvitationCommand}"
+                                            CommandParameter="{Binding}" />
 
                                         <Button
-                            Text="Ablehnen"
-                            BackgroundColor="#C62828"
-                            TextColor="White"
-                            CornerRadius="8"
-                            Padding="14,6"
-                            Command="{Binding Source={RelativeSource AncestorType={x:Type local:MainPage}}, Path=BindingContext.DeclineInvitationCommand}"
-                            CommandParameter="{Binding}" />
+                                            Text="Ablehnen"
+                                            BackgroundColor="#C62828"
+                                            TextColor="White"
+                                            CornerRadius="8"
+                                            Padding="14,6"
+                                            Command="{Binding Source={RelativeSource AncestorType={x:Type local:MainPage}}, Path=BindingContext.DeclineInvitationCommand}"
+                                            CommandParameter="{Binding}" />
 
                                     </HorizontalStackLayout>
 
@@ -93,15 +93,20 @@
                     </CollectionView.ItemTemplate>
 
                 </CollectionView>
-                
-                <!-- Vorschau des nächsten Termins auf der Startseite. MainPage bekommt
-                                 (genau wie EventPage) ein EventViewModel per Dependency Injection -
-                                 da es als "Transient" registriert ist (siehe MauiProgram.cs), ist
-                                 das aber ein EIGENES Objekt, nicht dieselbe Instanz wie auf
-                                 EventPage. Beide laden also unabhängig voneinander aus derselben
-                                 Datenbank. Gezeigt wird hier bewusst NUR der eine chronologisch
-                                 nächste Termin (NextUpcomingGameNight), keine Liste mehr. -->
-                            <Label Text="Nächster Termin"
+
+
+                <!-- Vorschau des nächsten Termins auf der Startseite.
+                 Die MainPage verwendet ein eigenes MainViewModel als BindingContext,
+                 während die EventPage weiterhin direkt mit dem EventViewModel arbeitet.
+                 Für die Terminvorschau nutzt das MainViewModel jedoch die zentrale
+                 Terminaufbereitung des EventViewModels (GetPreparedGameNightsAsync()),
+                 damit die Logik für Anzeigenamen, Zusagen/Absagen, Favoritenspiele
+                 und Statusberechnungen nur an einer Stelle existiert.
+                         
+                 Gezeigt wird hier bewusst nur der chronologisch nächste relevante
+                 Termin (NextUpcomingGameNight), nicht die komplette Terminliste. -->
+
+                <Label Text="Nächster Termin"
                                    Style="{StaticResource Headline}"
                                    FontSize="18"
                                    SemanticProperties.HeadingLevel="Level1"/>
@@ -189,7 +194,7 @@
                                           <!-- Keine Zusagen/Absagen-Buttons mehr auf dieser Karte: hier
                                                stehen nur noch Termine, an denen der Nutzer ohnehin schon
                                                teilnimmt (Gastgeber oder bereits zugesagt, siehe
-                                               EventViewModel.NextUpcomingGameNight) - eine Antwort ist
+                                               MainViewModel.NextUpcomingGameNight) - eine Antwort ist
                                                für die selten Fälle mit noch offener Zusage die
                                                "Noch offen"-Karte darunter zuständig. Der Text hier zeigt
                                                nur noch informativ die eigene, bereits abgegebene
@@ -214,10 +219,9 @@
                             </Border>
 
                             <!-- Zweite Vorschau-Karte: der nächste Termin, zu dem der Nutzer als
-                                 (potentieller) Teilnehmer noch GAR NICHT geantwortet hat (siehe
-                                 EventViewModel.NextUnansweredGameNight). Erinnert gezielt an eine
-                                 offene Antwort, auch wenn diese nicht zum allerersten Termin oben
-                                 gehört. Die Karte ist bewusst genauso aufgebaut wie die
+                                 Teilnehmer noch nicht geantwortet hat. Die Auswahl erfolgt im
+                                 MainViewModel über NextUnansweredGameNight auf Basis der zuvor
+                                 aufbereiteten Termine. Die Karte ist bewusst genauso aufgebaut wie die
                                  Terminkarten auf EventPage.xaml, damit der Nutzer hier gleich
                                  zusagen/absagen und auch Spiele vorschlagen kann, ohne extra zur
                                  Terminverwaltung wechseln zu müssen. -->
@@ -298,12 +302,14 @@
 
                                           </VerticalStackLayout>
 
-                                          <!-- Kein Gastgeber-Badge und kein "Termin absagen"-Button auf dieser
-                                               Karte: EventViewModel.NextUnansweredGameNight schließt Termine, bei
-                                               denen der Nutzer selbst Gastgeber ist, jetzt explizit aus - hier
-                                               stehen ausschließlich Termine, bei denen der Nutzer als Gast
-                                               zusagen/absagen kann. -->
-                                          <HorizontalStackLayout Grid.Column="0"
+
+                                                <!-- Kein Gastgeber-Badge und kein "Termin absagen"-Button auf dieser
+                                                 Karte: MainViewModel.NextUnansweredGameNight schließt Termine, bei
+                                                 denen der Nutzer selbst Gastgeber ist, bewusst aus. Hier sollen nur
+                                                 Termine erscheinen, auf die der Nutzer noch mit Zu- oder Absage
+                                                 reagieren kann. -->
+
+                                                 <HorizontalStackLayout Grid.Column="0"
                                                                   Grid.Row="1"
                                                                   Spacing="10"
                                                                   VerticalOptions="Center"

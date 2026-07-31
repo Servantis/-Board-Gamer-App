@@ -1,4 +1,5 @@
 ﻿using BoardGamerApp.Models;
+using BoardGamerApp.ViewModels;
 
 namespace BoardGamerApp.Repositories;
 
@@ -32,4 +33,9 @@ public interface IGroupMemberRepository
     string groupId,
     string playerId,
     string role = "member");
-    }
+
+    Task<List<GroupInvitationItem>>
+        GetPendingInvitationsAsync(
+            string playerId);
+
+}

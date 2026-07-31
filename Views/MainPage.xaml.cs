@@ -5,26 +5,26 @@ using BoardGamerApp.ViewModels;
 
 public partial class MainPage : ContentPage
 {
-	public EventViewModel ViewModel { get; }
+	public MainViewModel ViewModel { get; }
 
-	public MainPage(EventViewModel viewModel)
+	public MainPage(MainViewModel viewModel)
 	{
 		InitializeComponent();
 		ViewModel = viewModel;
 		BindingContext = ViewModel;
 	}
 
-	protected override async void OnAppearing()
-	{
-		base.OnAppearing();
+    protected override async void OnAppearing()
+    {
+        base.OnAppearing();
 
-		await ViewModel.LoadGameNightsAsync();
-	}
+        await ViewModel.LoadAsync();
+    }
 
-	// Wird angetippt, wenn auf der MainPage die Karte des nächsten Termins (NextUpcomingGameNight)
-	// angeklickt wird. Springt zur EventPage (Terminverwaltung) - der Termin selbst kann dann dort
-	// angetippt werden, um ihn zu bearbeiten (siehe EventPage.xaml.cs, OnEditEventClicked).
-	private async void OnEventPreviewClicked(object? sender, EventArgs e)
+    // Wird angetippt, wenn auf der MainPage die Karte des nächsten Termins (NextUpcomingGameNight)
+    // angeklickt wird. Springt zur EventPage (Terminverwaltung) - der Termin selbst kann dann dort
+    // angetippt werden, um ihn zu bearbeiten (siehe EventPage.xaml.cs, OnEditEventClicked).
+    private async void OnEventPreviewClicked(object? sender, EventArgs e)
 	{
 		await Shell.Current.GoToAsync(nameof(EventPage));
 	}

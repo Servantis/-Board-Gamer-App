@@ -109,6 +109,7 @@ public class GroupMemberRepository : IGroupMemberRepository
             INNER JOIN players p ON p.id = gm.player_id
             INNER JOIN gaming_groups gg ON gg.id = gm.group_id
             WHERE gm.group_id = ?
+              AND gm.status = 'active'
               AND gm.deleted_at IS NULL
               AND p.deleted_at IS NULL
               AND gg.deleted_at IS NULL
@@ -134,6 +135,7 @@ public class GroupMemberRepository : IGroupMemberRepository
             Debug.WriteLine(
                 $"RAW DB => " +
                 $"{r.PlayerId} " +
+                $"Status={r.Status} " +
                 $"Hosted={r.HostedFlag} " +
                 $"Next={r.IsNextHost}");
         }
@@ -142,13 +144,13 @@ public class GroupMemberRepository : IGroupMemberRepository
 
         foreach (var m in result)
         {
-            /*
+            
             Debug.WriteLine(
                     $"REPOSITORY => " +
                     $"{m.PlayerName} " +
                     $"Hosted={m.HostedFlag} " +
                     $"Next={m.IsNextHost}");
-            */
+            
         }
 
         return result;
@@ -274,16 +276,22 @@ public class GroupMemberRepository : IGroupMemberRepository
     {
         var database = await _databaseService.GetConnectionAsync();
 
-/*
+
         Debug.WriteLine(
             $"UPDATE {member.PlayerId} " +
             $"Hosted={member.HostedFlag} " +
             $"Next={member.IsNextHost}");
-*/
+
         member.UpdatedAt = DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ss.fffZ");
         member.Version += 1;
 
         await database.UpdateAsync(member);
+
+        Debug.WriteLine(
+            $"[UPDATE MEMBER] " +
+            $"Player={member.PlayerId} " +
+            $"Hosted={member.HostedFlag} " +
+            $"Next={member.IsNextHost}");
 
         await _syncOutboxService.AddFromDatabaseAsync(
             database,
@@ -298,13 +306,13 @@ public class GroupMemberRepository : IGroupMemberRepository
             member.Id);
 
         var saved = verify.First();
-        /*
+        
         Debug.WriteLine(
             $"DB VERIFY => " +
             $"Player={saved.PlayerId} " +
             $"Hosted={saved.HostedFlag} " +
             $"Next={saved.IsNextHost}");
-        */
+        
     }
 
     public async Task SoftDeleteGroupMemberAsync(
@@ -461,10 +469,13 @@ public class GroupMemberRepository : IGroupMemberRepository
             gm.id AS MemberId,
             gm.group_id AS GroupId,
             gg.name AS GroupName,
+            creator.name AS CreatorName,
             gm.created_at AS CreatedAt
         FROM group_members gm
         INNER JOIN gaming_groups gg
             ON gg.id = gm.group_id
+        INNER JOIN players creator
+        ON creator.id = gg.created_by_player_id
         WHERE gm.player_id = ?
           AND gm.status = 'invited'
           AND gm.deleted_at IS NULL

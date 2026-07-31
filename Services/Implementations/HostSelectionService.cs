@@ -12,11 +12,11 @@ namespace BoardGamerApp.Services.Implementations
                                             string? lastHostPlayerId,
                                             bool cycleCompleted)
         {
-            /*
+            
             Debug.WriteLine(
                 $"[SELECT] LastHostPlayerId => " +
                 $"{lastHostPlayerId}");
-            */
+            
             if (members == null || members.Count == 0)
                 return null;
 
@@ -24,21 +24,20 @@ namespace BoardGamerApp.Services.Implementations
             List<GroupMember> candidates;
 
             // Verhindere, dass der letzte Host nach Reset direkt neu gewählt wird
-
             if (cycleCompleted &&
                 !string.IsNullOrWhiteSpace(lastHostPlayerId))
             {
                 candidates = members
                     .Where(m => m.PlayerId != lastHostPlayerId)
                     .ToList();
-                /*
+                
                 Debug.WriteLine(
                     "[SELECT] Neuer Zyklus erkannt.");
 
                 Debug.WriteLine(
                     $"[SELECT] Letzter Host ausgeschlossen => " +
                     $"{lastHostPlayerId}");
-                */
+                
             }
             else
             {
@@ -50,11 +49,11 @@ namespace BoardGamerApp.Services.Implementations
 
             foreach (var candidate in candidates)
             {
-                /*
+                
                 Debug.WriteLine(
                     $"[SELECT] Kandidat => " +
                     $"{candidate.PlayerId}");
-                */
+                
             }
 
 
@@ -68,9 +67,10 @@ namespace BoardGamerApp.Services.Implementations
             {
                 member.IsNextHost = false;
             }
+            Debug.WriteLine($"[SELECT] Gewählter NextHost => {selected.PlayerId}");
 
             selected.IsNextHost = true;
-           // Debug.WriteLine($"[HOST] Neuer Host: {selected.PlayerId}");
+            Debug.WriteLine($"[HOST] Neuer Host: {selected.PlayerId}");
 
             return selected;
         }

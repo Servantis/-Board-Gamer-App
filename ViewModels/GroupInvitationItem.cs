@@ -12,7 +12,7 @@ public class GroupInvitationItem
 
     public string GroupName { get; set; } = string.Empty;
 
-    public string InviterName { get; set; } = string.Empty;
+    public string CreatorName { get; set; } = string.Empty;
 
     public string CreatedAt { get; set; } = string.Empty;
 }

@@ -82,10 +82,10 @@ public static class MauiProgram
                 builder.Services.AddSingleton<GroupOverviewRepository>();
                 
                 builder.Services.AddTransient<MainPage>();
+                builder.Services.AddTransient<MainViewModel>();
 
-
-                //Email Benachrichtigungen
-                builder.Services.AddSingleton<GroupMessageRepository>();
+        //Email Benachrichtigungen
+        builder.Services.AddSingleton<GroupMessageRepository>();
                 builder.Services.AddSingleton<MessageApiClient>();
                 builder.Services.AddSingleton<GroupDelayMessageService>();
 
@@ -119,8 +119,6 @@ public static class MauiProgram
                 // Service-Registration
                 builder.Services.AddSingleton<IHostSelectionService, HostSelectionService>();
                 builder.Services.AddSingleton<IHostScheduleService, HostScheduleService>();
-                builder.Services.AddSingleton<IGameNightTrigger, SimulatedGameNightTrigger>();
-
 
                 builder.Services.AddTransient<GroupMembersViewModel>();
                 builder.Services.AddTransient<GroupPage>();
