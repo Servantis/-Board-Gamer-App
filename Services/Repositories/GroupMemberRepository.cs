@@ -130,33 +130,13 @@ public class GroupMemberRepository : IGroupMemberRepository
             """,
                 groupId);
 
-        foreach (var r in raw)
-        {
-            Debug.WriteLine(
-                $"RAW DB => " +
-                $"{r.PlayerId} " +
-                $"Status={r.Status} " +
-                $"Hosted={r.HostedFlag} " +
-                $"Next={r.IsNextHost}");
-        }
-
         var result = await database.QueryAsync<GroupMemberListItem>(sql, groupId);
 
-        foreach (var m in result)
-        {
-            
-            Debug.WriteLine(
-                    $"REPOSITORY => " +
-                    $"{m.PlayerName} " +
-                    $"Hosted={m.HostedFlag} " +
-                    $"Next={m.IsNextHost}");
-            
-        }
-
         return result;
-
     }
 
+    // Group Member mit der angegebenen ID abrufen (für die Aktualisierung des Status des Mitglieds
+    // bei Annahme/Ablehnung einer Einladung)
     public async Task<GroupMember?> GetMemberByIdAsync(string memberId)
     {
         var database = await _databaseService.GetConnectionAsync();
@@ -174,6 +154,7 @@ public class GroupMemberRepository : IGroupMemberRepository
         return result.FirstOrDefault();
     }
 
+    // Spieler zu einer Gruppe hinzufügen. Wenn der Spieler bereits Mitglied war, wird der Datensatz reaktiviert.
     public async Task AddMemberAsync(
      string groupId,
      string playerId,
@@ -276,22 +257,10 @@ public class GroupMemberRepository : IGroupMemberRepository
     {
         var database = await _databaseService.GetConnectionAsync();
 
-
-        Debug.WriteLine(
-            $"UPDATE {member.PlayerId} " +
-            $"Hosted={member.HostedFlag} " +
-            $"Next={member.IsNextHost}");
-
         member.UpdatedAt = DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ss.fffZ");
         member.Version += 1;
 
         await database.UpdateAsync(member);
-
-        Debug.WriteLine(
-            $"[UPDATE MEMBER] " +
-            $"Player={member.PlayerId} " +
-            $"Hosted={member.HostedFlag} " +
-            $"Next={member.IsNextHost}");
 
         await _syncOutboxService.AddFromDatabaseAsync(
             database,
@@ -301,20 +270,14 @@ public class GroupMemberRepository : IGroupMemberRepository
 
         var verify = await database.QueryAsync<GroupMember>(
             @"SELECT *
-      FROM group_members
-      WHERE id = ?",
+             FROM group_members
+             WHERE id = ?",
             member.Id);
 
         var saved = verify.First();
-        
-        Debug.WriteLine(
-            $"DB VERIFY => " +
-            $"Player={saved.PlayerId} " +
-            $"Hosted={saved.HostedFlag} " +
-            $"Next={saved.IsNextHost}");
-        
     }
 
+    // Spieler aus einer Gruppe entfernen (Soft Delete)
     public async Task SoftDeleteGroupMemberAsync(
     string groupId,
     string playerId)
@@ -365,6 +328,7 @@ public class GroupMemberRepository : IGroupMemberRepository
         }
     }
 
+    // Liefert alle Mitglieder einer Gruppe zurück, die den Status "active" haben
     public async Task<List<GroupMember>> GetGroupMembersByGroupIdAsync(string groupId)
     {
         var database = await _databaseService.GetConnectionAsync();

@@ -8,15 +8,12 @@ namespace BoardGamerApp.Services.Implementations
     {
         private readonly Random _random = new Random();
 
+        // Liefert den nächsten Host eines Spieletermins
         public GroupMember SelectNextHost(List<GroupMember> members,
                                             string? lastHostPlayerId,
                                             bool cycleCompleted)
         {
-            
-            Debug.WriteLine(
-                $"[SELECT] LastHostPlayerId => " +
-                $"{lastHostPlayerId}");
-            
+
             if (members == null || members.Count == 0)
                 return null;
 
@@ -30,14 +27,6 @@ namespace BoardGamerApp.Services.Implementations
                 candidates = members
                     .Where(m => m.PlayerId != lastHostPlayerId)
                     .ToList();
-                
-                Debug.WriteLine(
-                    "[SELECT] Neuer Zyklus erkannt.");
-
-                Debug.WriteLine(
-                    $"[SELECT] Letzter Host ausgeschlossen => " +
-                    $"{lastHostPlayerId}");
-                
             }
             else
             {
@@ -45,17 +34,6 @@ namespace BoardGamerApp.Services.Implementations
                     .Where(m => !m.HostedFlag)
                     .ToList();
             }
-
-
-            foreach (var candidate in candidates)
-            {
-                
-                Debug.WriteLine(
-                    $"[SELECT] Kandidat => " +
-                    $"{candidate.PlayerId}");
-                
-            }
-
 
             if (!candidates.Any())
                 return null;
@@ -67,10 +45,8 @@ namespace BoardGamerApp.Services.Implementations
             {
                 member.IsNextHost = false;
             }
-            Debug.WriteLine($"[SELECT] Gewählter NextHost => {selected.PlayerId}");
 
             selected.IsNextHost = true;
-            Debug.WriteLine($"[HOST] Neuer Host: {selected.PlayerId}");
 
             return selected;
         }

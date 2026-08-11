@@ -37,6 +37,7 @@ public partial class AddGroupViewModel : ObservableObject
         await Shell.Current.GoToAsync("..");
     }
 
+    // Speichern einer Brettspielgruppe
     [RelayCommand]
     private async Task SaveAsync()
     {

@@ -33,6 +33,7 @@ public partial class GroupOverviewViewModel : ObservableObject
         _currentPlayerService = currentPlayerService;
     }
 
+    // Lade die Gruppen, die dem aktuellen Spieler zugeordnet sind
     [RelayCommand]
     public async Task LoadGroupsByPlayerIdAsync()
     {
@@ -77,6 +78,7 @@ public partial class GroupOverviewViewModel : ObservableObject
         }
     }
 
+    // Löschen oder Verlassen einer Gruppe in Abhängigkeit der zugeordneten Rolle des Nutzers mit Dialogbestätigung
     [RelayCommand]
     private async Task DeleteOrLeaveGroupAsync(GamingGroupListItem group)
     {
@@ -131,12 +133,14 @@ public partial class GroupOverviewViewModel : ObservableObject
         }
     }
 
+    // Navigation zu AddGroupPage
     [RelayCommand]
     private async Task OpenAddGroupPageAsync()
     {
         await Shell.Current.GoToAsync(nameof(AddGroupPage));
     }
 
+    // Navigation zu GroupPage mit Übergabe der Gruppen-ID
     [RelayCommand]
     private async Task OpenGroupAsync(GamingGroupListItem group)
     {
@@ -147,6 +151,7 @@ public partial class GroupOverviewViewModel : ObservableObject
             $"{nameof(GroupPage)}?groupId={group.Id}");
     }
 
+    // Überprüft, ob der aktuelle Spieler der Owner der Gruppe ist
     private bool IsGroupOwner(GamingGroupListItem group)
     {
         return group.CreatedByPlayerId ==

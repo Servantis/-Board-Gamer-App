@@ -12,7 +12,6 @@ public partial class GroupPage : ContentPage
 
         BindingContext = viewModel;
 #if DEBUG
-        DebugTrigger.IsVisible = Debugger.IsAttached;
 #else
         DebugFlyoutItem.IsVisible = false;
 

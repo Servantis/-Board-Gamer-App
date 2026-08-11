@@ -46,12 +46,6 @@
                                FontAttributes="Bold"
                                FontSize="16"
                                TextColor="#0F172A"/>
-                        <Button x:Name="DebugTrigger"
-                                Text="Trigger simulieren"
-                                Command="{Binding SimulateTriggerCommand}"
-                                Margin="10"
-                                IsVisible="false"
-                                />
 
                         <!-- Ansicht generiert-->
                         <CollectionView

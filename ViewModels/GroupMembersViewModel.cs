@@ -85,7 +85,6 @@ public partial class GroupMembersViewModel : ObservableObject
 
         RefreshCommand = new AsyncRelayCommand(LoadMembersAsync);
         SelectNextHostCommand = new AsyncRelayCommand(SelectNextHostAsync);
-        SimulateTriggerCommand = new AsyncRelayCommand(SimulateTriggerAsync);
         ManageMembersCommand = new AsyncRelayCommand(OpenMemberManagementAsync);
         OpenAddPlayerPageCommand = new AsyncRelayCommand(OpenAddPlayerPageAsync);
         _currentPlayerService = currentPlayerService;
@@ -130,8 +129,6 @@ public partial class GroupMembersViewModel : ObservableObject
                 members = await _groupMemberRepository.GetMembersAsync();
             }
 
-            System.Diagnostics.Debug.WriteLine($"LoadMembers: {members.Count}");
-
             Members.Clear();
 
             // prüfen, ob der aktuelle Spieler Mitglieder verwalten darf
@@ -144,7 +141,6 @@ public partial class GroupMembersViewModel : ObservableObject
 
                 Members.Add(member);
             }
-            Debug.WriteLine($"Members ObservableCollection: {Members.Count}");
 
             StatusText = Members.Count == 0
                 ? "Keine Gruppenmitglieder gefunden."
@@ -198,28 +194,6 @@ public partial class GroupMembersViewModel : ObservableObject
             "Nächster Gastgeber",
             $"Nach aktueller Rotation wäre '{nextHost.PlayerName}' der nächste Gastgeber.",
             "OK");
-    }
-
-    private async Task SimulateTriggerAsync()
-    {
-        var nextHost = RotationMembers.FirstOrDefault();
-        Debug.WriteLine("[TEST] Manueller Trigger");
-        if (nextHost is null)
-        {
-            await Shell.Current.DisplayAlertAsync(
-                "Keine Mitglieder",
-                "Es gibt aktuell kein aktives Gruppenmitglied für die Gastgeberrotation.",
-                "OK");
-
-            return;
-        }
-
-        await _hostScheduleService.EnsureNextHostExistsAsync(GroupId);
-        await _hostScheduleService.ProcessHostChangeAsync(GroupId);
-        await _hostScheduleService.CreateFollowUpGameNightIfNeededAsync(GroupId);
-
-        await LoadMembersAsync();
-        await LoadLastHostsAsync();
     }
 
     private async Task OpenMemberManagementAsync()

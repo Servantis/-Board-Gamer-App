@@ -730,14 +730,7 @@ public partial class EventViewModel : ObservableObject
     /// </summary>
     private async Task ApplyCompletedStatusIfDueAsync(GameNight night)
     {
-        // Debug.WriteLine("[EVENT] Automatischer Trigger");
-        /*
-        Debug.WriteLine(
-      $"[EVENT] Prüfe GameNight " +
-      $"{night.Id} | " +
-      $"Date={night.ScheduledAt} | " +
-      $"Status={night.Status}");
-        */
+         Debug.WriteLine("[EVENT] Automatischer Trigger");
 
         if (night.Status != BoardGamerConstants.GameNightStatus.Planned)
             return;
@@ -748,7 +741,7 @@ public partial class EventViewModel : ObservableObject
 
             return;
         }
-
+       
 
         //Debug.WriteLine( $"[EVENT] Setze COMPLETED => {night.Id}");
 
@@ -759,9 +752,12 @@ public partial class EventViewModel : ObservableObject
 
         // Debug.WriteLine( $"[EVENT] Starte Hostwechsel für Gruppe {night.GroupId}");
 
+        // Aufruf des HostScheduleService, der prüft, ob für die Gruppe ein künftiger
+        // Gastgeber existiert. Falls nicht wird automatisch der Owner als nächster Gastgeber gesetzt
         await _hostScheduleService.EnsureNextHostExistsAsync(night.GroupId);
 
-        await _hostScheduleService.ProcessHostChangeAsync(night.GroupId);
+        // Übergibt die Gruppe und den bisherigen Gastgeber an den HostScheduleService
+        await _hostScheduleService.ProcessHostChangeAsync(night.GroupId,night.HostPlayerId);
 
         // Automatische Terminerstellung: gibt es für die Gruppe noch keinen künftigen
         // geplanten Termin, wird jetzt automatisch einer angelegt 14 Tage nach diesem

@@ -30,7 +30,7 @@ public class GroupMemberListItem
     [Column("is_next_host")]
     public bool IsNextHost { get; set; } = false;
 
-    // UI-Kompatibilität für deine bestehende View
+    // UI-Kompatibilität für die bestehende View
     public string DisplayName => PlayerName;
 
     public string? Email => PlayerEmail;

@@ -30,30 +30,16 @@ namespace BoardGamerApp.Services.Implementations
             _databaseService = databaseService;
         }
 
-        public async Task ProcessHostChangeAsync(string groupId)
+        public async Task ProcessHostChangeAsync(
+            string groupId,
+            string? finishedHostPlayerId)
         {
-             Debug.WriteLine( $"[HOST] ProcessHostChangeAsync gestartet ({groupId})");
 
             // Mitglieder der Gruppe laden
             var members = await _groupMemberRepository
                 .GetGroupMembersByGroupIdAsync(groupId);
 
-            Debug.WriteLine("[HOST STATE BEFORE PROCESS]");
-            foreach (var m in members)
-            {
-                
-                Debug.WriteLine(
-                    $"[HOST] Player  => " +
-                    $"{m.PlayerId} " +
-                    $"Hosted={m.HostedFlag} " +
-                    $"Next={m.IsNextHost}");
-                
-            }
-
             var currentHost = members.FirstOrDefault(m => m.IsNextHost);
-
-            Debug.WriteLine(
-                $"[CURRENT HOST] => {currentHost?.PlayerId}");
 
             // Sollte niemals eintreten, da EnsureNextHostExistsAsync()
             // vorher ausgeführt wird.
@@ -67,27 +53,18 @@ namespace BoardGamerApp.Services.Implementations
             }
 
             // Bei Aufruf der ProcessHostChange-Methode (wenn night.Status = completed)
-            // den aktuellen Host abschließen
-            var currentNextHost =
-                    members.FirstOrDefault(m => m.IsNextHost);
+            // den aktuellen Host des vergangenen Spieleabends abschließen
+            var finishedHost = members.FirstOrDefault(m => m.PlayerId == finishedHostPlayerId);
 
-                Debug.WriteLine(
-                    $"[HOST] Aktueller Host => " +
-                    $"{currentNextHost?.PlayerId}");
+            if (finishedHost != null)
+            {
+                finishedHost.HostedFlag = true;
+                finishedHost.IsNextHost = false;
 
-                if (currentNextHost != null)
-                {
-                    currentNextHost.HostedFlag = true;
-                    currentNextHost.IsNextHost = false;
+                await _groupMemberRepository
+                    .UpdateMemberAsync(finishedHost);
+            }
 
-                    Debug.WriteLine(
-                        $"[HOST] Setze Host abgeschlossen => " +
-                        $"{currentNextHost.PlayerId}");
-
-                    await _groupMemberRepository
-                        .UpdateMemberAsync(currentNextHost);
-                }
-            
             // Aktuellen Stand neu laden
             members = await _groupMemberRepository
                 .GetGroupMembersByGroupIdAsync(groupId);
@@ -96,10 +73,7 @@ namespace BoardGamerApp.Services.Implementations
                    members.Count > 0 &&
                    members.All(m => m.HostedFlag);
 
-             Debug.WriteLine(  $"[HOST] Zyklus abgeschlossen => {cycleCompleted}");
-
-
-            // Wenn alle einmal Gastgeber waren -> Reset
+            // Wenn alle einmal Gastgeber waren -> Reset der Flags
             if (members.Count > 0 &&
                 members.All(m => m.HostedFlag))
             {
@@ -111,8 +85,6 @@ namespace BoardGamerApp.Services.Implementations
                         .UpdateMemberAsync(m);
                 }
 
-                 Debug.WriteLine(   "[HOST] Alle HostedFlags wurden zurückgesetzt.");
-
                 // Stand nach Reset neu laden
                 members = await _groupMemberRepository
                     .GetGroupMembersByGroupIdAsync(groupId);
@@ -123,19 +95,10 @@ namespace BoardGamerApp.Services.Implementations
             {
                 var lastHostPlayerId = await _gameNightRepository
                                        .GetLastCompletedHostPlayerIdAsync(groupId);
-                
-                    Debug.WriteLine(
-                        $"[HOST] Letzter abgeschlossener Host => " +
-                        $"{lastHostPlayerId}");
-                
 
                 var selectedHost =
                     _selectionService.SelectNextHost(members, lastHostPlayerId,cycleCompleted);
-                /*
-                Debug.WriteLine(
-                    $"[HOST] Neuer Host => " +
-                    $"{selectedHost?.PlayerId}");
-                */
+
                 if (selectedHost != null)
                 {
                     await _groupMemberRepository
@@ -148,10 +111,7 @@ namespace BoardGamerApp.Services.Implementations
                     if (nextGameNight != null)
                     {
                         
-                        Debug.WriteLine(
-                            $"[HOST] Trage Host in nächste GameNight ein => " +
-                            $"{selectedHost.PlayerId}");
-                        
+                        //Trage Host in nächste GameNight ein
                         await _gameNightRepository.AssignHostAsync(
                             nextGameNight.Id,
                             selectedHost.PlayerId);
@@ -167,12 +127,9 @@ namespace BoardGamerApp.Services.Implementations
             var members = await _groupMemberRepository
                 .GetGroupMembersByGroupIdAsync(groupId);
 
+            // return, wenn bereits ein Host gesetzt ist
             if (members.Any(m => m.IsNextHost))
-            {
-                
-                Debug.WriteLine(
-                    "[HOST] NextHost bereits vorhanden.");
-                
+            {               
                 return;
             }
 
@@ -186,14 +143,11 @@ namespace BoardGamerApp.Services.Implementations
                 return;
             }
 
-            Debug.WriteLine(
-    $"[ENSURE] Setze Owner als NextHost => {owner.PlayerId}");
+            // Setze Owner als NextHost
             owner.IsNextHost = true;
 
             await _groupMemberRepository
                 .UpdateMemberAsync(owner);
-
-             Debug.WriteLine(   $"[HOST] Owner als erster Host gesetzt: {owner.PlayerId}");
         }
 
         /// <summary>
